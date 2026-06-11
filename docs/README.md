@@ -28,6 +28,7 @@
 9. [Riscos e premissas](09-riscos-e-premissas.md)
 10. [Fundação técnica (infraestrutura)](10-fundacao-tecnica.md)
 11. [Módulo de autenticação](11-modulo-autenticacao.md)
+12. [Design System oficial](12-design-system.md)
 
 ## Objetivo central do sistema
 

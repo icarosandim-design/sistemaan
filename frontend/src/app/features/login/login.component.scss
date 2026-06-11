@@ -1,23 +1,24 @@
 :host {
-  --verde-900: #14532d;
-  --verde-800: #166534;
-  --verde-700: #15803d;
-  --verde-500: #22c55e;
-  --cinza-900: #111827;
-  --cinza-600: #4b5563;
-  --cinza-400: #9ca3af;
-  --cinza-200: #e5e7eb;
-  --cinza-100: #f3f4f6;
-  --erro: #dc2626;
-  --erro-bg: #fef2f2;
-  --erro-borda: #fecaca;
+  /* Mapeado ao Design System oficial (tokens --an-*) */
+  --verde-900: #2e3a21; /* títulos / escuro */
+  --verde-800: #3f4f2d; /* primária */
+  --verde-700: #5c6b3a; /* texto secundário */
+  --verde-500: #7a8450; /* hover primária */
+  --cinza-900: #2e3a21;
+  --cinza-600: #5c6b3a;
+  --cinza-400: #9aa07e;
+  --cinza-200: #e3d9c6;
+  --cinza-100: #f4efe5;
+  --erro: #b3261e;
+  --erro-bg: #fbeceb;
+  --erro-borda: #f3c9c6;
 }
 
 .login-page {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--an-fonte-corpo);
   color: var(--cinza-900);
 }
 
@@ -30,8 +31,8 @@
   padding: 3rem;
   color: #fff;
   background:
-    radial-gradient(120% 120% at 0% 0%, rgba(34, 197, 94, 0.35) 0%, transparent 45%),
-    linear-gradient(160deg, var(--verde-900) 0%, var(--verde-700) 100%);
+    radial-gradient(120% 120% at 0% 0%, rgba(168, 177, 126, 0.45) 0%, transparent 45%),
+    linear-gradient(160deg, var(--verde-900) 0%, var(--verde-800) 100%);
   overflow: hidden;
 }
 
@@ -59,6 +60,7 @@
   font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: #fff;
 }
 
 .brand-tagline {
@@ -166,7 +168,7 @@
 .field input:focus {
   outline: none;
   border-color: var(--verde-500);
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+  box-shadow: 0 0 0 3px rgba(122, 132, 80, 0.22);
 }
 
 .field input.invalid {

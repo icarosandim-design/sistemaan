@@ -32,7 +32,7 @@ import { AuthService } from '../../core/auth/auth.service';
         min-height: 100vh;
         display: grid;
         place-items: center;
-        background: #f3f4f6;
+        background: var(--an-fundo, #f4efe5);
         font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         padding: 1rem;
       }
@@ -67,13 +67,13 @@ import { AuthService } from '../../core/auth/auth.service';
         padding: 0.6rem 1.6rem;
         border: 0;
         border-radius: 10px;
-        background: #166534;
+        background: var(--an-primaria, #3f4f2d);
         color: #fff;
         font-weight: 600;
         cursor: pointer;
       }
       button:hover {
-        background: #14532d;
+        background: var(--an-primaria-hover, #2e3a21);
       }
     `,
   ],

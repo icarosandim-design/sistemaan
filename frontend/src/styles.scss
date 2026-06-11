@@ -1,16 +1,107 @@
-/* Estilos globais. A identidade visual e os componentes de UI serão definidos
-   na etapa de telas. */
-:root {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+@use '@angular/material' as mat;
+
+/* ===========================================================================
+   Design System oficial — SistemaAN
+   Tema do Angular Material + tokens de marca (paleta e tipografia).
+   =========================================================================== */
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$green-palette,
+        tertiary: mat.$orange-palette,
+      ),
+      typography: (
+        brand-family: 'Montserrat',
+        plain-family: 'Source Sans 3',
+        bold-weight: 700,
+        medium-weight: 600,
+        regular-weight: 400,
+      ),
+      density: -1,
+    )
+  );
 }
 
+:root {
+  /* ---- Tokens de marca (FONTE DA VERDADE da paleta) ---- */
+  --an-texto-titulo: #2e3a21;
+  --an-primaria: #3f4f2d;
+  --an-primaria-hover: #7a8450;
+  --an-detalhe-suave: #a8b17e;
+  --an-texto-secundario: #5c6b3a;
+  --an-cta: #b08d57;
+  --an-cta-hover: #8c6b3f;
+  --an-fundo: #f4efe5;
+  --an-fundo-secundario: #e3d9c6;
+  --an-superficie: #ffffff;
+  --an-texto-corpo: #3a3a2e;
+
+  /* ---- Tipografia ---- */
+  --an-fonte-titulo: 'Montserrat', system-ui, sans-serif;
+  --an-fonte-corpo: 'Source Sans 3', 'Source Sans Pro', system-ui, sans-serif;
+
+  /* ---- Raio / sombra ---- */
+  --an-raio: 10px;
+  --an-raio-sm: 8px;
+  --an-sombra-card: 0 1px 3px rgba(46, 58, 33, 0.08), 0 1px 2px rgba(46, 58, 33, 0.06);
+
+  /* ---- Override dos system tokens do Material para a marca ---- */
+  --mat-sys-primary: var(--an-primaria);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: var(--an-detalhe-suave);
+  --mat-sys-on-primary-container: var(--an-texto-titulo);
+  --mat-sys-tertiary: var(--an-cta);
+  --mat-sys-on-tertiary: #ffffff;
+  --mat-sys-surface: var(--an-superficie);
+  --mat-sys-surface-container: var(--an-superficie);
+  --mat-sys-background: var(--an-fundo);
+  --mat-sys-on-surface: var(--an-texto-corpo);
+  --mat-sys-on-background: var(--an-texto-corpo);
+}
+
+/* ---- Base ---- */
 * {
   box-sizing: border-box;
 }
 
 html,
 body {
-  margin: 0;
-  padding: 0;
   height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--an-fundo);
+  color: var(--an-texto-corpo);
+  font-family: var(--an-fonte-corpo);
+  font-size: 14px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--an-fonte-titulo);
+  color: var(--an-texto-titulo);
+}
+
+/* Ícones Material */
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
 }
