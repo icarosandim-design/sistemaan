@@ -114,6 +114,37 @@ export class CentralOperacionalComponent {
     return this.producaoCasa.length + this.producaoPersonalizada.length;
   }
 
+  // Limite visual: além disso, abre a tela de Produção.
+  private readonly maxCasaVisivel = 8;
+  private readonly maxPersVisivel = 12;
+
+  get casaVisivel() {
+    return this.producaoCasa.slice(0, this.maxCasaVisivel);
+  }
+
+  get casaExtra(): number {
+    return Math.max(0, this.producaoCasa.length - this.maxCasaVisivel);
+  }
+
+  get persVisivel() {
+    return this.producaoPersonalizada.slice(0, this.maxPersVisivel);
+  }
+
+  get persExtra(): number {
+    return Math.max(0, this.producaoPersonalizada.length - this.maxPersVisivel);
+  }
+
+  /** Densidade tipográfica conforme a quantidade (quanto mais, menor). */
+  get casaDensidade(): string {
+    const n = this.producaoCasa.length;
+    return n <= 3 ? 'd1' : n <= 6 ? 'd2' : 'd3';
+  }
+
+  get persDensidade(): string {
+    const n = this.producaoPersonalizada.length;
+    return n <= 6 ? 'd1' : n <= 12 ? 'd2' : 'd3';
+  }
+
   get faltantes(): { nome: string; falta: number }[] {
     return this.ingredientes
       .filter((i) => i.estoque < i.crus)

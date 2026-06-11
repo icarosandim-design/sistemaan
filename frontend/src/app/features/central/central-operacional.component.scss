@@ -177,10 +177,18 @@
 }
 
 /* ---- Produção do dia (2 blocos) ---- */
-.prod-corpo {
-  display: flex;
-  flex-direction: column;
-  gap: 1.4rem;
+.prod-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.prod-bloco {
+  min-width: 0;
+}
+
+.grupo + .grupo {
+  margin-top: 1.1rem;
 }
 
 .bloco-tit {
@@ -261,11 +269,86 @@
   line-height: 1.1;
 }
 
-/* Personalizadas — grade multi-coluna (escala para muitos pets) */
-.pers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 0.6rem;
+/* Personalizadas — lista vertical (densidade ajusta o tamanho) */
+.pers-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ---- Densidade proporcional (quanto mais itens, menor) ---- */
+.casa-grid {
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+}
+
+.casa-grid.d1 .cc-qtd {
+  font-size: 1.9rem;
+}
+
+.casa-grid.d2 {
+  grid-template-columns: repeat(auto-fit, minmax(94px, 1fr));
+}
+.casa-grid.d2 .cc-qtd {
+  font-size: 1.55rem;
+}
+.casa-grid.d2 .casa-card {
+  padding: 0.6rem 0.7rem;
+}
+
+.casa-grid.d3 {
+  grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+}
+.casa-grid.d3 .casa-card {
+  padding: 0.5rem 0.6rem;
+}
+.casa-grid.d3 .cc-nome {
+  font-size: 0.72rem;
+}
+.casa-grid.d3 .cc-qtd {
+  font-size: 1.25rem;
+}
+
+.pers-lista.d1 .pers-qtd {
+  font-size: 1.45rem;
+}
+
+.pers-lista.d2 .pers-card {
+  padding: 0.45rem 0.65rem;
+}
+.pers-lista.d2 .pers-avatar {
+  width: 32px;
+  height: 32px;
+}
+.pers-lista.d2 .pers-pet {
+  font-size: 0.92rem;
+}
+.pers-lista.d2 .pers-qtd {
+  font-size: 1.2rem;
+}
+
+.pers-lista.d3 .pers-card {
+  padding: 0.35rem 0.55rem;
+  gap: 0.5rem;
+}
+.pers-lista.d3 .pers-avatar {
+  width: 28px;
+  height: 28px;
+}
+.pers-lista.d3 .pers-pet {
+  font-size: 0.85rem;
+}
+.pers-lista.d3 .pers-cod,
+.pers-lista.d3 .pers-tutor {
+  font-size: 0.72rem;
+}
+.pers-lista.d3 .pers-qtd {
+  font-size: 1.05rem;
+}
+
+.ver-mais {
+  margin-top: 0.5rem;
+  color: var(--an-cta-hover);
+  font-weight: 600;
 }
 
 .pers-card {
@@ -386,6 +469,7 @@
 }
 
 @media (max-width: 900px) {
+  .prod-grid,
   .grid-2 {
     grid-template-columns: 1fr;
   }
