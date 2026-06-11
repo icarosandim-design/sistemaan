@@ -1,9 +1,8 @@
-namespace SistemaAN.Infrastructure.Authentication;
+namespace SistemaAN.Application.Identity;
 
 /// <summary>
-/// Configurações do JWT, vinculadas à seção <c>Jwt</c> da configuração.
-/// A emissão de tokens e o módulo de autenticação/permissões serão construídos
-/// sobre estas configurações na próxima etapa.
+/// Configurações do JWT, vinculadas à seção <c>Jwt</c> da configuração
+/// (a vinculação ocorre na camada de Infraestrutura).
 /// </summary>
 public sealed class JwtSettings
 {

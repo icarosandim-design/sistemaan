@@ -1,16 +1,17 @@
 using Microsoft.Extensions.DependencyInjection;
+using SistemaAN.Application.Identity;
 
 namespace SistemaAN.Application;
 
 /// <summary>
-/// Registro da camada de Aplicação. Casos de uso (handlers), validadores e
-/// serviços de cada módulo de negócio serão adicionados aqui nas próximas etapas.
+/// Registro da camada de Aplicação. Casos de uso/serviços de cada módulo são
+/// adicionados aqui.
 /// </summary>
 public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // Placeholder intencional: a fundação não registra regras de negócio.
+        services.AddScoped<IAuthService, AuthService>();
         return services;
     }
 }

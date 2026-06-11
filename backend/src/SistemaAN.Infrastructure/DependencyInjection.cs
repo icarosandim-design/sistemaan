@@ -5,16 +5,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SistemaAN.Application.Common.Interfaces;
-using SistemaAN.Infrastructure.Authentication;
+using SistemaAN.Application.Identity;
 using SistemaAN.Infrastructure.Common;
+using SistemaAN.Infrastructure.Identity;
 using SistemaAN.Infrastructure.Persistence;
 using SistemaAN.Infrastructure.Persistence.Interceptors;
+using SistemaAN.Infrastructure.Persistence.Seed;
 
 namespace SistemaAN.Infrastructure;
 
 /// <summary>
 /// Registro da camada de Infraestrutura: persistência (EF Core + PostgreSQL),
-/// auditoria, provedor de tempo e a base de autenticação JWT.
+/// auditoria, provedor de tempo, hashing de senha e autenticação JWT.
 /// </summary>
 public static class DependencyInjection
 {
@@ -24,7 +26,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
         services.AddPersistence(configuration);
-        services.AddJwtAuthentication(configuration);
+        services.AddSecurity(configuration);
         return services;
     }
 
@@ -50,16 +52,25 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(sp =>
             sp.GetRequiredService<ApplicationDbContext>());
 
+        services.AddScoped<IdentityDataSeeder>();
+
         return services;
     }
 
-    private static IServiceCollection AddJwtAuthentication(
+    private static IServiceCollection AddSecurity(
         this IServiceCollection services,
         IConfiguration configuration)
     {
         var jwtSettings = new JwtSettings();
         configuration.GetSection(JwtSettings.SectionName).Bind(jwtSettings);
         services.AddSingleton(jwtSettings);
+
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+
+        var key = string.IsNullOrWhiteSpace(jwtSettings.SecretKey)
+            ? new string('0', 32)
+            : jwtSettings.SecretKey;
 
         services
             .AddAuthentication(options =>
@@ -69,12 +80,7 @@ public static class DependencyInjection
             })
             .AddJwtBearer(options =>
             {
-                // Em produção a SecretKey vem de variável de ambiente; aqui há um
-                // fallback inerte apenas para permitir a inicialização em dev.
-                var key = string.IsNullOrWhiteSpace(jwtSettings.SecretKey)
-                    ? new string('0', 32)
-                    : jwtSettings.SecretKey;
-
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -85,6 +91,8 @@ public static class DependencyInjection
                     ValidAudience = jwtSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
                     ClockSkew = TimeSpan.Zero,
+                    NameClaimType = "sub",
+                    RoleClaimType = JwtTokenGenerator.RoleClaimType,
                 };
             });
 

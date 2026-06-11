@@ -27,6 +27,7 @@
 8. [Decisões arquiteturais](08-decisoes-arquiteturais.md)
 9. [Riscos e premissas](09-riscos-e-premissas.md)
 10. [Fundação técnica (infraestrutura)](10-fundacao-tecnica.md)
+11. [Módulo de autenticação](11-modulo-autenticacao.md)
 
 ## Objetivo central do sistema
 

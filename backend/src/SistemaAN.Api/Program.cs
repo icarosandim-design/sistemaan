@@ -1,9 +1,11 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using SistemaAN.Api.Middleware;
 using SistemaAN.Application;
 using SistemaAN.Infrastructure;
 using SistemaAN.Infrastructure.Persistence;
+using SistemaAN.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +89,16 @@ builder.Services.AddCors(options => options.AddPolicy(corsPolicy, policy =>
         .AllowAnyMethod()));
 
 var app = builder.Build();
+
+// Aplica migrations pendentes e executa o seed inicial (papel + admin).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<IdentityDataSeeder>();
+    await seeder.SeedAsync();
+}
 
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();

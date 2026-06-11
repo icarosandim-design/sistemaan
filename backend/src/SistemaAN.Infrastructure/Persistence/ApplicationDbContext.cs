@@ -1,14 +1,13 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Domain.Identity;
 
 namespace SistemaAN.Infrastructure.Persistence;
 
 /// <summary>
-/// Contexto principal do EF Core. Os <c>DbSet</c> dos módulos de negócio serão
-/// adicionados aqui (e refletidos em <see cref="IApplicationDbContext"/>) nas
-/// próximas etapas. As configurações de mapeamento são aplicadas por reflexão a
-/// partir das classes <c>IEntityTypeConfiguration</c> deste assembly.
+/// Contexto principal do EF Core. As configurações de mapeamento são aplicadas
+/// por reflexão a partir das classes <c>IEntityTypeConfiguration</c> deste assembly.
 /// </summary>
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
@@ -16,6 +15,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         : base(options)
     {
     }
+
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+
+    public DbSet<Papel> Papeis => Set<Papel>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

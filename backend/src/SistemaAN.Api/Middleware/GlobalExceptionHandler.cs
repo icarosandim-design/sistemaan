@@ -24,6 +24,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         {
             NotFoundException => (StatusCodes.Status404NotFound, "Recurso não encontrado"),
             ValidationException => (StatusCodes.Status400BadRequest, "Erro de validação"),
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Não autenticado"),
             BusinessRuleException => (StatusCodes.Status409Conflict, "Regra de negócio violada"),
             ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Acesso negado"),
             _ => (StatusCodes.Status500InternalServerError, "Erro interno do servidor"),
