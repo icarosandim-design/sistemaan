@@ -54,6 +54,7 @@ public static class DependencyInjection
 
         services.AddScoped<IdentityDataSeeder>();
         services.AddScoped<CatalogDataSeeder>();
+        services.AddScoped<ConsumoDataSeeder>();
 
         return services;
     }

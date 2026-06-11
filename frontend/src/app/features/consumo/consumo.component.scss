@@ -1,0 +1,156 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.btn-cta {
+  background: var(--an-cta);
+  color: #fff;
+
+  &:hover {
+    background: var(--an-cta-hover);
+  }
+}
+
+/* Consulta */
+.consulta-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--an-superficie);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
+}
+
+.consulta-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--an-texto-titulo);
+}
+
+.consulta-input {
+  width: 160px;
+  margin-bottom: -1.25em;
+}
+
+.consulta-resultado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 600;
+
+  small {
+    font-weight: 400;
+    opacity: 0.85;
+  }
+
+  .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.consulta-resultado.ok {
+  background: rgba(63, 79, 45, 0.12);
+  color: var(--an-primaria);
+}
+
+.consulta-resultado.vazio {
+  background: var(--an-fundo-secundario);
+  color: var(--an-texto-secundario);
+}
+
+/* Filtros */
+.filtros {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filtros mat-form-field {
+  margin-bottom: -1.25em;
+}
+
+/* Tabela */
+.tabela-card {
+  background: var(--an-superficie);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
+}
+
+.tabela {
+  width: 100%;
+  background: var(--an-superficie);
+}
+
+th.mat-mdc-header-cell {
+  font-weight: 700;
+  color: var(--an-texto-secundario);
+  background: var(--an-fundo);
+}
+
+.t-center {
+  text-align: center !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.cel-gramas {
+  font-weight: 700;
+  color: var(--an-primaria);
+}
+
+.t-acoes {
+  text-align: right !important;
+  width: 56px;
+}
+
+.linha {
+  cursor: pointer;
+}
+
+.linha:hover {
+  background: rgba(168, 177, 126, 0.12);
+}
+
+.chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(63, 79, 45, 0.12);
+  color: var(--an-primaria);
+}
+
+.chip-inativo {
+  background: var(--an-fundo-secundario);
+  color: var(--an-texto-secundario);
+}
+
+.sem-dados td {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--an-texto-secundario);
+}

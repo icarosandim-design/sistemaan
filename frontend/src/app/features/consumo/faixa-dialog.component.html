@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar faixa' : 'Nova faixa' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    <div class="linha">
+      <mat-form-field appearance="outline">
+        <mat-label>Peso inicial</mat-label>
+        <input matInput type="number" step="0.1" formControlName="pesoInicial" />
+        <span matTextSuffix>kg</span>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Peso final</mat-label>
+        <input matInput type="number" step="0.1" formControlName="pesoFinal" />
+        <span matTextSuffix>kg</span>
+      </mat-form-field>
+    </div>
+
+    @if (form.hasError('ordem')) {
+      <p class="erro-ordem">O peso final deve ser maior que o peso inicial.</p>
+    }
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Gramas por dia</mat-label>
+      <input matInput type="number" step="10" formControlName="gramasPorDia" />
+      <span matTextSuffix>g/dia</span>
+    </mat-form-field>
+
+    <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" (click)="salvar()">
+    {{ edicao ? 'Salvar' : 'Cadastrar' }}
+  </button>
+</mat-dialog-actions>

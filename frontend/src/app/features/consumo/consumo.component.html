@@ -1,0 +1,94 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Tabela de Consumo</h1>
+    </div>
+    <button mat-flat-button class="btn-cta" (click)="novo()">
+      <mat-icon>add</mat-icon>
+      Nova faixa
+    </button>
+  </header>
+
+  <!-- Ferramenta de consulta por peso -->
+  <div class="consulta-card">
+    <div class="consulta-titulo"><mat-icon>search</mat-icon> Consultar peso</div>
+    <mat-form-field appearance="outline" class="consulta-input">
+      <mat-label>Peso do pet</mat-label>
+      <input matInput type="number" step="0.1" [(ngModel)]="pesoConsulta" (keyup.enter)="consultarPeso()" />
+      <span matTextSuffix>kg</span>
+    </mat-form-field>
+    <button mat-stroked-button (click)="consultarPeso()">Consultar</button>
+
+    @if (consultaFeita) {
+      @if (resultadoConsulta) {
+        <span class="consulta-resultado ok">
+          <mat-icon>check_circle</mat-icon>
+          {{ fmtGramas(resultadoConsulta.gramasPorDia) }}
+          <small>(faixa {{ fmtKg(resultadoConsulta.pesoInicial) }} – {{ fmtKg(resultadoConsulta.pesoFinal) }})</small>
+        </span>
+      } @else {
+        <span class="consulta-resultado vazio">
+          <mat-icon>info</mat-icon> Nenhuma faixa ativa para este peso.
+        </span>
+      }
+    }
+  </div>
+
+  <!-- Filtro -->
+  <div class="filtros">
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="filtroStatus" (ngModelChange)="aplicarFiltro()">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="ativo">Ativos</mat-option>
+        <mat-option value="inativo">Inativos</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Tabela -->
+  <div class="tabela-card">
+    @if (carregando) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    <table mat-table [dataSource]="dataSource" matSort class="tabela">
+      <ng-container matColumnDef="pesoInicial">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-center">Peso inicial</th>
+        <td mat-cell *matCellDef="let f" class="t-center">{{ fmtKg(f.pesoInicial) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="pesoFinal">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-center">Peso final</th>
+        <td mat-cell *matCellDef="let f" class="t-center">{{ fmtKg(f.pesoFinal) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="gramasPorDia">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-center">Gramas por dia</th>
+        <td mat-cell *matCellDef="let f" class="t-center cel-gramas">{{ fmtGramas(f.gramasPorDia) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="ativo">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let f">
+          <span class="chip" [class.chip-inativo]="!f.ativo">{{ f.ativo ? 'Ativo' : 'Inativo' }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let f" class="t-acoes">
+          <button mat-icon-button (click)="editar(f); $event.stopPropagation()" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="linha" (click)="editar(row)"></tr>
+
+      <tr class="sem-dados" *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length">Nenhuma faixa cadastrada.</td>
+      </tr>
+    </table>
+  </div>
+</section>

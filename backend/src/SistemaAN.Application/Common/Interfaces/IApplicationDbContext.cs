@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Domain.Catalog;
+using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Identity;
 
 namespace SistemaAN.Application.Common.Interfaces;
@@ -18,6 +19,8 @@ public interface IApplicationDbContext
     DbSet<CategoriaIngrediente> CategoriasIngredientes { get; }
 
     DbSet<Ingrediente> Ingredientes { get; }
+
+    DbSet<FaixaConsumo> FaixasConsumo { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

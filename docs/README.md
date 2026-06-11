@@ -30,6 +30,7 @@
 11. [Módulo de autenticação](11-modulo-autenticacao.md)
 12. [Design System oficial](12-design-system.md)
 13. [Módulo de Ingredientes](13-modulo-ingredientes.md)
+14. [Módulo Tabela de Consumo](14-modulo-tabela-consumo.md)
 
 ## Objetivo central do sistema
 

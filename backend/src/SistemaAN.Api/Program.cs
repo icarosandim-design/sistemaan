@@ -101,6 +101,9 @@ using (var scope = app.Services.CreateScope())
 
     var catalogSeeder = scope.ServiceProvider.GetRequiredService<CatalogDataSeeder>();
     await catalogSeeder.SeedAsync();
+
+    var consumoSeeder = scope.ServiceProvider.GetRequiredService<ConsumoDataSeeder>();
+    await consumoSeeder.SeedAsync();
 }
 
 app.UseExceptionHandler();
