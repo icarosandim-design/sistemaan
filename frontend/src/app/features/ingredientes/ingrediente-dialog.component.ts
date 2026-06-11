@@ -10,9 +10,11 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
   CATEGORIAS,
+  coefDeFator,
   custoRealKg,
+  fatorCorrecaoPct,
+  fmtFatorCorrecao,
   fmtMoeda,
-  fmtPercentRendimento,
   Ingrediente,
   previewConversao,
   TIPOS_CONVERSAO,
@@ -52,7 +54,7 @@ export class IngredienteDialogComponent {
     nome: ['', [Validators.required]],
     categoria: ['', [Validators.required]],
     tipoConversao: ['perda' as TipoConversao, [Validators.required]],
-    rendimentoPct: [100, [Validators.required, Validators.min(0.01)]],
+    fatorPct: [0, [Validators.required, Validators.min(0)]],
     custoKg: [0, [Validators.required, Validators.min(0)]],
     ativo: [true],
   });
@@ -69,26 +71,27 @@ export class IngredienteDialogComponent {
         nome: i.nome,
         categoria: i.categoria,
         tipoConversao: i.tipoConversao,
-        rendimentoPct: i.coeficiente * 100,
+        fatorPct: fatorCorrecaoPct(i.tipoConversao, i.coeficiente) ?? 0,
         custoKg: i.custoKg,
         ativo: i.ativo,
       });
     }
 
-    this.ajustarRendimento(this.form.controls.tipoConversao.value);
-    this.form.controls.tipoConversao.valueChanges.subscribe((t) => this.ajustarRendimento(t));
+    this.ajustarFator(this.form.controls.tipoConversao.value);
+    this.form.controls.tipoConversao.valueChanges.subscribe((t) => this.ajustarFator(t));
   }
 
   private get coeficiente(): number {
-    return this.form.getRawValue().rendimentoPct / 100;
+    const v = this.form.getRawValue();
+    return coefDeFator(v.tipoConversao, v.fatorPct);
   }
 
   get preview(): string[] {
     return previewConversao(this.form.getRawValue().tipoConversao, this.coeficiente);
   }
 
-  get rendimentoPercent(): string {
-    return fmtPercentRendimento(this.form.getRawValue().tipoConversao, this.coeficiente);
+  get fatorLabel(): string {
+    return fmtFatorCorrecao(this.form.getRawValue().tipoConversao, this.coeficiente);
   }
 
   get custoRealLabel(): string {
@@ -99,14 +102,22 @@ export class IngredienteDialogComponent {
     return this.data.ingrediente?.historico ?? [];
   }
 
-  private ajustarRendimento(tipo: TipoConversao): void {
-    const c = this.form.controls.rendimentoPct;
+  private ajustarFator(tipo: TipoConversao): void {
+    const c = this.form.controls.fatorPct;
     if (tipo === 'sem_conversao') {
-      c.setValue(100);
+      c.setValue(0);
       c.disable();
-    } else if (c.disabled) {
+      return;
+    }
+    if (c.disabled) {
       c.enable();
     }
+    if (tipo === 'perda') {
+      c.setValidators([Validators.required, Validators.min(0), Validators.max(99.99)]);
+    } else {
+      c.setValidators([Validators.required, Validators.min(0.01)]);
+    }
+    c.updateValueAndValidity({ emitEvent: false });
   }
 
   salvar(): void {
@@ -116,7 +127,7 @@ export class IngredienteDialogComponent {
     }
 
     const v = this.form.getRawValue();
-    const coeficiente = v.tipoConversao === 'sem_conversao' ? 1 : v.rendimentoPct / 100;
+    const coeficiente = coefDeFator(v.tipoConversao, v.fatorPct);
     const original = this.data.ingrediente;
     const historico = original ? [...original.historico] : [];
 

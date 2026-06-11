@@ -63,8 +63,9 @@
       </ng-container>
 
       <ng-container matColumnDef="coeficiente">
-        <th mat-header-cell *matHeaderCellDef class="t-center">Rendimento</th>
-        <td mat-cell *matCellDef="let i" class="t-center">{{ fmtPercentRendimento(i.tipoConversao, i.coeficiente) }}</td>
+        <th mat-header-cell *matHeaderCellDef class="t-center"
+            matTooltip="Fator de correção: % de perda ou ganho de peso no preparo">Correção</th>
+        <td mat-cell *matCellDef="let i" class="t-center">{{ fmtFatorCorrecao(i.tipoConversao, i.coeficiente) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="custoKg">

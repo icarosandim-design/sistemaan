@@ -13,8 +13,8 @@ import { MatDialog } from '@angular/material/dialog';
 import {
   CATEGORIAS,
   custoRealKg,
+  fmtFatorCorrecao,
   fmtMoeda,
-  fmtPercentRendimento,
   Ingrediente,
   labelTipoConversao,
   MOCK_INGREDIENTES,
@@ -56,7 +56,7 @@ export class IngredientesComponent implements AfterViewInit {
   readonly dataSource = new MatTableDataSource<Ingrediente>([...MOCK_INGREDIENTES]);
 
   readonly fmtMoeda = fmtMoeda;
-  readonly fmtPercentRendimento = fmtPercentRendimento;
+  readonly fmtFatorCorrecao = fmtFatorCorrecao;
   readonly custoRealKg = custoRealKg;
   readonly labelTipoConversao = labelTipoConversao;
 

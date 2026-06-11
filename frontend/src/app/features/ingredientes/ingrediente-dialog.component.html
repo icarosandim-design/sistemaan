@@ -38,10 +38,10 @@
 
         <div class="linha">
           <mat-form-field appearance="outline">
-            <mat-label>Rendimento (cozido ÷ cru)</mat-label>
-            <input matInput type="number" step="1" formControlName="rendimentoPct" />
+            <mat-label>Fator de correção</mat-label>
+            <input matInput type="number" step="1" formControlName="fatorPct" />
             <span matTextSuffix>%</span>
-            <mat-hint>Ex.: 55% (perda) · 300% (ganho)</mat-hint>
+            <mat-hint>Perda: % perdido (ex.: 45%) · Ganho: % ganho (ex.: 200%)</mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -54,8 +54,8 @@
         <div class="conversao">
           <div class="conv-tit">
             <mat-icon>swap_horiz</mat-icon> Conversão
-            @if (rendimentoPercent !== '—') {
-              <span class="conv-rend">rendimento {{ rendimentoPercent }}</span>
+            @if (fatorLabel !== '—') {
+              <span class="conv-rend">{{ fatorLabel }}</span>
             }
           </div>
           @for (linha of preview; track linha) {

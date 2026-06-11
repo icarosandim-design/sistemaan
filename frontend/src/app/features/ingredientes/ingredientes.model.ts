@@ -56,12 +56,35 @@ export function fmtCoeficiente(tipo: TipoConversao, coef: number): string {
   return coef.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
 }
 
-/** Rendimento em percentual (cozido ÷ cru × 100). */
-export function fmtPercentRendimento(tipo: TipoConversao, coef: number): string {
-  if (tipo === 'sem_conversao' || !coef || coef <= 0) {
+/** Fator de correção em % (perda ou ganho de peso no preparo). */
+export function fatorCorrecaoPct(tipo: TipoConversao, coef: number): number | null {
+  if (tipo === 'perda') {
+    return (1 - coef) * 100;
+  }
+  if (tipo === 'ganho') {
+    return (coef - 1) * 100;
+  }
+  return null;
+}
+
+export function fmtFatorCorrecao(tipo: TipoConversao, coef: number): string {
+  if (tipo === 'sem_conversao') {
     return '—';
   }
-  return `${(coef * 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}%`;
+  const pct = fatorCorrecaoPct(tipo, coef) ?? 0;
+  const sinal = tipo === 'perda' ? '−' : '+';
+  return `${sinal}${pct.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}%`;
+}
+
+/** Converte o fator de correção (%) no coeficiente de rendimento (cozido ÷ cru). */
+export function coefDeFator(tipo: TipoConversao, pct: number): number {
+  if (tipo === 'perda') {
+    return 1 - pct / 100;
+  }
+  if (tipo === 'ganho') {
+    return 1 + pct / 100;
+  }
+  return 1;
 }
 
 /** Custo real por kg do alimento pronto (cozido) = custo/kg ÷ rendimento. */

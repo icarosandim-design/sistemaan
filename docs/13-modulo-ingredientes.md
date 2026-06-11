@@ -35,8 +35,13 @@ Fórmulas:
 - `cozido = cru × coeficiente`
 - `cru = cozido ÷ coeficiente`
 
-No cadastro, a equipe **digita o coeficiente** e o sistema calcula/pré-visualiza
-as duas direções automaticamente. `sem_conversao` força coeficiente = 1.
+No cadastro, a equipe **digita o fator de correção em %** (a perda ou o ganho de
+peso no preparo) e o sistema converte para o coeficiente interno:
+- **Perda X%** → coeficiente = 1 − X/100 (batata-doce 45% → 0,55 → 1 kg cru = 550 g cozido)
+- **Ganho X%** → coeficiente = 1 + X/100 (arroz 200% → 3,00 → 333 g cru = 1 kg cozido)
+- **Sem conversão** → 0% → coeficiente = 1
+
+A pré-visualização (cru↔cozido) e o custo real são calculados automaticamente.
 
 ## Custos
 - `custo_atual_kg` no ingrediente (preço do insumo **cru**).
