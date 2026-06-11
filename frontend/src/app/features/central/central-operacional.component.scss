@@ -82,40 +82,30 @@
   }
 }
 
-/* ---- Toggle e resumo da produção ---- */
+/* ---- Toggle e altura do card de produção ---- */
 .toggle-prod {
   margin-left: 0.5rem;
   color: var(--an-cta-hover);
   font-weight: 600;
 }
 
-.prod-resumo {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+.prod-wrap {
+  position: relative;
 }
 
-.resumo-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  background: var(--an-fundo);
-  border: 1px solid var(--an-fundo-secundario);
-  font-size: 0.9rem;
-  color: var(--an-texto-secundario);
+.prod-wrap.minimizado {
+  max-height: 360px;
+  overflow: hidden;
+}
 
-  b {
-    color: var(--an-primaria);
-  }
-
-  .mat-icon {
-    font-size: 17px;
-    width: 17px;
-    height: 17px;
-    color: var(--an-texto-secundario);
-  }
+.prod-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--an-superficie));
 }
 
 /* ---- KPIs ---- */

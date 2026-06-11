@@ -71,17 +71,7 @@
       </div>
     }
 
-    <!-- Minimizado: resumo -->
-    @if (!producaoExpandida()) {
-      <div class="prod-resumo">
-        <span class="resumo-pill"><mat-icon>home</mat-icon> Casa <b>{{ subtotalCasa }}</b> pac.</span>
-        <span class="resumo-pill"><mat-icon>pets</mat-icon> Personalizadas <b>{{ subtotalPersonalizada }}</b> pac.</span>
-        <span class="resumo-pill"><mat-icon>inventory_2</mat-icon> {{ ingredientes.length }} ingredientes</span>
-      </div>
-    }
-
-    <!-- Expandido: detalhe -->
-    @if (producaoExpandida()) {
+    <div class="prod-wrap" [class.minimizado]="!producaoExpandida()">
     <div class="prod-grid">
       <!-- Esquerda: o que cozinhar -->
       <div class="prod-bloco">
@@ -167,7 +157,10 @@
         </table>
       </div>
     </div>
+    @if (!producaoExpandida()) {
+      <div class="prod-fade"></div>
     }
+    </div>
   </mat-card>
 
   <div class="grid-2">
