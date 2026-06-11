@@ -1,0 +1,89 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar receita da casa' : 'Nova receita da casa' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    <div class="linha">
+      <mat-form-field appearance="outline" class="f-codigo">
+        <mat-label>Código</mat-label>
+        <input matInput formControlName="codigo" placeholder="Ex.: FRA" />
+        @if (form.controls.codigo.hasError('required')) {
+          <mat-error>Informe o código.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="f-nome">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="nome" placeholder="Ex.: Frango" />
+        @if (form.controls.nome.hasError('required')) {
+          <mat-error>Informe o nome.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <!-- Ficha técnica -->
+    <div class="ficha">
+      <div class="ficha-head">
+        <div>
+          <h3>Ficha técnica · base 1 kg cozido</h3>
+          <p class="ficha-sub">O que vai na bacia para 1 kg de comida pronta.</p>
+        </div>
+        <button mat-stroked-button type="button" (click)="adicionar()">
+          <mat-icon>add</mat-icon> Ingrediente
+        </button>
+      </div>
+
+      <div formArrayName="itens" class="itens">
+        @for (item of itens.controls; track $index) {
+          <div class="item" [formGroupName]="$index">
+            <mat-form-field appearance="outline" class="i-ing">
+              <mat-label>Ingrediente</mat-label>
+              <mat-select formControlName="ingredienteId">
+                @for (ing of ingredientes; track ing.id) {
+                  <mat-option [value]="ing.id">{{ ing.nome }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <span class="i-cat">{{ categoriaDe(item.value.ingredienteId) }}</span>
+
+            <mat-form-field appearance="outline" class="i-gramas">
+              <mat-label>Cozido</mat-label>
+              <input matInput type="number" step="10" formControlName="gramas" />
+              <span matTextSuffix>g</span>
+            </mat-form-field>
+
+            <span class="i-custo">{{ fmtMoeda(custoDe(item.value.ingredienteId, item.value.gramas)) }}</span>
+
+            <button mat-icon-button type="button" class="i-remover" (click)="remover($index)" matTooltip="Remover">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="total" [class]="statusFicha.classe">
+        <mat-icon>{{ statusFicha.classe === 'ok' ? 'check_circle' : 'info' }}</mat-icon>
+        <span>{{ statusFicha.texto }}</span>
+      </div>
+    </div>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Observações de preparo</mat-label>
+      <textarea matInput rows="2" formControlName="observacoes"></textarea>
+    </mat-form-field>
+
+    <div class="rodape-form">
+      <mat-slide-toggle formControlName="ativo" color="primary">Ativa</mat-slide-toggle>
+      <span class="custo-gerencial">
+        Custo estimado por kg cozido: <strong>{{ fmtMoeda(custoTotal) }}</strong>
+      </span>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" [disabled]="!podeSalvar" (click)="salvar()">
+    {{ edicao ? 'Salvar' : 'Cadastrar' }}
+  </button>
+</mat-dialog-actions>

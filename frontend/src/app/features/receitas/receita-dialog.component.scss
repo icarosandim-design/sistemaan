@@ -1,0 +1,164 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 1rem;
+  min-width: 560px;
+}
+
+.full {
+  width: 100%;
+}
+
+.linha {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.f-codigo {
+  width: 120px;
+}
+
+.f-nome {
+  flex: 1;
+}
+
+/* Ficha técnica */
+.ficha {
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  background: var(--an-fundo);
+}
+
+.ficha-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .ficha-sub {
+    margin: 0.1rem 0 0;
+    font-size: 0.8rem;
+    color: var(--an-texto-secundario);
+  }
+}
+
+.itens {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.i-ing {
+  flex: 1;
+}
+
+.i-cat {
+  width: 96px;
+  font-size: 0.78rem;
+  color: var(--an-texto-secundario);
+}
+
+.i-gramas {
+  width: 110px;
+}
+
+.i-custo {
+  width: 84px;
+  text-align: right;
+  font-size: 0.82rem;
+  color: var(--an-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+.i-remover {
+  flex-shrink: 0;
+}
+
+/* Total da ficha */
+.total {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--an-raio-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.total.ok {
+  background: rgba(63, 79, 45, 0.12);
+  color: var(--an-primaria);
+}
+
+.total.falta {
+  background: #fdf4e3;
+  color: #8c6b3f;
+}
+
+.total.excede {
+  background: #fbeceb;
+  color: #b3261e;
+}
+
+/* Rodapé do form */
+.rodape-form {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.custo-gerencial {
+  font-size: 0.85rem;
+  color: var(--an-texto-secundario);
+
+  strong {
+    color: var(--an-primaria);
+  }
+}
+
+.btn-cta {
+  background: var(--an-cta);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--an-cta-hover);
+  }
+}
+
+@media (max-width: 620px) {
+  .form {
+    min-width: auto;
+  }
+
+  .item {
+    flex-wrap: wrap;
+  }
+
+  .i-cat {
+    width: auto;
+  }
+}

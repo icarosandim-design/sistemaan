@@ -51,7 +51,7 @@ export class MainLayoutComponent {
     { label: 'Central Operacional', icone: 'space_dashboard', rota: '/central' },
     { label: 'Clientes', icone: 'group', rota: null },
     { label: 'Pets', icone: 'pets', rota: null },
-    { label: 'Receitas', icone: 'menu_book', rota: null },
+    { label: 'Receitas', icone: 'menu_book', rota: '/receitas' },
     { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes' },
     { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo' },
     { label: 'Produção', icone: 'factory', rota: null },

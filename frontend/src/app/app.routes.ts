@@ -5,6 +5,7 @@ import { MainLayoutComponent } from './layout/main-layout.component';
 import { CentralOperacionalComponent } from './features/central/central-operacional.component';
 import { IngredientesComponent } from './features/ingredientes/ingredientes.component';
 import { ConsumoComponent } from './features/consumo/consumo.component';
+import { ReceitasComponent } from './features/receitas/receitas.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -16,6 +17,7 @@ export const routes: Routes = [
       { path: 'central', component: CentralOperacionalComponent },
       { path: 'ingredientes', component: IngredientesComponent },
       { path: 'tabela-consumo', component: ConsumoComponent },
+      { path: 'receitas', component: ReceitasComponent },
       { path: '', pathMatch: 'full', redirectTo: 'central' },
     ],
   },
