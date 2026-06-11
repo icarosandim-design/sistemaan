@@ -20,9 +20,15 @@
 }
 
 .erro-ordem {
-  margin: -0.25rem 0 0.75rem;
+  margin: -0.25rem 0 0.5rem;
   color: #b3261e;
   font-size: 0.8rem;
+}
+
+.nota {
+  margin: 0 0 0.75rem;
+  color: var(--an-texto-secundario);
+  font-size: 0.78rem;
 }
 
 .btn-cta {

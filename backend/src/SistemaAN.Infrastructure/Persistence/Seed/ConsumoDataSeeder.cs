@@ -25,12 +25,13 @@ public sealed class ConsumoDataSeeder
             return;
         }
 
+        // Intervalos fechados que não se encostam (a próxima começa após o final).
         var faixas = new[]
         {
             FaixaConsumo.Criar(3m, 5m, 200),
-            FaixaConsumo.Criar(5m, 8m, 290),
-            FaixaConsumo.Criar(8m, 10m, 370),
-            FaixaConsumo.Criar(10m, 13m, 440),
+            FaixaConsumo.Criar(6m, 8m, 290),
+            FaixaConsumo.Criar(9m, 11m, 370),
+            FaixaConsumo.Criar(12m, 14m, 440),
         };
 
         _db.FaixasConsumo.AddRange(faixas);

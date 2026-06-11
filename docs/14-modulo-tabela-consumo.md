@@ -19,10 +19,11 @@ consumo diário de um pet a partir do peso (em **Pets** e **Plano Alimentar**).
 
 ## Regras de negócio
 - Peso inicial **menor** que o peso final.
-- **Sem sobreposição entre faixas ATIVAS** (faixas inativas podem sobrepor).
-  Duas faixas se sobrepõem quando `a.inicial < b.final E b.inicial < a.final`.
-- Faixa é **semiaberta**: aplica-se quando `peso ∈ [peso_inicial, peso_final)`
-  (ex.: 5 kg cai em 5–8, não em 3–5).
+- Faixa é **fechada**: aplica-se quando `peso ∈ [peso_inicial, peso_final]`
+  (vale o início, o meio **e** o final — ex.: 5 kg pertence à faixa 3–5).
+- **Faixas ativas não podem se sobrepor nem se encostar**: a próxima começa
+  **após** o final da anterior (ex.: 3–5, depois **6**–8). Conflito quando
+  `a.inicial <= b.final E b.inicial <= a.final` (faixas inativas podem conflitar).
 - Status ativo/inativo (inativação no lugar de exclusão).
 - Consulta: qual faixa **ativa** se aplica a um peso.
 
@@ -36,7 +37,7 @@ consumo diário de um pet a partir do peso (em **Pets** e **Plano Alimentar**).
 | PUT | `/api/faixas-consumo/{id}` | Atualiza (inclui inativação via `ativo`) |
 
 ## Seed inicial
-3–5 → 200 g/dia · 5–8 → 290 · 8–10 → 370 · 10–13 → 440 (apenas na 1ª execução).
+3–5 → 200 · 6–8 → 290 · 9–11 → 370 · 12–14 → 440 (apenas na 1ª execução).
 
 ## Tela
 - **Tabela** (lista única, header fixo): Peso inicial · Peso final · Gramas/dia · Status, com ordenação e filtro por status.

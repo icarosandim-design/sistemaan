@@ -29,7 +29,7 @@ public sealed class FaixaConsumoService : IFaixaConsumoService
     public async Task<FaixaConsumoDto?> ConsultarPorPesoAsync(decimal peso, CancellationToken cancellationToken = default)
     {
         var faixa = await _db.FaixasConsumo
-            .Where(f => f.Ativo && f.PesoInicial <= peso && peso < f.PesoFinal)
+            .Where(f => f.Ativo && f.PesoInicial <= peso && peso <= f.PesoFinal)
             .OrderBy(f => f.PesoInicial)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -89,18 +89,20 @@ public sealed class FaixaConsumoService : IFaixaConsumoService
         // Sobreposição apenas entre faixas ATIVAS (regra de negócio).
         if (request.Ativo)
         {
-            var sobreposta = await _db.FaixasConsumo.AnyAsync(
+            // Intervalo fechado: faixas ativas não podem se sobrepor NEM se encostar
+            // (comparações com <=, então tocar no limite já é conflito).
+            var conflito = await _db.FaixasConsumo.AnyAsync(
                 f => f.Ativo
                     && (idAtual == null || f.Id != idAtual)
-                    && f.PesoInicial < request.PesoFinal
-                    && request.PesoInicial < f.PesoFinal,
+                    && f.PesoInicial <= request.PesoFinal
+                    && request.PesoInicial <= f.PesoFinal,
                 cancellationToken);
 
-            if (sobreposta)
+            if (conflito)
             {
                 throw new ValidationException(new Dictionary<string, string[]>
                 {
-                    ["pesoInicial"] = ["Esta faixa se sobrepõe a outra faixa ativa."],
+                    ["pesoInicial"] = ["Esta faixa se sobrepõe ou encosta em outra faixa ativa."],
                 });
             }
         }

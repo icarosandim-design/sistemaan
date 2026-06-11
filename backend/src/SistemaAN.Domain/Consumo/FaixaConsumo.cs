@@ -5,7 +5,8 @@ namespace SistemaAN.Domain.Consumo;
 /// <summary>
 /// Faixa de peso → gramas/dia recomendadas. Base para sugerir o consumo de um
 /// pet a partir do peso (usada futuramente em Pets e Plano Alimentar).
-/// Faixa é semiaberta: aplica quando peso ∈ [PesoInicial, PesoFinal).
+/// Faixa é FECHADA: aplica quando peso ∈ [PesoInicial, PesoFinal]. Faixas ativas
+/// não podem se sobrepor nem se encostar (a próxima começa após o final da anterior).
 /// </summary>
 public class FaixaConsumo : AuditableEntity
 {
@@ -40,6 +41,6 @@ public class FaixaConsumo : AuditableEntity
 
     public void DefinirAtivo(bool ativo) => Ativo = ativo;
 
-    /// <summary>Indica se a faixa se aplica ao peso informado (semiaberta).</summary>
-    public bool Aplica(decimal peso) => peso >= PesoInicial && peso < PesoFinal;
+    /// <summary>Indica se a faixa se aplica ao peso informado (intervalo fechado).</summary>
+    public bool Aplica(decimal peso) => peso >= PesoInicial && peso <= PesoFinal;
 }
