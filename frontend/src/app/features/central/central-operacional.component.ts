@@ -44,17 +44,26 @@ export class CentralOperacionalComponent {
     { diaSemana: 'Ter', data: '17/06', entregas: 6, hoje: false },
   ];
 
-  /** Produção da casa (receitas padrão). */
+  /** Produção da casa (3 receitas × 2 tamanhos = até 6 produtos). */
   readonly producaoCasa = [
     { produto: 'Frango 250g', pacotes: 35 },
+    { produto: 'Frango 500g', pacotes: 12 },
+    { produto: 'Bovina 250g', pacotes: 18 },
     { produto: 'Bovina 500g', pacotes: 10 },
     { produto: 'Suína 250g', pacotes: 22 },
+    { produto: 'Suína 500g', pacotes: 8 },
   ];
 
-  /** Receitas personalizadas (por pet). */
+  /** Receitas personalizadas (por pet) — podem chegar a ~20 num dia. */
   readonly producaoPersonalizada = [
     { pet: 'Scooby', codigo: 'VET-001', tutor: 'Icaro', pacotes: 8 },
     { pet: 'Bidu', codigo: 'VET-002', tutor: 'Maria', pacotes: 7 },
+    { pet: 'Rex', codigo: 'VET-003', tutor: 'João', pacotes: 6 },
+    { pet: 'Mel', codigo: 'VET-004', tutor: 'Ana', pacotes: 5 },
+    { pet: 'Thor', codigo: 'VET-005', tutor: 'Carlos', pacotes: 9 },
+    { pet: 'Luna', codigo: 'VET-006', tutor: 'Paula', pacotes: 4 },
+    { pet: 'Nina', codigo: 'VET-007', tutor: 'Bruno', pacotes: 6 },
+    { pet: 'Bob', codigo: 'VET-008', tutor: 'Carla', pacotes: 5 },
   ];
 
   /** Ingredientes do dia: cozidos, crus necessários e estoque cru. */

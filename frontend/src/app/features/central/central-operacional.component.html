@@ -67,45 +67,51 @@
       </div>
     }
 
-    <div class="prod-grid">
-      <!-- Esquerda: o que cozinhar -->
-      <div class="prod-bloco">
-        <div class="bloco-head">
-          <h3 class="bloco-tit">Produção da casa</h3>
-          <span class="bloco-sub">{{ subtotalCasa }} pac.</span>
-        </div>
-        <div class="casa-grid">
-          @for (c of producaoCasa; track c.produto) {
-            <div class="casa-card">
-              <div class="cc-nome">{{ c.produto }}</div>
-              <div class="cc-qtd">{{ c.pacotes }}</div>
-            </div>
-          }
-        </div>
-
-        <div class="bloco-head">
-          <h3 class="bloco-tit">Receitas personalizadas</h3>
-          <span class="bloco-sub">{{ subtotalPersonalizada }} pac.</span>
-        </div>
-        <div class="pers-lista">
-          @for (p of producaoPersonalizada; track p.codigo) {
-            <div class="pers-card">
-              <div class="pers-avatar"><mat-icon>pets</mat-icon></div>
-              <div class="pers-info">
-                <div class="pers-linha">
-                  <span class="pers-pet">{{ p.pet }}</span>
-                  <span class="pers-cod">· {{ p.codigo }}</span>
-                </div>
-                <div class="pers-tutor">Tutor: {{ p.tutor }}</div>
+    <div class="prod-corpo">
+      <!-- O que cozinhar (grupos escondem quando vazios) -->
+      @if (producaoCasa.length) {
+        <div class="grupo">
+          <div class="bloco-head">
+            <h3 class="bloco-tit">Produção da casa</h3>
+            <span class="bloco-sub">{{ subtotalCasa }} pac.</span>
+          </div>
+          <div class="casa-grid">
+            @for (c of producaoCasa; track c.produto) {
+              <div class="casa-card">
+                <div class="cc-nome">{{ c.produto }}</div>
+                <div class="cc-qtd">{{ c.pacotes }}</div>
               </div>
-              <span class="pers-qtd">{{ p.pacotes }}</span>
-            </div>
-          }
+            }
+          </div>
         </div>
-      </div>
+      }
 
-      <!-- Direita: tabela de ingredientes -->
-      <div class="prod-bloco">
+      @if (producaoPersonalizada.length) {
+        <div class="grupo">
+          <div class="bloco-head">
+            <h3 class="bloco-tit">Receitas personalizadas</h3>
+            <span class="bloco-sub">{{ subtotalPersonalizada }} pac.</span>
+          </div>
+          <div class="pers-grid">
+            @for (p of producaoPersonalizada; track p.codigo) {
+              <div class="pers-card">
+                <div class="pers-avatar"><mat-icon>pets</mat-icon></div>
+                <div class="pers-info">
+                  <div class="pers-linha">
+                    <span class="pers-pet">{{ p.pet }}</span>
+                    <span class="pers-cod">· {{ p.codigo }}</span>
+                  </div>
+                  <div class="pers-tutor">Tutor: {{ p.tutor }}</div>
+                </div>
+                <span class="pers-qtd">{{ p.pacotes }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Ingredientes -->
+      <div class="grupo">
         <h3 class="bloco-tit">Ingredientes</h3>
         <table class="ing-table">
           <thead>

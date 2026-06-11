@@ -177,10 +177,10 @@
 }
 
 /* ---- Produção do dia (2 blocos) ---- */
-.prod-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+.prod-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
 }
 
 .bloco-tit {
@@ -261,11 +261,11 @@
   line-height: 1.1;
 }
 
-/* Personalizadas — cards em linha */
-.pers-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+/* Personalizadas — grade multi-coluna (escala para muitos pets) */
+.pers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.6rem;
 }
 
 .pers-card {
@@ -327,6 +327,7 @@
 /* Tabela de ingredientes */
 .ing-table {
   width: 100%;
+  max-width: 720px;
   border-collapse: collapse;
   margin-top: 0.6rem;
   font-size: 0.9rem;
@@ -385,7 +386,6 @@
 }
 
 @media (max-width: 900px) {
-  .prod-grid,
   .grid-2 {
     grid-template-columns: 1fr;
   }
