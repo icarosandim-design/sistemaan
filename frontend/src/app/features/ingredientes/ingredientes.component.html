@@ -93,20 +93,21 @@
       <ng-container matColumnDef="acoes">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let i" class="t-acoes">
-          <button mat-icon-button (click)="editar(i)" matTooltip="Editar">
+          <button mat-icon-button (click)="editar(i); $event.stopPropagation()" matTooltip="Editar">
             <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button class="btn-excluir" (click)="excluir(i, $event)" matTooltip="Excluir">
+            <mat-icon>delete</mat-icon>
           </button>
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns" class="linha" (click)="editar(row)"></tr>
 
       <tr class="sem-dados" *matNoDataRow>
         <td [attr.colspan]="displayedColumns.length">Nenhum ingrediente encontrado.</td>
       </tr>
     </table>
-
-    <mat-paginator [pageSizeOptions]="[8, 15, 30]" pageSize="8" showFirstLastButtons></mat-paginator>
   </div>
 </section>

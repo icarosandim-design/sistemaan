@@ -2,7 +2,6 @@ import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -20,6 +19,7 @@ import {
   MOCK_INGREDIENTES,
 } from './ingredientes.model';
 import { IngredienteDialogComponent } from './ingrediente-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 @Component({
   selector: 'app-ingredientes',
@@ -28,7 +28,6 @@ import { IngredienteDialogComponent } from './ingrediente-dialog.component';
     FormsModule,
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -65,7 +64,6 @@ export class IngredientesComponent implements AfterViewInit {
   filtroStatus = '';
 
   @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor() {
     this.dataSource.filterPredicate = (d, filter) => {
@@ -95,7 +93,6 @@ export class IngredientesComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
   }
 
   aplicarFiltro(): void {
@@ -104,7 +101,6 @@ export class IngredientesComponent implements AfterViewInit {
       categoria: this.filtroCategoria,
       status: this.filtroStatus,
     });
-    this.dataSource.paginator?.firstPage();
   }
 
   limparFiltros(): void {
@@ -124,6 +120,26 @@ export class IngredientesComponent implements AfterViewInit {
 
   editar(ing: Ingrediente): void {
     this.abrir(ing);
+  }
+
+  excluir(ing: Ingrediente, ev: Event): void {
+    ev.stopPropagation();
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        titulo: 'Excluir ingrediente',
+        mensagem: `Excluir "${ing.nome}"? Esta ação não pode ser desfeita.`,
+        confirmar: 'Excluir',
+        perigo: true,
+      },
+      width: '420px',
+      maxWidth: '95vw',
+      autoFocus: false,
+    });
+    ref.afterClosed().subscribe((ok: boolean | undefined) => {
+      if (ok) {
+        this.dataSource.data = this.dataSource.data.filter((d) => d.id !== ing.id);
+      }
+    });
   }
 
   private abrir(ing: Ingrediente | null): void {

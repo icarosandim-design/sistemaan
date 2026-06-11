@@ -67,7 +67,6 @@
   background: var(--an-superficie);
   border: 1px solid var(--an-fundo-secundario);
   border-radius: var(--an-raio);
-  overflow: hidden;
 }
 
 .tabela {
@@ -103,7 +102,12 @@ th.mat-mdc-header-cell {
 
 .t-acoes {
   text-align: right !important;
-  width: 56px;
+  width: 104px;
+  white-space: nowrap;
+}
+
+.btn-excluir:hover {
+  color: #b3261e;
 }
 
 .linha {
