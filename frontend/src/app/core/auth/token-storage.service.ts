@@ -5,6 +5,7 @@ const ACCESS_KEY = 'access_token';
 const REFRESH_KEY = 'refresh_token';
 const EXPIRES_KEY = 'access_token_expira';
 const USER_KEY = 'usuario';
+const REMEMBER_EMAIL_KEY = 'remember_email';
 
 /**
  * Persistência da sessão no localStorage (sobrevive a reloads/abas).
@@ -37,6 +38,21 @@ export class TokenStorageService {
   }
 
   limpar(): void {
+    // Não remove o e-mail lembrado: ele deve sobreviver ao logout.
     [ACCESS_KEY, REFRESH_KEY, EXPIRES_KEY, USER_KEY].forEach((k) => localStorage.removeItem(k));
+  }
+
+  // ---- "Lembrar meu e-mail" (independente da sessão) ----
+
+  get emailLembrado(): string | null {
+    return localStorage.getItem(REMEMBER_EMAIL_KEY);
+  }
+
+  lembrarEmail(email: string): void {
+    localStorage.setItem(REMEMBER_EMAIL_KEY, email);
+  }
+
+  esquecerEmail(): void {
+    localStorage.removeItem(REMEMBER_EMAIL_KEY);
   }
 }

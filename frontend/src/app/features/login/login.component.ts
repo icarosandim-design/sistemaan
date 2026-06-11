@@ -4,6 +4,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { TokenStorageService } from '../../core/auth/token-storage.service';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +16,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly storage = inject(TokenStorageService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -25,12 +27,20 @@ export class LoginComponent {
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     senha: ['', [Validators.required]],
+    lembrar: [false],
   });
 
   constructor() {
     // Já autenticado? Vai direto para a área interna.
     if (this.auth.estaAutenticado()) {
       this.router.navigateByUrl('/inicio');
+      return;
+    }
+
+    // Pré-preenche o e-mail lembrado, se houver.
+    const lembrado = this.storage.emailLembrado;
+    if (lembrado) {
+      this.form.patchValue({ email: lembrado, lembrar: true });
     }
   }
 
@@ -47,8 +57,16 @@ export class LoginComponent {
     this.carregando.set(true);
     this.erro.set(null);
 
-    this.auth.login(this.form.getRawValue()).subscribe({
+    const { email, senha, lembrar } = this.form.getRawValue();
+
+    this.auth.login({ email, senha }).subscribe({
       next: () => {
+        if (lembrar) {
+          this.storage.lembrarEmail(email);
+        } else {
+          this.storage.esquecerEmail();
+        }
+
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/inicio';
         this.router.navigateByUrl(returnUrl);
       },

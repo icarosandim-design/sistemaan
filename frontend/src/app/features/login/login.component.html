@@ -66,6 +66,13 @@
           }
         </div>
 
+        <div class="opcoes">
+          <label class="checkbox">
+            <input type="checkbox" formControlName="lembrar" />
+            <span>Lembrar meu e-mail</span>
+          </label>
+        </div>
+
         <button type="submit" class="btn-entrar" [disabled]="carregando()">
           @if (carregando()) {
             <span class="spinner" aria-hidden="true"></span>

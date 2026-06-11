@@ -234,6 +234,30 @@
   font-size: 0.8rem;
 }
 
+/* ---------- Opções (lembrar) ---------- */
+.opcoes {
+  display: flex;
+  align-items: center;
+  margin: 0.25rem 0 1.25rem;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--cinza-600);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--verde-700);
+  cursor: pointer;
+}
+
 /* ---------- Botão ---------- */
 .btn-entrar {
   width: 100%;
