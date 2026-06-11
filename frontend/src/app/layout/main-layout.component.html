@@ -13,8 +13,37 @@
     </div>
 
     <mat-nav-list>
-      @for (item of navItems; track item.label) {
-        @if (item.rota) {
+      @for (item of menu; track item.label) {
+        @if (item.filhos) {
+          <a mat-list-item class="grupo" (click)="alternarGrupo(item.label)">
+            <mat-icon matListItemIcon>{{ item.icone }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+            <mat-icon matListItemMeta class="chevron">
+              {{ isAberto(item.label) ? 'expand_less' : 'expand_more' }}
+            </mat-icon>
+          </a>
+          @if (isAberto(item.label)) {
+            @for (f of item.filhos; track f.label) {
+              @if (f.rota) {
+                <a
+                  mat-list-item
+                  class="subitem"
+                  [routerLink]="f.rota"
+                  routerLinkActive="nav-active"
+                  (click)="isMobile() && sidenav.close()"
+                >
+                  <mat-icon matListItemIcon>{{ f.icone }}</mat-icon>
+                  <span matListItemTitle>{{ f.label }}</span>
+                </a>
+              } @else {
+                <a mat-list-item class="subitem nav-disabled" matTooltip="Em breve" matTooltipPosition="right">
+                  <mat-icon matListItemIcon>{{ f.icone }}</mat-icon>
+                  <span matListItemTitle>{{ f.label }}</span>
+                </a>
+              }
+            }
+          }
+        } @else if (item.rota) {
           <a
             mat-list-item
             [routerLink]="item.rota"

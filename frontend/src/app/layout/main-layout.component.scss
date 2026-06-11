@@ -65,6 +65,22 @@ a.nav-disabled {
   cursor: default;
 }
 
+.grupo {
+  cursor: pointer;
+
+  .chevron {
+    color: var(--an-texto-secundario);
+  }
+}
+
+.subitem {
+  padding-left: 1rem !important;
+}
+
+.subitem .mat-icon {
+  font-size: 20px;
+}
+
 /* ---- Topbar ---- */
 .topbar {
   position: sticky;

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -15,7 +15,8 @@ import { AuthService } from '../core/auth/auth.service';
 interface NavItem {
   label: string;
   icone: string;
-  rota: string | null;
+  rota?: string | null;
+  filhos?: NavItem[];
 }
 
 @Component({
@@ -46,21 +47,50 @@ export class MainLayoutComponent {
     { initialValue: false },
   );
 
-  /** Navegação preparada para as próximas telas (itens sem rota ficam "Em breve"). */
-  readonly navItems: NavItem[] = [
+  readonly menu: NavItem[] = [
     { label: 'Central Operacional', icone: 'space_dashboard', rota: '/central' },
-    { label: 'Clientes', icone: 'group', rota: null },
-    { label: 'Pets', icone: 'pets', rota: null },
-    { label: 'Receitas', icone: 'menu_book', rota: '/receitas' },
-    { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes' },
-    { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo' },
+    {
+      label: 'Clientes',
+      icone: 'group',
+      filhos: [
+        { label: 'Clientes', icone: 'badge', rota: null },
+        { label: 'Pets', icone: 'pets', rota: null },
+      ],
+    },
     { label: 'Produção', icone: 'factory', rota: null },
     { label: 'Estoque', icone: 'inventory_2', rota: null },
     { label: 'Entregas', icone: 'local_shipping', rota: null },
+    {
+      label: 'Cadastros',
+      icone: 'tune',
+      filhos: [
+        { label: 'Receitas', icone: 'menu_book', rota: '/receitas' },
+        { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes' },
+        { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo' },
+      ],
+    },
   ];
+
+  private readonly abertos = signal<Set<string>>(this.gruposIniciais());
+
+  isAberto(label: string): boolean {
+    return this.abertos().has(label);
+  }
+
+  alternarGrupo(label: string): void {
+    const set = new Set(this.abertos());
+    set.has(label) ? set.delete(label) : set.add(label);
+    this.abertos.set(set);
+  }
 
   sair(): void {
     this.auth.logout();
     this.router.navigateByUrl('/login');
+  }
+
+  private gruposIniciais(): Set<string> {
+    const url = this.router.url;
+    const grupoAtivo = this.menu.find((m) => m.filhos?.some((f) => f.rota && url.startsWith(f.rota)));
+    return new Set([grupoAtivo?.label ?? 'Cadastros']);
   }
 }
