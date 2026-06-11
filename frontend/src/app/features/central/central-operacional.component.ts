@@ -97,6 +97,7 @@ export class CentralOperacionalComponent {
   readonly acoes = [
     { label: 'Novo cliente', icone: 'person_add' },
     { label: 'Planejar produção', icone: 'factory' },
+    { label: 'Planejar rotas', icone: 'route' },
   ];
 
   // ===== Derivados =====
