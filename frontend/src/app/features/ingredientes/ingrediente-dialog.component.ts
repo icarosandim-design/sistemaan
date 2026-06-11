@@ -52,7 +52,7 @@ export class IngredienteDialogComponent {
     nome: ['', [Validators.required]],
     categoria: ['', [Validators.required]],
     tipoConversao: ['perda' as TipoConversao, [Validators.required]],
-    coeficiente: [1, [Validators.required, Validators.min(0.0001)]],
+    rendimentoPct: [100, [Validators.required, Validators.min(0.01)]],
     custoKg: [0, [Validators.required, Validators.min(0)]],
     ativo: [true],
   });
@@ -69,39 +69,40 @@ export class IngredienteDialogComponent {
         nome: i.nome,
         categoria: i.categoria,
         tipoConversao: i.tipoConversao,
-        coeficiente: i.coeficiente,
+        rendimentoPct: i.coeficiente * 100,
         custoKg: i.custoKg,
         ativo: i.ativo,
       });
     }
 
-    this.ajustarCoeficiente(this.form.controls.tipoConversao.value);
-    this.form.controls.tipoConversao.valueChanges.subscribe((t) => this.ajustarCoeficiente(t));
+    this.ajustarRendimento(this.form.controls.tipoConversao.value);
+    this.form.controls.tipoConversao.valueChanges.subscribe((t) => this.ajustarRendimento(t));
+  }
+
+  private get coeficiente(): number {
+    return this.form.getRawValue().rendimentoPct / 100;
   }
 
   get preview(): string[] {
-    const { tipoConversao, coeficiente } = this.form.getRawValue();
-    return previewConversao(tipoConversao, coeficiente);
+    return previewConversao(this.form.getRawValue().tipoConversao, this.coeficiente);
   }
 
   get rendimentoPercent(): string {
-    const { tipoConversao, coeficiente } = this.form.getRawValue();
-    return fmtPercentRendimento(tipoConversao, coeficiente);
+    return fmtPercentRendimento(this.form.getRawValue().tipoConversao, this.coeficiente);
   }
 
   get custoRealLabel(): string {
-    const { coeficiente, custoKg } = this.form.getRawValue();
-    return fmtMoeda(custoRealKg(custoKg, coeficiente));
+    return fmtMoeda(custoRealKg(this.form.getRawValue().custoKg, this.coeficiente));
   }
 
   get historico() {
     return this.data.ingrediente?.historico ?? [];
   }
 
-  private ajustarCoeficiente(tipo: TipoConversao): void {
-    const c = this.form.controls.coeficiente;
+  private ajustarRendimento(tipo: TipoConversao): void {
+    const c = this.form.controls.rendimentoPct;
     if (tipo === 'sem_conversao') {
-      c.setValue(1);
+      c.setValue(100);
       c.disable();
     } else if (c.disabled) {
       c.enable();
@@ -115,6 +116,7 @@ export class IngredienteDialogComponent {
     }
 
     const v = this.form.getRawValue();
+    const coeficiente = v.tipoConversao === 'sem_conversao' ? 1 : v.rendimentoPct / 100;
     const original = this.data.ingrediente;
     const historico = original ? [...original.historico] : [];
 
@@ -131,7 +133,7 @@ export class IngredienteDialogComponent {
       nome: v.nome.trim(),
       categoria: v.categoria,
       tipoConversao: v.tipoConversao,
-      coeficiente: v.tipoConversao === 'sem_conversao' ? 1 : v.coeficiente,
+      coeficiente,
       custoKg: v.custoKg,
       ativo: v.ativo,
       historico,
