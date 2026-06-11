@@ -19,6 +19,8 @@ export class CentralOperacionalComponent {
   // ===== DADOS FICTÍCIOS (placeholder) =====
   // Serão substituídos por dados reais conforme os módulos forem implementados.
 
+  readonly diaSelecionado = '11/06';
+
   readonly kpis = [
     { label: 'Clientes ativos', valor: '150', icone: 'group' },
     { label: 'Pets', valor: '210', icone: 'pets' },
@@ -26,16 +28,37 @@ export class CentralOperacionalComponent {
     { label: 'Recorrente / mês', valor: 'R$ 38.500', icone: 'payments' },
   ];
 
-  readonly dias7 = [
-    { diaSemana: 'Seg', data: '09/06', entregas: 8, producao: 2, hoje: true },
-    { diaSemana: 'Ter', data: '10/06', entregas: 6, producao: 1, hoje: false },
-    { diaSemana: 'Qua', data: '11/06', entregas: 9, producao: 3, hoje: false },
-    { diaSemana: 'Qui', data: '12/06', entregas: 5, producao: 0, hoje: false },
-    { diaSemana: 'Sex', data: '13/06', entregas: 11, producao: 2, hoje: false },
-    { diaSemana: 'Sáb', data: '14/06', entregas: 4, producao: 0, hoje: false },
-    { diaSemana: 'Dom', data: '15/06', entregas: 0, producao: 0, hoje: false },
+  /** Calendário apenas de ENTREGAS, próximos 7 dias. */
+  readonly entregas7 = [
+    { diaSemana: 'Qua', data: '11/06', entregas: 9, hoje: true },
+    { diaSemana: 'Qui', data: '12/06', entregas: 5, hoje: false },
+    { diaSemana: 'Sex', data: '13/06', entregas: 11, hoje: false },
+    { diaSemana: 'Sáb', data: '14/06', entregas: 4, hoje: false },
+    { diaSemana: 'Dom', data: '15/06', entregas: 0, hoje: false },
+    { diaSemana: 'Seg', data: '16/06', entregas: 8, hoje: false },
+    { diaSemana: 'Ter', data: '17/06', entregas: 6, hoje: false },
   ];
 
+  /** O que será cozinhado no dia + para quem. */
+  readonly cozinharHoje: { item: string; qtd: string; tipo: TipoProducao; para: string | null }[] = [
+    { item: 'Frango 250g', qtd: '35 pacotes', tipo: 'casa', para: null },
+    { item: 'Bovina 500g', qtd: '10 pacotes', tipo: 'casa', para: null },
+    { item: 'Suína 250g', qtd: '22 pacotes', tipo: 'casa', para: null },
+    { item: 'VET-001', qtd: '8 pacotes', tipo: 'personalizada', para: 'Icaro · Scooby' },
+    { item: 'VET-002', qtd: '7 pacotes', tipo: 'personalizada', para: 'Maria · Bidu' },
+  ];
+
+  /** Ingredientes crus necessários para a produção do dia × estoque cru disponível. */
+  readonly ingredientesCrus: { nome: string; necessario: string; estoque: string; status: StatusEstoque }[] = [
+    { nome: 'Frango (peito)', necessario: '12 kg', estoque: '20 kg', status: 'ok' },
+    { nome: 'Carne bovina', necessario: '6 kg', estoque: '4 kg', status: 'baixo' },
+    { nome: 'Carne suína', necessario: '5 kg', estoque: '9 kg', status: 'ok' },
+    { nome: 'Arroz integral', necessario: '5 kg', estoque: '8 kg', status: 'ok' },
+    { nome: 'Abóbora', necessario: '3 kg', estoque: '1,5 kg', status: 'baixo' },
+    { nome: 'Cenoura', necessario: '2 kg', estoque: '6 kg', status: 'ok' },
+  ];
+
+  /** Estoque de produto acabado das receitas da casa. */
   readonly estoque: { produto: string; saldo: number; minimo: number; status: StatusEstoque }[] = [
     { produto: 'Frango 250g', saldo: 120, minimo: 80, status: 'ok' },
     { produto: 'Bovina 250g', saldo: 45, minimo: 60, status: 'baixo' },
@@ -44,26 +67,14 @@ export class CentralOperacionalComponent {
     { produto: 'Peixe 250g', saldo: 64, minimo: 30, status: 'ok' },
   ];
 
-  readonly producaoPendentes = 5;
-
-  readonly producao: { item: string; qtd: string; tipo: TipoProducao }[] = [
-    { item: 'Frango 250g', qtd: '+35 pacotes', tipo: 'casa' },
-    { item: 'Bovina 250g', qtd: '+20 pacotes', tipo: 'casa' },
-    { item: 'Suína 250g', qtd: '+22 pacotes', tipo: 'casa' },
-    { item: 'VET-001', qtd: '+8 pacotes', tipo: 'personalizada' },
-    { item: 'VET-002', qtd: '+4 pacotes', tipo: 'personalizada' },
-  ];
-
   readonly alertas: { tipo: Severidade; icone: string; texto: string }[] = [
-    { tipo: 'erro', icone: 'inventory_2', texto: 'Bovina 250g e Suína 250g abaixo do estoque mínimo' },
+    { tipo: 'erro', icone: 'inventory_2', texto: 'Carne bovina e abóbora abaixo do necessário para hoje' },
     { tipo: 'aviso', icone: 'pending_actions', texto: '2 receitas personalizadas aguardando produção' },
-    { tipo: 'info', icone: 'local_shipping', texto: '8 entregas previstas para hoje' },
+    { tipo: 'info', icone: 'local_shipping', texto: '9 entregas previstas para hoje' },
   ];
 
   readonly acoes = [
     { label: 'Novo cliente', icone: 'person_add' },
-    { label: 'Novo pet', icone: 'pets' },
-    { label: 'Registrar produção', icone: 'factory' },
-    { label: 'Nova entrega', icone: 'local_shipping' },
+    { label: 'Planejar produção', icone: 'factory' },
   ];
 }
