@@ -104,6 +104,9 @@ using (var scope = app.Services.CreateScope())
 
     var consumoSeeder = scope.ServiceProvider.GetRequiredService<ConsumoDataSeeder>();
     await consumoSeeder.SeedAsync();
+
+    var frequenciasSeeder = scope.ServiceProvider.GetRequiredService<FrequenciasDataSeeder>();
+    await frequenciasSeeder.SeedAsync();
 }
 
 app.UseExceptionHandler();

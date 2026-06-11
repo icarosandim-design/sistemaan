@@ -67,6 +67,7 @@ export class MainLayoutComponent {
         { label: 'Receitas', icone: 'menu_book', rota: '/receitas' },
         { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes' },
         { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo' },
+        { label: 'Frequências de Entrega', icone: 'event_repeat', rota: '/frequencias-entrega' },
       ],
     },
   ];

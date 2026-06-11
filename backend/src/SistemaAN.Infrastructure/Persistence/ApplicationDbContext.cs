@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Interfaces;
 using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Consumo;
+using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Receitas;
 
@@ -34,6 +35,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Receita> Receitas => Set<Receita>();
 
     public DbSet<ItemReceita> ItensReceita => Set<ItemReceita>();
+
+    public DbSet<FrequenciaEntrega> FrequenciasEntrega => Set<FrequenciaEntrega>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

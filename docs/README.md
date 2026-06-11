@@ -32,6 +32,7 @@
 13. [Módulo de Ingredientes](13-modulo-ingredientes.md)
 14. [Módulo Tabela de Consumo](14-modulo-tabela-consumo.md)
 15. [Módulo Receitas da Casa](15-modulo-receitas-casa.md)
+16. [Módulo Frequências de Entrega](16-modulo-frequencias-entrega.md)
 
 ## Objetivo central do sistema
 
