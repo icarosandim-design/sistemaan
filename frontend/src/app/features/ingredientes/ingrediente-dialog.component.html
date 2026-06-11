@@ -51,10 +51,18 @@
         </div>
 
         <div class="conversao">
-          <div class="conv-tit"><mat-icon>swap_horiz</mat-icon> Conversão</div>
+          <div class="conv-tit">
+            <mat-icon>swap_horiz</mat-icon> Conversão
+            @if (rendimentoPercent !== '—') {
+              <span class="conv-rend">rendimento {{ rendimentoPercent }}</span>
+            }
+          </div>
           @for (linha of preview; track linha) {
             <div class="conv-linha">{{ linha }}</div>
           }
+          <div class="conv-custo">
+            Custo/kg real (cozido): <strong>{{ custoRealLabel }}</strong>
+          </div>
         </div>
 
         <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>

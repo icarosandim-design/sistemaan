@@ -10,7 +10,9 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
   CATEGORIAS,
+  custoRealKg,
   fmtMoeda,
+  fmtPercentRendimento,
   Ingrediente,
   previewConversao,
   TIPOS_CONVERSAO,
@@ -80,6 +82,16 @@ export class IngredienteDialogComponent {
   get preview(): string[] {
     const { tipoConversao, coeficiente } = this.form.getRawValue();
     return previewConversao(tipoConversao, coeficiente);
+  }
+
+  get rendimentoPercent(): string {
+    const { tipoConversao, coeficiente } = this.form.getRawValue();
+    return fmtPercentRendimento(tipoConversao, coeficiente);
+  }
+
+  get custoRealLabel(): string {
+    const { coeficiente, custoKg } = this.form.getRawValue();
+    return fmtMoeda(custoRealKg(custoKg, coeficiente));
   }
 
   get historico() {

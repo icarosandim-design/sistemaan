@@ -39,8 +39,12 @@ No cadastro, a equipe **digita o coeficiente** e o sistema calcula/pré-visualiz
 as duas direções automaticamente. `sem_conversao` força coeficiente = 1.
 
 ## Custos
-- `custo_atual_kg` no ingrediente.
-- Toda alteração gera registro em `historico_custos_ingredientes`.
+- `custo_atual_kg` no ingrediente (preço do insumo **cru**).
+- **Custo/kg real (cozido)** = `custo_atual_kg ÷ coeficiente` (derivado, não armazenado):
+  reflete que para render 1 kg cozido pode ser necessário mais (perda) ou menos
+  (ganho) de insumo cru. Ex.: batata-doce R$ 6,50/kg cru ÷ 0,55 = **R$ 11,82/kg cozido**.
+- O rendimento é exibido em **percentual** (cozido ÷ cru × 100): perda 55%, ganho 300%.
+- Toda alteração de custo gera registro em `historico_custos_ingredientes`.
 - Custo de item de receita: `(gramas_cru ÷ 1000) × custo_atual_kg` (ficha em
   cozido é convertida para cru antes). Receita = soma dos itens.
 

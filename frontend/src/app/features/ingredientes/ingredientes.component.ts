@@ -12,8 +12,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import {
   CATEGORIAS,
-  fmtCoeficiente,
+  custoRealKg,
   fmtMoeda,
+  fmtPercentRendimento,
   Ingrediente,
   labelTipoConversao,
   MOCK_INGREDIENTES,
@@ -42,11 +43,21 @@ export class IngredientesComponent implements AfterViewInit {
   private readonly dialog = inject(MatDialog);
 
   readonly categorias = CATEGORIAS;
-  readonly displayedColumns = ['nome', 'categoria', 'tipoConversao', 'coeficiente', 'custoKg', 'ativo', 'acoes'];
+  readonly displayedColumns = [
+    'nome',
+    'categoria',
+    'tipoConversao',
+    'coeficiente',
+    'custoKg',
+    'custoRealKg',
+    'ativo',
+    'acoes',
+  ];
   readonly dataSource = new MatTableDataSource<Ingrediente>([...MOCK_INGREDIENTES]);
 
   readonly fmtMoeda = fmtMoeda;
-  readonly fmtCoeficiente = fmtCoeficiente;
+  readonly fmtPercentRendimento = fmtPercentRendimento;
+  readonly custoRealKg = custoRealKg;
   readonly labelTipoConversao = labelTipoConversao;
 
   filtroNome = '';
@@ -72,6 +83,8 @@ export class IngredientesComponent implements AfterViewInit {
       switch (prop) {
         case 'custoKg':
           return item.custoKg;
+        case 'custoRealKg':
+          return custoRealKg(item.custoKg, item.coeficiente);
         case 'categoria':
           return item.categoria;
         default:

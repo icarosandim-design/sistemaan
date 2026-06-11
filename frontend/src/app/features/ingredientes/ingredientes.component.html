@@ -63,13 +63,23 @@
       </ng-container>
 
       <ng-container matColumnDef="coeficiente">
-        <th mat-header-cell *matHeaderCellDef class="t-num">Coef.</th>
-        <td mat-cell *matCellDef="let i" class="t-num">{{ fmtCoeficiente(i.tipoConversao, i.coeficiente) }}</td>
+        <th mat-header-cell *matHeaderCellDef class="t-center">Rendimento</th>
+        <td mat-cell *matCellDef="let i" class="t-center">{{ fmtPercentRendimento(i.tipoConversao, i.coeficiente) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="custoKg">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-num">Custo / kg</th>
-        <td mat-cell *matCellDef="let i" class="t-num">{{ fmtMoeda(i.custoKg) }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-center">Custo/kg cru</th>
+        <td mat-cell *matCellDef="let i" class="t-center">{{ fmtMoeda(i.custoKg) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="custoRealKg">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-center"
+            matTooltip="Custo por kg do alimento pronto (cozido) = custo/kg ÷ rendimento">
+          Custo/kg real
+        </th>
+        <td mat-cell *matCellDef="let i" class="t-center custo-real">
+          {{ fmtMoeda(custoRealKg(i.custoKg, i.coeficiente)) }}
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="ativo">

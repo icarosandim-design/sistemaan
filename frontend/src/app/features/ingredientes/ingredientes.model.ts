@@ -56,6 +56,19 @@ export function fmtCoeficiente(tipo: TipoConversao, coef: number): string {
   return coef.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
 }
 
+/** Rendimento em percentual (cozido ÷ cru × 100). */
+export function fmtPercentRendimento(tipo: TipoConversao, coef: number): string {
+  if (tipo === 'sem_conversao' || !coef || coef <= 0) {
+    return '—';
+  }
+  return `${(coef * 100).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}%`;
+}
+
+/** Custo real por kg do alimento pronto (cozido) = custo/kg ÷ rendimento. */
+export function custoRealKg(custoKg: number, coef: number): number {
+  return coef && coef > 0 ? custoKg / coef : custoKg;
+}
+
 /** Linhas de pré-visualização da conversão. */
 export function previewConversao(tipo: TipoConversao, coef: number): string[] {
   if (tipo === 'sem_conversao' || !coef || coef <= 0) {

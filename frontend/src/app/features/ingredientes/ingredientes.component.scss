@@ -91,6 +91,16 @@ th.mat-mdc-header-cell {
   font-variant-numeric: tabular-nums;
 }
 
+.t-center {
+  text-align: center !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.custo-real {
+  font-weight: 600;
+  color: var(--an-primaria);
+}
+
 .t-acoes {
   text-align: right !important;
   width: 56px;

@@ -45,9 +45,30 @@
   }
 }
 
+.conv-rend {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--an-cta-hover);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .conv-linha {
   font-weight: 600;
   color: var(--an-primaria);
+}
+
+.conv-custo {
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed var(--an-detalhe-suave);
+  font-size: 0.9rem;
+  color: var(--an-texto-secundario);
+
+  strong {
+    color: var(--an-primaria);
+  }
 }
 
 .btn-cta {
