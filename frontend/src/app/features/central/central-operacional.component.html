@@ -52,50 +52,86 @@
     <div class="card-head">
       <mat-icon>factory</mat-icon>
       <h2>Produção planejada · hoje ({{ diaSelecionado }})</h2>
-      <span class="badge">{{ cozinharHoje.length }} itens</span>
+      <span class="badge">{{ totalPacotes }} pacotes · {{ totalReceitas }} receitas</span>
     </div>
 
+    @if (faltantes.length) {
+      <div class="falta-banner">
+        <mat-icon>warning_amber</mat-icon>
+        <div>
+          <div class="fb-tit">
+            {{ faltantes.length }} ingrediente{{ faltantes.length > 1 ? 's' : '' }} em falta
+          </div>
+          <div class="fb-txt">{{ bannerTexto }}</div>
+        </div>
+      </div>
+    }
+
     <div class="prod-grid">
+      <!-- Esquerda: o que cozinhar -->
       <div class="prod-bloco">
-        <h3 class="bloco-tit">O que cozinhar · para quem</h3>
-        <div class="lista">
-          @for (p of cozinharHoje; track p.item) {
-            <div class="lista-item">
-              <div class="li-info">
-                <div class="li-linha">
-                  <span class="li-nome">{{ p.item }}</span>
-                  <span class="li-tag" [class.personalizada]="p.tipo === 'personalizada'">
-                    {{ p.tipo === 'personalizada' ? 'Personalizada' : 'Casa' }}
-                  </span>
+        <div class="bloco-head">
+          <h3 class="bloco-tit">Produção da casa</h3>
+          <span class="bloco-sub">{{ subtotalCasa }} pac.</span>
+        </div>
+        <div class="casa-grid">
+          @for (c of producaoCasa; track c.produto) {
+            <div class="casa-card">
+              <div class="cc-nome">{{ c.produto }}</div>
+              <div class="cc-qtd">{{ c.pacotes }}</div>
+            </div>
+          }
+        </div>
+
+        <div class="bloco-head">
+          <h3 class="bloco-tit">Receitas personalizadas</h3>
+          <span class="bloco-sub">{{ subtotalPersonalizada }} pac.</span>
+        </div>
+        <div class="pers-lista">
+          @for (p of producaoPersonalizada; track p.codigo) {
+            <div class="pers-card">
+              <div class="pers-avatar"><mat-icon>pets</mat-icon></div>
+              <div class="pers-info">
+                <div class="pers-linha">
+                  <span class="pers-pet">{{ p.pet }}</span>
+                  <span class="pers-cod">· {{ p.codigo }}</span>
                 </div>
-                @if (p.para) {
-                  <span class="li-sub"><mat-icon>person</mat-icon>{{ p.para }}</span>
-                }
+                <div class="pers-tutor">Tutor: {{ p.tutor }}</div>
               </div>
-              <span class="li-qtd">{{ p.qtd }}</span>
+              <span class="pers-qtd">{{ p.pacotes }}</span>
             </div>
           }
         </div>
       </div>
 
+      <!-- Direita: tabela de ingredientes -->
       <div class="prod-bloco">
-        <h3 class="bloco-tit">Ingredientes crus · necessário × estoque</h3>
-        <div class="lista">
-          @for (i of ingredientesCrus; track i.nome) {
-            <div class="lista-item">
-              <div class="li-info">
-                <span class="li-nome">{{ i.nome }}</span>
-                <span class="li-sub">necessário {{ i.necessario }}</span>
-              </div>
-              <div class="li-dir">
-                <span class="li-qtd">{{ i.estoque }}</span>
-                <span class="chip" [class.chip-baixo]="i.status === 'baixo'">
-                  {{ i.status === 'baixo' ? 'Faltando' : 'OK' }}
-                </span>
-              </div>
-            </div>
-          }
-        </div>
+        <h3 class="bloco-tit">Ingredientes</h3>
+        <table class="ing-table">
+          <thead>
+            <tr>
+              <th class="t-left">Ingrediente</th>
+              <th class="t-num">Cozid.</th>
+              <th class="t-num">Crus</th>
+              <th class="t-num">Estoq.</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of ingredientes; track i.nome) {
+              <tr [class.linha-falta]="i.estoque < i.crus">
+                <td class="t-left">
+                  @if (i.estoque < i.crus) {
+                    <mat-icon class="ing-alerta">warning_amber</mat-icon>
+                  }
+                  {{ i.nome }}
+                </td>
+                <td class="t-num">{{ fmtKg(i.cozidos) }}</td>
+                <td class="t-num">{{ fmtKg(i.crus) }}</td>
+                <td class="t-num">{{ fmtKg(i.estoque) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     </div>
   </mat-card>

@@ -184,12 +184,197 @@
 }
 
 .bloco-tit {
-  margin: 0 0 0.5rem;
+  margin: 0;
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--an-texto-secundario);
+}
+
+.bloco-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 0.6rem;
+
+  &:not(:first-child) {
+    margin-top: 1rem;
+  }
+}
+
+.bloco-sub {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--an-texto-secundario);
+}
+
+/* Banner de falta */
+.falta-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--an-raio-sm);
+  background: #fbeceb;
+  border: 1px solid #f3c9c6;
+  color: #b3261e;
+
+  .mat-icon {
+    flex-shrink: 0;
+  }
+
+  .fb-tit {
+    font-weight: 700;
+  }
+
+  .fb-txt {
+    font-size: 0.9rem;
+  }
+}
+
+/* Produção da casa — cards em grade */
+.casa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 0.6rem;
+}
+
+.casa-card {
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio-sm);
+  background: var(--an-fundo);
+  padding: 0.7rem 0.8rem;
+}
+
+.cc-nome {
+  font-size: 0.8rem;
+  color: var(--an-texto-secundario);
+}
+
+.cc-qtd {
+  font-family: var(--an-fonte-titulo);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--an-texto-titulo);
+  line-height: 1.1;
+}
+
+/* Personalizadas — cards em linha */
+.pers-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pers-card {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio-sm);
+}
+
+.pers-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(176, 141, 87, 0.18);
+
+  .mat-icon {
+    color: var(--an-cta-hover);
+  }
+}
+
+.pers-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pers-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.pers-pet {
+  font-weight: 700;
+  color: var(--an-texto-titulo);
+}
+
+.pers-cod {
+  font-size: 0.8rem;
+  color: var(--an-texto-secundario);
+}
+
+.pers-tutor {
+  font-size: 0.8rem;
+  color: var(--an-texto-secundario);
+}
+
+.pers-qtd {
+  font-family: var(--an-fonte-titulo);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--an-primaria);
+}
+
+/* Tabela de ingredientes */
+.ing-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+
+  th,
+  td {
+    padding: 0.5rem 0.4rem;
+    border-bottom: 1px solid var(--an-fundo);
+  }
+
+  thead th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--an-texto-secundario);
+    border-bottom: 1px solid var(--an-fundo-secundario);
+  }
+
+  .t-left {
+    text-align: left;
+  }
+
+  .t-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  tbody td.t-left {
+    font-weight: 600;
+    color: var(--an-texto-titulo);
+  }
+
+  .ing-alerta {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+    margin-right: 0.15rem;
+  }
+
+  .linha-falta {
+    background: #fbeceb;
+
+    td {
+      color: #b3261e;
+    }
+  }
 }
 
 /* ---- Grid de 2 colunas ---- */

@@ -5,8 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 type StatusEstoque = 'ok' | 'baixo';
-type TipoProducao = 'casa' | 'personalizada';
 type Severidade = 'erro' | 'aviso' | 'info';
+
+interface Ingrediente {
+  nome: string;
+  cozidos: number; // kg já cozidos/processados
+  crus: number; // kg de cru necessário para a produção do dia
+  estoque: number; // kg de cru disponível
+}
 
 @Component({
   selector: 'app-central-operacional',
@@ -17,7 +23,6 @@ type Severidade = 'erro' | 'aviso' | 'info';
 })
 export class CentralOperacionalComponent {
   // ===== DADOS FICTÍCIOS (placeholder) =====
-  // Serão substituídos por dados reais conforme os módulos forem implementados.
 
   readonly diaSelecionado = '11/06';
 
@@ -39,23 +44,27 @@ export class CentralOperacionalComponent {
     { diaSemana: 'Ter', data: '17/06', entregas: 6, hoje: false },
   ];
 
-  /** O que será cozinhado no dia + para quem. */
-  readonly cozinharHoje: { item: string; qtd: string; tipo: TipoProducao; para: string | null }[] = [
-    { item: 'Frango 250g', qtd: '35 pacotes', tipo: 'casa', para: null },
-    { item: 'Bovina 500g', qtd: '10 pacotes', tipo: 'casa', para: null },
-    { item: 'Suína 250g', qtd: '22 pacotes', tipo: 'casa', para: null },
-    { item: 'VET-001', qtd: '8 pacotes', tipo: 'personalizada', para: 'Icaro · Scooby' },
-    { item: 'VET-002', qtd: '7 pacotes', tipo: 'personalizada', para: 'Maria · Bidu' },
+  /** Produção da casa (receitas padrão). */
+  readonly producaoCasa = [
+    { produto: 'Frango 250g', pacotes: 35 },
+    { produto: 'Bovina 500g', pacotes: 10 },
+    { produto: 'Suína 250g', pacotes: 22 },
   ];
 
-  /** Ingredientes crus necessários para a produção do dia × estoque cru disponível. */
-  readonly ingredientesCrus: { nome: string; necessario: string; estoque: string; status: StatusEstoque }[] = [
-    { nome: 'Frango (peito)', necessario: '12 kg', estoque: '20 kg', status: 'ok' },
-    { nome: 'Carne bovina', necessario: '6 kg', estoque: '4 kg', status: 'baixo' },
-    { nome: 'Carne suína', necessario: '5 kg', estoque: '9 kg', status: 'ok' },
-    { nome: 'Arroz integral', necessario: '5 kg', estoque: '8 kg', status: 'ok' },
-    { nome: 'Abóbora', necessario: '3 kg', estoque: '1,5 kg', status: 'baixo' },
-    { nome: 'Cenoura', necessario: '2 kg', estoque: '6 kg', status: 'ok' },
+  /** Receitas personalizadas (por pet). */
+  readonly producaoPersonalizada = [
+    { pet: 'Scooby', codigo: 'VET-001', tutor: 'Icaro', pacotes: 8 },
+    { pet: 'Bidu', codigo: 'VET-002', tutor: 'Maria', pacotes: 7 },
+  ];
+
+  /** Ingredientes do dia: cozidos, crus necessários e estoque cru. */
+  readonly ingredientes: Ingrediente[] = [
+    { nome: 'Frango', cozidos: 1.0, crus: 12, estoque: 20 },
+    { nome: 'Bovina', cozidos: 3.0, crus: 6, estoque: 4 },
+    { nome: 'Suína', cozidos: 0.5, crus: 5, estoque: 9 },
+    { nome: 'Arroz int.', cozidos: 0.6, crus: 5, estoque: 8 },
+    { nome: 'Abóbora', cozidos: 0.8, crus: 3, estoque: 1.5 },
+    { nome: 'Cenoura', cozidos: 0.4, crus: 2, estoque: 6 },
   ];
 
   /** Estoque de produto acabado das receitas da casa. */
@@ -77,4 +86,48 @@ export class CentralOperacionalComponent {
     { label: 'Novo cliente', icone: 'person_add' },
     { label: 'Planejar produção', icone: 'factory' },
   ];
+
+  // ===== Derivados =====
+
+  get subtotalCasa(): number {
+    return this.producaoCasa.reduce((s, c) => s + c.pacotes, 0);
+  }
+
+  get subtotalPersonalizada(): number {
+    return this.producaoPersonalizada.reduce((s, p) => s + p.pacotes, 0);
+  }
+
+  get totalPacotes(): number {
+    return this.subtotalCasa + this.subtotalPersonalizada;
+  }
+
+  get totalReceitas(): number {
+    return this.producaoCasa.length + this.producaoPersonalizada.length;
+  }
+
+  get faltantes(): { nome: string; falta: number }[] {
+    return this.ingredientes
+      .filter((i) => i.estoque < i.crus)
+      .map((i) => ({ nome: i.nome, falta: i.crus - i.estoque }));
+  }
+
+  get bannerTexto(): string {
+    const partes = this.faltantes.map((f) => `${this.fmtNum(f.falta)} kg de ${f.nome.toLowerCase()}`);
+    return `Comprar ${this.juntar(partes)}.`;
+  }
+
+  fmtKg(v: number): string {
+    return `${this.fmtNum(v)}kg`;
+  }
+
+  private fmtNum(v: number): string {
+    return v.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+  }
+
+  private juntar(itens: string[]): string {
+    if (itens.length <= 1) {
+      return itens.join('');
+    }
+    return `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`;
+  }
 }
