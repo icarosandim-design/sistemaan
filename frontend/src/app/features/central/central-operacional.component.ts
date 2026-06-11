@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,6 +25,9 @@ export class CentralOperacionalComponent {
   // ===== DADOS FICTÍCIOS (placeholder) =====
 
   readonly diaSelecionado = '11/06';
+
+  /** Card de produção começa minimizado. */
+  readonly producaoExpandida = signal(false);
 
   readonly kpis = [
     { label: 'Clientes ativos', valor: '150', icone: 'group' },

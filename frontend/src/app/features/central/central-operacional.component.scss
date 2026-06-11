@@ -82,6 +82,42 @@
   }
 }
 
+/* ---- Toggle e resumo da produção ---- */
+.toggle-prod {
+  margin-left: 0.5rem;
+  color: var(--an-cta-hover);
+  font-weight: 600;
+}
+
+.prod-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.resumo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: var(--an-fundo);
+  border: 1px solid var(--an-fundo-secundario);
+  font-size: 0.9rem;
+  color: var(--an-texto-secundario);
+
+  b {
+    color: var(--an-primaria);
+  }
+
+  .mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: var(--an-texto-secundario);
+  }
+}
+
 /* ---- KPIs ---- */
 .kpis {
   display: grid;
@@ -253,17 +289,17 @@
   border: 1px solid var(--an-fundo-secundario);
   border-radius: var(--an-raio-sm);
   background: var(--an-fundo);
-  padding: 0.7rem 0.8rem;
+  padding: 0.45rem 0.55rem;
 }
 
 .cc-nome {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--an-texto-secundario);
 }
 
 .cc-qtd {
   font-family: var(--an-fonte-titulo);
-  font-size: 1.8rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--an-texto-titulo);
   line-height: 1.1;
@@ -278,34 +314,25 @@
 
 /* ---- Densidade proporcional (quanto mais itens, menor) ---- */
 .casa-grid {
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
 }
 
 .casa-grid.d1 .cc-qtd {
-  font-size: 1.9rem;
+  font-size: 1.5rem;
 }
 
-.casa-grid.d2 {
-  grid-template-columns: repeat(auto-fit, minmax(94px, 1fr));
-}
 .casa-grid.d2 .cc-qtd {
-  font-size: 1.55rem;
-}
-.casa-grid.d2 .casa-card {
-  padding: 0.6rem 0.7rem;
+  font-size: 1.3rem;
 }
 
 .casa-grid.d3 {
-  grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
-}
-.casa-grid.d3 .casa-card {
-  padding: 0.5rem 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
 }
 .casa-grid.d3 .cc-nome {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
 }
 .casa-grid.d3 .cc-qtd {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
 }
 
 .pers-lista.d1 .pers-qtd {

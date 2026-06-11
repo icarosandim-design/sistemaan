@@ -53,6 +53,10 @@
       <mat-icon>factory</mat-icon>
       <h2>Produção planejada · hoje ({{ diaSelecionado }})</h2>
       <span class="badge">{{ totalPacotes }} pacotes · {{ totalReceitas }} receitas</span>
+      <button mat-button class="toggle-prod" (click)="producaoExpandida.set(!producaoExpandida())">
+        {{ producaoExpandida() ? 'Recolher' : 'Ver tudo' }}
+        <mat-icon>{{ producaoExpandida() ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </button>
     </div>
 
     @if (faltantes.length) {
@@ -67,6 +71,17 @@
       </div>
     }
 
+    <!-- Minimizado: resumo -->
+    @if (!producaoExpandida()) {
+      <div class="prod-resumo">
+        <span class="resumo-pill"><mat-icon>home</mat-icon> Casa <b>{{ subtotalCasa }}</b> pac.</span>
+        <span class="resumo-pill"><mat-icon>pets</mat-icon> Personalizadas <b>{{ subtotalPersonalizada }}</b> pac.</span>
+        <span class="resumo-pill"><mat-icon>inventory_2</mat-icon> {{ ingredientes.length }} ingredientes</span>
+      </div>
+    }
+
+    <!-- Expandido: detalhe -->
+    @if (producaoExpandida()) {
     <div class="prod-grid">
       <!-- Esquerda: o que cozinhar -->
       <div class="prod-bloco">
@@ -152,6 +167,7 @@
         </table>
       </div>
     </div>
+    }
   </mat-card>
 
   <div class="grid-2">
