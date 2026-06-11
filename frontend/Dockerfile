@@ -1,11 +1,12 @@
 # ---- Build ----
-FROM node:22-alpine AS build
+# Debian (glibc) é mais compatível com os binários nativos do build do Angular
+# do que o alpine (musl), evitando falhas no 'ng build'.
+FROM node:22-slim AS build
 WORKDIR /app
-# Garante a instalação das devDependencies (onde está o @angular/cli),
-# mesmo que NODE_ENV venha como production no ambiente.
+# Garante a instalação das devDependencies (onde está o @angular/cli/ng).
 ENV NODE_ENV=development
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm ci --include=dev --no-audit --no-fund
 COPY . .
 RUN npm run build
 
