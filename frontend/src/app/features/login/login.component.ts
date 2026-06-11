@@ -47,7 +47,7 @@ export class LoginComponent {
 
   constructor() {
     if (this.auth.estaAutenticado()) {
-      this.router.navigateByUrl('/inicio');
+      this.router.navigateByUrl('/central');
       return;
     }
 
@@ -80,7 +80,7 @@ export class LoginComponent {
           this.storage.esquecerEmail();
         }
 
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/inicio';
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/central';
         this.router.navigateByUrl(returnUrl);
       },
       error: (e: HttpErrorResponse) => {

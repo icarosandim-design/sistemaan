@@ -1,0 +1,66 @@
+<mat-sidenav-container class="layout">
+  <mat-sidenav
+    #sidenav
+    class="sidenav"
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="!isMobile()"
+  >
+    <div class="sidenav-brand">
+      <img src="assets/logo-nuri.svg" alt="Nuri Pet" />
+      <div class="sidenav-brand-text">
+        <span class="n">Nuri</span><span class="p">PET</span>
+      </div>
+    </div>
+
+    <mat-nav-list>
+      @for (item of navItems; track item.label) {
+        @if (item.rota) {
+          <a
+            mat-list-item
+            [routerLink]="item.rota"
+            routerLinkActive="nav-active"
+            (click)="isMobile() && sidenav.close()"
+          >
+            <mat-icon matListItemIcon>{{ item.icone }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+        } @else {
+          <a mat-list-item class="nav-disabled" matTooltip="Em breve" matTooltipPosition="right">
+            <mat-icon matListItemIcon>{{ item.icone }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+        }
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar class="topbar">
+      <button mat-icon-button (click)="sidenav.toggle()" aria-label="Alternar menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="topbar-title">Nuri Pet</span>
+      <span class="spacer"></span>
+      <button mat-button class="user-btn" [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+        <span class="user-nome">{{ auth.usuario()?.nome }}</span>
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div class="user-info">
+          <div class="ui-nome">{{ auth.usuario()?.nome }}</div>
+          <div class="ui-email">{{ auth.usuario()?.email }}</div>
+          <div class="ui-papel">{{ auth.usuario()?.papeis?.join(', ') }}</div>
+        </div>
+        <button mat-menu-item (click)="sair()">
+          <mat-icon>logout</mat-icon>
+          <span>Sair</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

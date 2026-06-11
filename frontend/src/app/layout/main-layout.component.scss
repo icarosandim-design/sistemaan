@@ -1,0 +1,143 @@
+.layout {
+  height: 100vh;
+}
+
+/* ---- Sidenav ---- */
+.sidenav {
+  width: 256px;
+  background: var(--an-superficie);
+  border-right: 1px solid var(--an-fundo-secundario);
+}
+
+.sidenav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--an-fundo-secundario);
+
+  img {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.sidenav-brand-text {
+  font-family: var(--an-fonte-titulo);
+  line-height: 1;
+
+  .n {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--an-primaria);
+  }
+
+  .p {
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    margin-left: 0.25em;
+    color: var(--an-texto-secundario);
+  }
+}
+
+mat-nav-list {
+  padding-top: 0.5rem;
+
+  .mat-icon {
+    color: var(--an-texto-secundario);
+  }
+}
+
+a.nav-active {
+  background: rgba(168, 177, 126, 0.22);
+  border-left: 3px solid var(--an-primaria);
+  color: var(--an-primaria);
+  font-weight: 600;
+
+  .mat-icon {
+    color: var(--an-primaria);
+  }
+}
+
+a.nav-disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---- Topbar ---- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--an-primaria);
+  color: #fff;
+
+  .mat-icon {
+    color: #fff;
+  }
+}
+
+.topbar-title {
+  font-family: var(--an-fonte-titulo);
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-left: 0.25rem;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.user-btn {
+  color: #fff;
+  font-weight: 600;
+
+  .user-nome {
+    margin: 0 0.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .user-nome {
+    display: none;
+  }
+}
+
+/* ---- Menu do usuário ---- */
+.user-info {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--an-fundo-secundario);
+
+  .ui-nome {
+    font-weight: 700;
+    color: var(--an-texto-titulo);
+  }
+
+  .ui-email {
+    font-size: 0.85rem;
+    color: var(--an-texto-secundario);
+  }
+
+  .ui-papel {
+    font-size: 0.75rem;
+    color: var(--an-detalhe-suave);
+    margin-top: 0.15rem;
+  }
+}
+
+/* ---- Conteúdo ---- */
+mat-sidenav-content {
+  background: var(--an-fundo);
+}
+
+.content {
+  padding: 1.5rem 1.75rem;
+  min-height: calc(100vh - 64px);
+}
+
+@media (max-width: 600px) {
+  .content {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,111 @@
+<section class="central">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Central Operacional</h1>
+      <p class="sub">Visão geral da operação · <span class="mock">dados de exemplo</span></p>
+    </div>
+    <div class="acoes-rapidas">
+      @for (a of acoes; track a.label) {
+        <button mat-flat-button class="btn-cta" matTooltip="Em breve">
+          <mat-icon>{{ a.icone }}</mat-icon>
+          {{ a.label }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    @for (k of kpis; track k.label) {
+      <mat-card class="kpi" appearance="outlined">
+        <div class="kpi-icone"><mat-icon>{{ k.icone }}</mat-icon></div>
+        <div class="kpi-dados">
+          <div class="kpi-valor">{{ k.valor }}</div>
+          <div class="kpi-label">{{ k.label }}</div>
+        </div>
+      </mat-card>
+    }
+  </div>
+
+  <!-- Calendário 7 dias -->
+  <mat-card class="card" appearance="outlined">
+    <div class="card-head">
+      <mat-icon>calendar_month</mat-icon>
+      <h2>Calendário operacional · próximos 7 dias</h2>
+    </div>
+    <div class="cal-grid">
+      @for (d of dias7; track d.data) {
+        <div class="cal-dia" [class.hoje]="d.hoje">
+          <div class="cal-sem">{{ d.diaSemana }}</div>
+          <div class="cal-data">{{ d.data }}</div>
+          <div class="cal-info"><mat-icon>local_shipping</mat-icon> {{ d.entregas }}</div>
+          <div class="cal-info"><mat-icon>factory</mat-icon> {{ d.producao }}</div>
+        </div>
+      }
+    </div>
+  </mat-card>
+
+  <div class="grid-2">
+    <!-- Produção planejada -->
+    <mat-card class="card" appearance="outlined">
+      <div class="card-head">
+        <mat-icon>factory</mat-icon>
+        <h2>Produção planejada</h2>
+        <span class="badge">{{ producaoPendentes }} pendentes</span>
+      </div>
+      <div class="lista">
+        @for (p of producao; track p.item) {
+          <div class="lista-item">
+            <div class="li-info">
+              <span class="li-nome">{{ p.item }}</span>
+              <span class="li-tag" [class.personalizada]="p.tipo === 'personalizada'">
+                {{ p.tipo === 'personalizada' ? 'Personalizada' : 'Casa' }}
+              </span>
+            </div>
+            <span class="li-qtd">{{ p.qtd }}</span>
+          </div>
+        }
+      </div>
+    </mat-card>
+
+    <!-- Estoque resumido -->
+    <mat-card class="card" appearance="outlined">
+      <div class="card-head">
+        <mat-icon>inventory_2</mat-icon>
+        <h2>Estoque · receitas da casa</h2>
+      </div>
+      <div class="lista">
+        @for (e of estoque; track e.produto) {
+          <div class="lista-item">
+            <div class="li-info">
+              <span class="li-nome">{{ e.produto }}</span>
+              <span class="li-sub">mínimo {{ e.minimo }}</span>
+            </div>
+            <div class="li-dir">
+              <span class="li-qtd">{{ e.saldo }}</span>
+              <span class="chip" [class.chip-baixo]="e.status === 'baixo'">
+                {{ e.status === 'baixo' ? 'Baixo' : 'OK' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Alertas -->
+  <mat-card class="card" appearance="outlined">
+    <div class="card-head">
+      <mat-icon>notifications_active</mat-icon>
+      <h2>Alertas operacionais</h2>
+    </div>
+    <div class="alertas">
+      @for (al of alertas; track al.texto) {
+        <div class="alerta" [class]="'sev-' + al.tipo">
+          <mat-icon>{{ al.icone }}</mat-icon>
+          <span>{{ al.texto }}</span>
+        </div>
+      }
+    </div>
+  </mat-card>
+</section>
