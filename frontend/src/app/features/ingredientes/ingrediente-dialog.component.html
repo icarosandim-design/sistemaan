@@ -1,0 +1,97 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar ingrediente' : 'Novo ingrediente' }}</h2>
+
+<mat-dialog-content>
+  <mat-tab-group animationDuration="0ms">
+    <!-- Aba: Dados -->
+    <mat-tab label="Dados">
+      <form [formGroup]="form" class="form">
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Nome</mat-label>
+          <input matInput formControlName="nome" placeholder="Ex.: Batata-doce" />
+          @if (form.controls.nome.hasError('required')) {
+            <mat-error>Informe o nome.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="linha">
+          <mat-form-field appearance="outline">
+            <mat-label>Categoria</mat-label>
+            <mat-select formControlName="categoria">
+              @for (c of categorias; track c) {
+                <mat-option [value]="c">{{ c }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.categoria.hasError('required')) {
+              <mat-error>Selecione a categoria.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de conversão</mat-label>
+            <mat-select formControlName="tipoConversao">
+              @for (t of tipos; track t.valor) {
+                <mat-option [value]="t.valor">{{ t.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="linha">
+          <mat-form-field appearance="outline">
+            <mat-label>Coeficiente (cozido ÷ cru)</mat-label>
+            <input matInput type="number" step="0.01" formControlName="coeficiente" />
+            <mat-hint>Ex.: 0,55 (perda) · 3,00 (ganho)</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Custo atual por kg</mat-label>
+            <span matTextPrefix>R$&nbsp;</span>
+            <input matInput type="number" step="0.01" formControlName="custoKg" />
+          </mat-form-field>
+        </div>
+
+        <div class="conversao">
+          <div class="conv-tit"><mat-icon>swap_horiz</mat-icon> Conversão</div>
+          @for (linha of preview; track linha) {
+            <div class="conv-linha">{{ linha }}</div>
+          }
+        </div>
+
+        <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>
+      </form>
+    </mat-tab>
+
+    <!-- Aba: Histórico de custos -->
+    <mat-tab label="Histórico de custos">
+      @if (historico.length) {
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th class="t-left">Data</th>
+              <th class="t-num">Valor anterior</th>
+              <th class="t-num">Novo valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (h of historico; track h.data) {
+              <tr>
+                <td class="t-left">{{ h.data }}</td>
+                <td class="t-num">{{ fmtMoeda(h.valorAnterior) }}</td>
+                <td class="t-num">{{ fmtMoeda(h.valorNovo) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="vazio">Nenhuma alteração de custo registrada.</p>
+      }
+    </mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" (click)="salvar()">
+    {{ edicao ? 'Salvar' : 'Cadastrar' }}
+  </button>
+</mat-dialog-actions>

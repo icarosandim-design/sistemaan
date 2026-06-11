@@ -102,22 +102,42 @@
 
 ## Módulo Catálogo / Receitas
 
+> **Atualizado pelo módulo de Ingredientes** (ver [doc 13](13-modulo-ingredientes.md)).
+> O ingrediente passou a conter categoria, tipo/coeficiente de conversão e custo
+> atual; a antiga `fatores_correcao` foi **substituída** pelo coeficiente de
+> conversão no próprio ingrediente, e o custo passou a ter histórico dedicado.
+
+### `categorias_ingredientes`
+| Campo | Tipo | Regras |
+|---|---|---|
+| id | bigint | PK |
+| nome | varchar(60) | not null, UQ |
+| ativo | boolean | default true |
+> Seed: Proteína, Carboidrato, Vegetal, Óleo, Suplemento, Tempero.
+
 ### `ingredientes`
 | Campo | Tipo | Regras |
 |---|---|---|
 | id | bigint | PK |
 | nome | varchar(120) | not null, UQ |
-| unidade | varchar(10) | not null, CK ∈ {g, kg, ml, l, un} |
+| categoria_id | bigint | not null, FK→categorias_ingredientes |
+| tipo_conversao | varchar(15) | not null, CK ∈ {perda, ganho, sem_conversao} |
+| coeficiente_conversao | numeric(8,4) | not null, CK > 0 (rendimento = cozido ÷ cru) |
+| custo_atual_kg | numeric(12,2) | not null, CK ≥ 0 |
 | ativo | boolean | default true |
+| criado_em / atualizado_em | timestamptz | auditoria |
+- **CK:** `tipo_conversao <> 'sem_conversao' OR coeficiente_conversao = 1`
 
-### `fatores_correcao`
+### `historico_custos_ingredientes`
 | Campo | Tipo | Regras |
 |---|---|---|
 | id | bigint | PK |
 | ingrediente_id | bigint | not null, FK→ingredientes |
-| fator | numeric(6,3) | not null, CK > 0 |
-| vigente_desde | date | not null |
-- **IX:** `(ingrediente_id, vigente_desde DESC)` → fator vigente.
+| data_alteracao | timestamptz | not null, default now() |
+| valor_anterior | numeric(12,2) | not null |
+| valor_novo | numeric(12,2) | not null |
+| usuario_id | bigint | FK→usuarios (nullable) |
+- **IX:** `(ingrediente_id, data_alteracao DESC)`. Registro criado automaticamente ao alterar `custo_atual_kg`.
 
 ### `receitas_casa`
 | Campo | Tipo | Regras |

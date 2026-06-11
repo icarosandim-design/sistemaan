@@ -29,6 +29,7 @@
 10. [Fundação técnica (infraestrutura)](10-fundacao-tecnica.md)
 11. [Módulo de autenticação](11-modulo-autenticacao.md)
 12. [Design System oficial](12-design-system.md)
+13. [Módulo de Ingredientes](13-modulo-ingredientes.md)
 
 ## Objetivo central do sistema
 

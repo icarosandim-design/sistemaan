@@ -1,0 +1,101 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Ingredientes</h1>
+      <p class="sub">Cadastro, conversão cru↔cozido e custos · <span class="mock">dados de exemplo</span></p>
+    </div>
+    <button mat-flat-button class="btn-cta" (click)="novo()">
+      <mat-icon>add</mat-icon>
+      Novo ingrediente
+    </button>
+  </header>
+
+  <!-- Filtros -->
+  <div class="filtros">
+    <mat-form-field appearance="outline" class="f-nome">
+      <mat-label>Buscar por nome</mat-label>
+      <input matInput [(ngModel)]="filtroNome" (ngModelChange)="aplicarFiltro()" placeholder="Ex.: Frango" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Categoria</mat-label>
+      <mat-select [(ngModel)]="filtroCategoria" (ngModelChange)="aplicarFiltro()">
+        <mat-option value="">Todas</mat-option>
+        @for (c of categorias; track c) {
+          <mat-option [value]="c">{{ c }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="filtroStatus" (ngModelChange)="aplicarFiltro()">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="ativo">Ativos</mat-option>
+        <mat-option value="inativo">Inativos</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    @if (temFiltro) {
+      <button mat-button class="limpar" (click)="limparFiltros()">
+        <mat-icon>close</mat-icon> Limpar
+      </button>
+    }
+  </div>
+
+  <!-- Tabela -->
+  <div class="tabela-card">
+    <table mat-table [dataSource]="dataSource" matSort class="tabela">
+      <ng-container matColumnDef="nome">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome</th>
+        <td mat-cell *matCellDef="let i" class="cel-nome">{{ i.nome }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
+        <td mat-cell *matCellDef="let i">{{ i.categoria }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tipoConversao">
+        <th mat-header-cell *matHeaderCellDef>Conversão</th>
+        <td mat-cell *matCellDef="let i">{{ labelTipoConversao(i.tipoConversao) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="coeficiente">
+        <th mat-header-cell *matHeaderCellDef class="t-num">Coef.</th>
+        <td mat-cell *matCellDef="let i" class="t-num">{{ fmtCoeficiente(i.tipoConversao, i.coeficiente) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="custoKg">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-num">Custo / kg</th>
+        <td mat-cell *matCellDef="let i" class="t-num">{{ fmtMoeda(i.custoKg) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="ativo">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let i">
+          <span class="chip" [class.chip-inativo]="!i.ativo">{{ i.ativo ? 'Ativo' : 'Inativo' }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let i" class="t-acoes">
+          <button mat-icon-button (click)="editar(i)" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="linha" (click)="editar(row)"></tr>
+
+      <tr class="sem-dados" *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length">Nenhum ingrediente encontrado.</td>
+      </tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[8, 15, 30]" pageSize="8" showFirstLastButtons></mat-paginator>
+  </div>
+</section>
