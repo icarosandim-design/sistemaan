@@ -1,0 +1,28 @@
+# ---- .NET ----
+bin/
+obj/
+*.user
+*.suo
+artifacts/
+[Tt]est[Rr]esults/
+*.dll
+*.pdb
+
+# ---- Node / Angular ----
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Env / secrets ----
+.env
+*.local
+
+# ---- IDE / OS ----
+.vs/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

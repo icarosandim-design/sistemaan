@@ -1,0 +1,16 @@
+/* Estilos globais. A identidade visual e os componentes de UI serão definidos
+   na etapa de telas. */
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SistemaAN.Domain</RootNamespace>
+    <AssemblyName>SistemaAN.Domain</AssemblyName>
+  </PropertyGroup>
+
+</Project>

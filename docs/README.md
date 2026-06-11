@@ -26,6 +26,7 @@
 7. [Modelo físico do banco](07-modelo-fisico-banco.md)
 8. [Decisões arquiteturais](08-decisoes-arquiteturais.md)
 9. [Riscos e premissas](09-riscos-e-premissas.md)
+10. [Fundação técnica (infraestrutura)](10-fundacao-tecnica.md)
 
 ## Objetivo central do sistema
 

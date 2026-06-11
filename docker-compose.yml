@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sistemaan-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sistemaan}
+      POSTGRES_USER: ${POSTGRES_USER:-sistemaan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sistemaan}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sistemaan} -d ${POSTGRES_DB:-sistemaan}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sistemaan-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB:-sistemaan};Username=${POSTGRES_USER:-sistemaan};Password=${POSTGRES_PASSWORD:-sistemaan}"
+      Jwt__SecretKey: ${JWT_SECRET_KEY:?defina JWT_SECRET_KEY no .env}
+      Jwt__Issuer: ${JWT_ISSUER:-SistemaAN}
+      Jwt__Audience: ${JWT_AUDIENCE:-SistemaAN.Client}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sistemaan-web
+    ports:
+      - "${WEB_PORT:-4200}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
