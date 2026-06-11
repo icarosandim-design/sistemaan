@@ -7,7 +7,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTabsModule } from '@angular/material/tabs';
 import {
   CATEGORIAS,
   coefDeFator,
@@ -37,7 +36,6 @@ export interface IngredienteDialogData {
     MatButtonModule,
     MatIconModule,
     MatSlideToggleModule,
-    MatTabsModule,
   ],
   templateUrl: './ingrediente-dialog.component.html',
   styleUrl: './ingrediente-dialog.component.scss',
@@ -98,10 +96,6 @@ export class IngredienteDialogComponent {
     return fmtMoeda(custoRealKg(this.form.getRawValue().custoKg, this.coeficiente));
   }
 
-  get historico() {
-    return this.data.ingrediente?.historico ?? [];
-  }
-
   private ajustarFator(tipo: TipoConversao): void {
     const c = this.form.controls.fatorPct;
     if (tipo === 'sem_conversao') {
@@ -127,27 +121,16 @@ export class IngredienteDialogComponent {
     }
 
     const v = this.form.getRawValue();
-    const coeficiente = coefDeFator(v.tipoConversao, v.fatorPct);
     const original = this.data.ingrediente;
-    const historico = original ? [...original.historico] : [];
-
-    if (original && v.custoKg !== original.custoKg) {
-      historico.unshift({
-        data: this.hoje(),
-        valorAnterior: original.custoKg,
-        valorNovo: v.custoKg,
-      });
-    }
 
     const resultado: Ingrediente = {
       id: original?.id ?? Date.now(),
       nome: v.nome.trim(),
       categoria: v.categoria,
       tipoConversao: v.tipoConversao,
-      coeficiente,
+      coeficiente: coefDeFator(v.tipoConversao, v.fatorPct),
       custoKg: v.custoKg,
       ativo: v.ativo,
-      historico,
     };
 
     this.ref.close(resultado);
@@ -155,9 +138,5 @@ export class IngredienteDialogComponent {
 
   cancelar(): void {
     this.ref.close();
-  }
-
-  private hoje(): string {
-    return new Date().toLocaleDateString('pt-BR');
   }
 }

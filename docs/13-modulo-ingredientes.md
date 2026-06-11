@@ -19,8 +19,10 @@ Seed: Proteína, Carboidrato, Vegetal, Óleo, Suplemento, Tempero.
 - **coeficiente_conversao** = rendimento = **cozido ÷ cru**
 - **custo_atual_kg** (R$/kg)
 
-### HistoricoCustoIngrediente
-Registro automático a cada mudança de custo: data, valor anterior, novo valor, usuário.
+> **Escopo desta fase:** o **histórico de custos não será implementado agora**.
+> O custo é **informado manualmente**. A entidade `HistoricoCustoIngrediente`
+> permanece **prevista** no modelo (ver "Preparação para evolução"), mas não é
+> construída nesta fase.
 
 ## Conversão (regra central)
 Um único coeficiente (rendimento = cozido ÷ cru) cobre os três casos:
@@ -44,14 +46,33 @@ peso no preparo) e o sistema converte para o coeficiente interno:
 A pré-visualização (cru↔cozido) e o custo real são calculados automaticamente.
 
 ## Custos
-- `custo_atual_kg` no ingrediente (preço do insumo **cru**).
+- `custo_atual_kg` no ingrediente — **informado manualmente** nesta fase (preço do insumo **cru**).
 - **Custo/kg real (cozido)** = `custo_atual_kg ÷ coeficiente` (derivado, não armazenado):
   reflete que para render 1 kg cozido pode ser necessário mais (perda) ou menos
   (ganho) de insumo cru. Ex.: batata-doce R$ 6,50/kg cru ÷ 0,55 = **R$ 11,82/kg cozido**.
 - O rendimento é exibido em **percentual** (cozido ÷ cru × 100): perda 55%, ganho 300%.
-- Toda alteração de custo gera registro em `historico_custos_ingredientes`.
 - Custo de item de receita: `(gramas_cru ÷ 1000) × custo_atual_kg` (ficha em
   cozido é convertida para cru antes). Receita = soma dos itens.
+
+## Preparação para evolução futura (NÃO implementar agora)
+O foco atual é o **cálculo correto do custo de receitas e produção**. O domínio
+foi modelado para integrar, mais adiante, sem refatoração disruptiva:
+
+| Evolução futura | Como o modelo já está preparado |
+|---|---|
+| **Fornecedores** | `Ingrediente` referenciável por `fornecedor_id`/tabela `fornecedores` sem alterar o consumo atual. |
+| **Compras** | Entradas de compra podem alimentar custo e estoque; o ingrediente tem `id` estável e custo numérico isolado. |
+| **Estoque de matéria-prima** | Saldo de insumo cru vive em tabela própria ligada ao ingrediente; não conflita com o estoque de produto acabado. |
+| **Financeiro** | Custos em `numeric` e por ingrediente, prontos para compor custo de produção e margem. |
+| **Atualização automática de custos** | `custo_atual_kg` é um único ponto de verdade; uma **fonte do custo** (manual hoje; compra/integração depois) e o `HistoricoCustoIngrediente` podem ser adicionados sem quebrar quem consome o custo. |
+
+**Decisões que mantêm o caminho aberto:**
+- Custo como propriedade única e numérica do ingrediente (não espalhado).
+- Conversão (rendimento) separada do custo — cada um evolui isolado.
+- Ingrediente com identidade estável e desacoplado de Compras/Estoque/Financeiro.
+- Categoria já em tabela; mesma estratégia servirá para Fornecedor.
+- Nenhuma regra atual pressupõe ausência de histórico/fornecedor/estoque — só
+  não os utiliza ainda.
 
 ## Decisões arquiteturais
 1. Categoria como tabela (extensível).

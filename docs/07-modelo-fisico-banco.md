@@ -128,7 +128,10 @@
 | criado_em / atualizado_em | timestamptz | auditoria |
 - **CK:** `tipo_conversao <> 'sem_conversao' OR coeficiente_conversao = 1`
 
-### `historico_custos_ingredientes`
+### `historico_custos_ingredientes` _(previsto — NÃO implementado nesta fase)_
+> O custo é informado manualmente agora; esta tabela fica reservada para quando
+> houver Compras/Financeiro/atualização automática de custos.
+
 | Campo | Tipo | Regras |
 |---|---|---|
 | id | bigint | PK |
