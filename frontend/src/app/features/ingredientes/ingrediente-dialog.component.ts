@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
-  CATEGORIAS,
+  Categoria,
   coefDeFator,
   custoRealKg,
   fatorCorrecaoPct,
@@ -16,12 +16,14 @@ import {
   fmtMoeda,
   Ingrediente,
   previewConversao,
+  SalvarIngredienteRequest,
   TIPOS_CONVERSAO,
   TipoConversao,
 } from './ingredientes.model';
 
 export interface IngredienteDialogData {
   ingrediente: Ingrediente | null;
+  categorias: Categoria[];
 }
 
 @Component({
@@ -43,14 +45,14 @@ export interface IngredienteDialogData {
 export class IngredienteDialogComponent {
   private readonly fb = inject(FormBuilder);
 
-  readonly categorias = CATEGORIAS;
+  readonly categorias: Categoria[];
   readonly tipos = TIPOS_CONVERSAO;
   readonly edicao: boolean;
   readonly fmtMoeda = fmtMoeda;
 
   readonly form = this.fb.nonNullable.group({
     nome: ['', [Validators.required]],
-    categoria: ['', [Validators.required]],
+    categoriaId: [null as number | null, [Validators.required]],
     tipoConversao: ['perda' as TipoConversao, [Validators.required]],
     fatorPct: [0, [Validators.required, Validators.min(0)]],
     custoKg: [0, [Validators.required, Validators.min(0)]],
@@ -58,16 +60,17 @@ export class IngredienteDialogComponent {
   });
 
   constructor(
-    private readonly ref: MatDialogRef<IngredienteDialogComponent, Ingrediente>,
+    private readonly ref: MatDialogRef<IngredienteDialogComponent, SalvarIngredienteRequest>,
     @Inject(MAT_DIALOG_DATA) readonly data: IngredienteDialogData,
   ) {
+    this.categorias = data.categorias;
     this.edicao = !!data.ingrediente;
 
     if (data.ingrediente) {
       const i = data.ingrediente;
       this.form.patchValue({
         nome: i.nome,
-        categoria: i.categoria,
+        categoriaId: i.categoriaId,
         tipoConversao: i.tipoConversao,
         fatorPct: fatorCorrecaoPct(i.tipoConversao, i.coeficiente) ?? 0,
         custoKg: i.custoKg,
@@ -121,19 +124,17 @@ export class IngredienteDialogComponent {
     }
 
     const v = this.form.getRawValue();
-    const original = this.data.ingrediente;
 
-    const resultado: Ingrediente = {
-      id: original?.id ?? Date.now(),
+    const request: SalvarIngredienteRequest = {
       nome: v.nome.trim(),
-      categoria: v.categoria,
+      categoriaId: v.categoriaId!,
       tipoConversao: v.tipoConversao,
       coeficiente: coefDeFator(v.tipoConversao, v.fatorPct),
       custoKg: v.custoKg,
       ativo: v.ativo,
     };
 
-    this.ref.close(resultado);
+    this.ref.close(request);
   }
 
   cancelar(): void {

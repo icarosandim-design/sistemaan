@@ -1,23 +1,29 @@
 export type TipoConversao = 'perda' | 'ganho' | 'sem_conversao';
 
+export interface Categoria {
+  id: number;
+  nome: string;
+}
+
 export interface Ingrediente {
   id: number;
   nome: string;
-  categoria: string;
+  categoriaId: number;
+  categoria: string; // nome da categoria (vindo da API)
   tipoConversao: TipoConversao;
   coeficiente: number; // rendimento = cozido ÷ cru
-  custoKg: number; // custo informado manualmente nesta fase
+  custoKg: number;
   ativo: boolean;
 }
 
-export const CATEGORIAS: string[] = [
-  'Proteína',
-  'Carboidrato',
-  'Vegetal',
-  'Óleo',
-  'Suplemento',
-  'Tempero',
-];
+export interface SalvarIngredienteRequest {
+  nome: string;
+  categoriaId: number;
+  tipoConversao: TipoConversao;
+  coeficiente: number;
+  custoKg: number;
+  ativo: boolean;
+}
 
 export const TIPOS_CONVERSAO: { valor: TipoConversao; label: string }[] = [
   { valor: 'perda', label: 'Perda' },
@@ -90,17 +96,3 @@ export function previewConversao(tipo: TipoConversao, coef: number): string[] {
     `${fmtPeso(cruPara1kgCozido)} cru → 1 kg cozido`,
   ];
 }
-
-export const MOCK_INGREDIENTES: Ingrediente[] = [
-  { id: 1, nome: 'Batata-doce', categoria: 'Carboidrato', tipoConversao: 'perda', coeficiente: 0.55, custoKg: 6.5, ativo: true },
-  { id: 2, nome: 'Arroz integral', categoria: 'Carboidrato', tipoConversao: 'ganho', coeficiente: 3.0, custoKg: 7.2, ativo: true },
-  { id: 3, nome: 'Frango (peito)', categoria: 'Proteína', tipoConversao: 'perda', coeficiente: 0.7, custoKg: 18.9, ativo: true },
-  { id: 4, nome: 'Carne bovina (patinho)', categoria: 'Proteína', tipoConversao: 'perda', coeficiente: 0.65, custoKg: 32.5, ativo: true },
-  { id: 5, nome: 'Fígado bovino', categoria: 'Proteína', tipoConversao: 'perda', coeficiente: 0.72, custoKg: 19.0, ativo: true },
-  { id: 6, nome: 'Abóbora', categoria: 'Vegetal', tipoConversao: 'perda', coeficiente: 0.8, custoKg: 4.8, ativo: true },
-  { id: 7, nome: 'Cenoura', categoria: 'Vegetal', tipoConversao: 'perda', coeficiente: 0.88, custoKg: 5.5, ativo: true },
-  { id: 8, nome: 'Aveia em flocos', categoria: 'Carboidrato', tipoConversao: 'ganho', coeficiente: 2.5, custoKg: 9.0, ativo: true },
-  { id: 9, nome: 'Óleo de coco', categoria: 'Óleo', tipoConversao: 'sem_conversao', coeficiente: 1, custoKg: 39.9, ativo: true },
-  { id: 10, nome: 'Sal', categoria: 'Tempero', tipoConversao: 'sem_conversao', coeficiente: 1, custoKg: 2.5, ativo: false },
-  { id: 11, nome: 'Suplemento vitamínico', categoria: 'Suplemento', tipoConversao: 'sem_conversao', coeficiente: 1, custoKg: 120.0, ativo: true },
-];

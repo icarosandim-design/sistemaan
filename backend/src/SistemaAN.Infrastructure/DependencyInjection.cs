@@ -53,6 +53,7 @@ public static class DependencyInjection
             sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<IdentityDataSeeder>();
+        services.AddScoped<CatalogDataSeeder>();
 
         return services;
     }

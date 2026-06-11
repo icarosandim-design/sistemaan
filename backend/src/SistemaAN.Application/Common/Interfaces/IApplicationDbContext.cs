@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Identity;
 
 namespace SistemaAN.Application.Common.Interfaces;
 
 /// <summary>
 /// Abstração do contexto de persistência exposta à camada de Aplicação.
-/// Os <c>DbSet</c> dos demais módulos de negócio serão adicionados aqui conforme
-/// forem criados, mantendo a Application desacoplada da Infrastructure.
 /// </summary>
 public interface IApplicationDbContext
 {
@@ -15,6 +14,10 @@ public interface IApplicationDbContext
     DbSet<Papel> Papeis { get; }
 
     DbSet<RefreshToken> RefreshTokens { get; }
+
+    DbSet<CategoriaIngrediente> CategoriasIngredientes { get; }
+
+    DbSet<Ingrediente> Ingredientes { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

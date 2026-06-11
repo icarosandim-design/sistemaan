@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Identity;
 
 namespace SistemaAN.Infrastructure.Persistence;
@@ -21,6 +22,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Papel> Papeis => Set<Papel>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<CategoriaIngrediente> CategoriasIngredientes => Set<CategoriaIngrediente>();
+
+    public DbSet<Ingrediente> Ingredientes => Set<Ingrediente>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

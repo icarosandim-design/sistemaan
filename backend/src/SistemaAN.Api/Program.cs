@@ -98,6 +98,9 @@ using (var scope = app.Services.CreateScope())
 
     var seeder = scope.ServiceProvider.GetRequiredService<IdentityDataSeeder>();
     await seeder.SeedAsync();
+
+    var catalogSeeder = scope.ServiceProvider.GetRequiredService<CatalogDataSeeder>();
+    await catalogSeeder.SeedAsync();
 }
 
 app.UseExceptionHandler();

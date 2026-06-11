@@ -82,12 +82,32 @@ foi modelado para integrar, mais adiante, sem refatoração disruptiva:
 5. Histórico de custo dedicado (auditoria de preço).
 6. Substitui a antiga `fatores_correcao` do modelo inicial.
 
-## Tela (estado atual: dados fictícios)
-- **Tabela** densa: Nome · Categoria · Conversão · Coeficiente · Custo/kg · Status.
-- **Filtros**: nome, categoria, status. **Ordenação**: nome, categoria, custo. **Paginação**.
-- **Dialog criar/editar** com pré-visualização da conversão em tempo real.
-- **Aba Histórico de Custos** no detalhe (data, valor anterior, novo valor).
+## Tela
+- **Tabela** densa em **lista única**: Nome · Categoria · Correção · Custo/kg cru · Custo/kg real · Status.
+- **Filtros**: nome, categoria, status. **Ordenação**: nome, categoria, custo.
+- **Dialog criar/editar** com fator de correção (%) e pré-visualização da conversão + custo real em tempo real.
+- **Excluir** (com confirmação) além de inativar.
 - Tudo no Design System (Angular Material, paleta, densidade compacta).
 
-> Próximo passo de backend: entidades + EF + migration + endpoints, ligando a
-> tela aos dados reais (hoje a tela opera com mock em memória).
+## Backend (implementado — persistência real)
+- **Entidades:** `CategoriaIngrediente`, `Ingrediente` (Clean Architecture).
+- **EF Core + PostgreSQL:** configs com `snake_case`, FK `ingrediente → categoria`
+  (on delete restrict), índice único em `nome`, `tipo_conversao` como string
+  (check), precisão `coeficiente (8,4)` e `custo (12,2)`, checks `coeficiente > 0`
+  e `custo >= 0`.
+- **Migration:** `AddCatalogIngredientes`.
+- **Seed:** 6 categorias + ingredientes de exemplo (apenas na 1ª execução).
+
+### Endpoints (todos exigem JWT)
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/api/categorias-ingredientes` | Lista categorias ativas |
+| GET | `/api/ingredientes` | Lista ingredientes |
+| GET | `/api/ingredientes/{id}` | Obtém um ingrediente |
+| POST | `/api/ingredientes` | Cria (valida nome, coeficiente > 0, custo ≥ 0, categoria existente) |
+| PUT | `/api/ingredientes/{id}` | Atualiza |
+| DELETE | `/api/ingredientes/{id}` | Exclui |
+
+Validado de ponta a ponta: build limpo, migration aplicada, seed, e o fluxo
+listar/criar/atualizar/excluir + 401 (sem token) e 400 (validação) com os status
+esperados. A tela consome esses endpoints (sem mock).

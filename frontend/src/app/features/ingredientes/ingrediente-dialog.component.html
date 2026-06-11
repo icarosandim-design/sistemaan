@@ -13,12 +13,12 @@
     <div class="linha">
       <mat-form-field appearance="outline">
         <mat-label>Categoria</mat-label>
-        <mat-select formControlName="categoria">
-          @for (c of categorias; track c) {
-            <mat-option [value]="c">{{ c }}</mat-option>
+        <mat-select formControlName="categoriaId">
+          @for (c of categorias; track c.id) {
+            <mat-option [value]="c.id">{{ c.nome }}</mat-option>
           }
         </mat-select>
-        @if (form.controls.categoria.hasError('required')) {
+        @if (form.controls.categoriaId.hasError('required')) {
           <mat-error>Selecione a categoria.</mat-error>
         }
       </mat-form-field>

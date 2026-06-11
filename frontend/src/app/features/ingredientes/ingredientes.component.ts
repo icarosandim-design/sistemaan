@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -8,16 +8,19 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
-  CATEGORIAS,
+  Categoria,
   custoRealKg,
   fmtFatorCorrecao,
   fmtMoeda,
   Ingrediente,
   labelTipoConversao,
-  MOCK_INGREDIENTES,
+  SalvarIngredienteRequest,
 } from './ingredientes.model';
+import { IngredientesService } from './ingredientes.service';
 import { IngredienteDialogComponent } from './ingrediente-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
@@ -34,33 +37,29 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
+    MatProgressBarModule,
   ],
   templateUrl: './ingredientes.component.html',
   styleUrl: './ingredientes.component.scss',
 })
-export class IngredientesComponent implements AfterViewInit {
+export class IngredientesComponent implements OnInit, AfterViewInit {
   private readonly dialog = inject(MatDialog);
+  private readonly service = inject(IngredientesService);
+  private readonly snack = inject(MatSnackBar);
 
-  readonly categorias = CATEGORIAS;
-  readonly displayedColumns = [
-    'nome',
-    'categoria',
-    'tipoConversao',
-    'coeficiente',
-    'custoKg',
-    'custoRealKg',
-    'ativo',
-    'acoes',
-  ];
-  readonly dataSource = new MatTableDataSource<Ingrediente>([...MOCK_INGREDIENTES]);
+  readonly displayedColumns = ['nome', 'categoria', 'tipoConversao', 'coeficiente', 'custoKg', 'custoRealKg', 'ativo', 'acoes'];
+  readonly dataSource = new MatTableDataSource<Ingrediente>([]);
 
   readonly fmtMoeda = fmtMoeda;
   readonly fmtFatorCorrecao = fmtFatorCorrecao;
   readonly custoRealKg = custoRealKg;
   readonly labelTipoConversao = labelTipoConversao;
 
+  categorias: Categoria[] = [];
+  carregando = false;
+
   filtroNome = '';
-  filtroCategoria = '';
+  filtroCategoria: number | '' = '';
   filtroStatus = '';
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -72,7 +71,7 @@ export class IngredientesComponent implements AfterViewInit {
       }
       const f = JSON.parse(filter);
       const nomeOk = !f.nome || d.nome.toLowerCase().includes(f.nome);
-      const catOk = !f.categoria || d.categoria === f.categoria;
+      const catOk = !f.categoria || d.categoriaId === f.categoria;
       const statusOk = !f.status || (f.status === 'ativo' ? d.ativo : !d.ativo);
       return nomeOk && catOk && statusOk;
     };
@@ -91,8 +90,30 @@ export class IngredientesComponent implements AfterViewInit {
     };
   }
 
+  ngOnInit(): void {
+    this.service.listarCategorias().subscribe({
+      next: (cats) => (this.categorias = cats),
+      error: () => this.erro('Falha ao carregar categorias.'),
+    });
+    this.carregar();
+  }
+
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
+  }
+
+  carregar(): void {
+    this.carregando = true;
+    this.service.listar().subscribe({
+      next: (itens) => {
+        this.dataSource.data = itens;
+        this.carregando = false;
+      },
+      error: () => {
+        this.carregando = false;
+        this.erro('Falha ao carregar ingredientes.');
+      },
+    });
   }
 
   aplicarFiltro(): void {
@@ -136,32 +157,43 @@ export class IngredientesComponent implements AfterViewInit {
       autoFocus: false,
     });
     ref.afterClosed().subscribe((ok: boolean | undefined) => {
-      if (ok) {
-        this.dataSource.data = this.dataSource.data.filter((d) => d.id !== ing.id);
+      if (!ok) {
+        return;
       }
+      this.service.excluir(ing.id).subscribe({
+        next: () => {
+          this.snack.open('Ingrediente excluído.', 'OK', { duration: 2500 });
+          this.carregar();
+        },
+        error: () => this.erro('Não foi possível excluir o ingrediente.'),
+      });
     });
   }
 
   private abrir(ing: Ingrediente | null): void {
     const ref = this.dialog.open(IngredienteDialogComponent, {
-      data: { ingrediente: ing },
+      data: { ingrediente: ing, categorias: this.categorias },
       width: '560px',
       maxWidth: '95vw',
       autoFocus: false,
     });
 
-    ref.afterClosed().subscribe((res: Ingrediente | undefined) => {
-      if (!res) {
+    ref.afterClosed().subscribe((req: SalvarIngredienteRequest | undefined) => {
+      if (!req) {
         return;
       }
-      const dados = this.dataSource.data;
-      const idx = dados.findIndex((d) => d.id === res.id);
-      if (idx >= 0) {
-        dados[idx] = res;
-      } else {
-        dados.unshift(res);
-      }
-      this.dataSource.data = [...dados];
+      const obs = ing ? this.service.atualizar(ing.id, req) : this.service.criar(req);
+      obs.subscribe({
+        next: () => {
+          this.snack.open(ing ? 'Ingrediente atualizado.' : 'Ingrediente criado.', 'OK', { duration: 2500 });
+          this.carregar();
+        },
+        error: () => this.erro('Não foi possível salvar o ingrediente.'),
+      });
     });
+  }
+
+  private erro(msg: string): void {
+    this.snack.open(msg, 'Fechar', { duration: 4000 });
   }
 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using SistemaAN.Application.Catalog;
 using SistemaAN.Application.Identity;
 
 namespace SistemaAN.Application;
@@ -12,6 +13,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IIngredienteService, IngredienteService>();
         return services;
     }
 }
