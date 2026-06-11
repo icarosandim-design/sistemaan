@@ -1,5 +1,11 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
+import { LoginComponent } from './features/login/login.component';
+import { InicioComponent } from './features/inicio/inicio.component';
 
-// As rotas de negócio (e seus módulos lazy-loaded) serão adicionadas nas
-// próximas etapas. A fundação não define telas.
-export const routes: Routes = [];
+export const routes: Routes = [
+  { path: 'login', component: LoginComponent },
+  { path: 'inicio', component: InicioComponent, canActivate: [authGuard] },
+  { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+  { path: '**', redirectTo: 'inicio' },
+];
