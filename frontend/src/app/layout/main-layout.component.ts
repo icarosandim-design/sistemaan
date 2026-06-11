@@ -52,6 +52,7 @@ export class MainLayoutComponent {
     { label: 'Clientes', icone: 'group', rota: null },
     { label: 'Pets', icone: 'pets', rota: null },
     { label: 'Receitas', icone: 'menu_book', rota: null },
+    { label: 'Ingredientes', icone: 'eco', rota: null },
     { label: 'Produção', icone: 'factory', rota: null },
     { label: 'Estoque', icone: 'inventory_2', rota: null },
     { label: 'Entregas', icone: 'local_shipping', rota: null },
