@@ -70,6 +70,20 @@ ninguém; Infrastructure e Api dependem das abstrações da Application.
 - **Api:** controllers por módulo; políticas de autorização (próxima etapa: auth e permissões).
 - **Frontend:** rotas, módulos de feature e serviços de API.
 
+## Central Operacional — contrato de leitura (sem backend)
+
+A Central é uma **camada fina de leitura/agregação** (sem regra de negócio). Para
+permitir integração incremental futura sem retrabalho, ela consome um contrato:
+
+- `CentralResumo` (`features/central/central.model.ts`) — tipo do que a tela exibe.
+- `CentralService` (`features/central/central.service.ts`) — hoje devolve **mock**;
+  **futuramente** passará a consumir **`GET /api/central/resumo`** sem alterar a tela.
+- A tela trata **loading / erro / vazio** e cada card é **resiliente a dados ausentes**.
+
+> Quando os módulos (Clientes, Pets, Produção, Estoque, Entregas, Financeiro)
+> existirem, um endpoint agregador (BFF/read-model) preencherá `CentralResumo`
+> campo a campo. A Central **não** chama vários endpoints nem contém lógica de negócio.
+
 ## Observação sobre versões
 
 A fundação foi escrita para **.NET 9 / EF Core 9 / Angular 19 / PostgreSQL 16**.

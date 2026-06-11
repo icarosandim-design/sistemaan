@@ -14,194 +14,227 @@
     </div>
   </header>
 
-  <!-- KPIs -->
-  <div class="kpis">
-    @for (k of kpis; track k.label) {
-      <mat-card class="kpi" appearance="outlined">
-        <div class="kpi-icone"><mat-icon>{{ k.icone }}</mat-icon></div>
-        <div class="kpi-dados">
-          <div class="kpi-valor">{{ k.valor }}</div>
-          <div class="kpi-label">{{ k.label }}</div>
-        </div>
-      </mat-card>
-    }
-  </div>
-
-  <!-- Calendário de entregas -->
-  <mat-card class="card" appearance="outlined">
-    <div class="card-head">
-      <mat-icon>event</mat-icon>
-      <h2>Calendário de entregas · próximos 7 dias</h2>
+  @if (carregando()) {
+    <div class="estado">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Carregando a operação...</p>
     </div>
-    <div class="cal-grid">
-      @for (d of entregas7; track d.data) {
-        <div class="cal-dia" [class.hoje]="d.hoje">
-          <div class="cal-sem">{{ d.diaSemana }}</div>
-          <div class="cal-data">{{ d.data }}</div>
-          <div class="cal-entregas">
-            <span class="ce-num">{{ d.entregas }}</span>
-            <span class="ce-lbl">entregas</span>
-          </div>
-        </div>
-      }
-    </div>
-  </mat-card>
-
-  <!-- Produção do dia -->
-  <mat-card class="card" appearance="outlined">
-    <div class="card-head">
-      <mat-icon>factory</mat-icon>
-      <h2>Produção planejada · hoje ({{ diaSelecionado }})</h2>
-      <span class="badge">{{ totalPacotes }} pacotes · {{ totalReceitas }} receitas</span>
-      <button mat-button class="toggle-prod" (click)="producaoExpandida.set(!producaoExpandida())">
-        {{ producaoExpandida() ? 'Recolher' : 'Ver tudo' }}
-        <mat-icon>{{ producaoExpandida() ? 'expand_less' : 'expand_more' }}</mat-icon>
+  } @else if (erro()) {
+    <div class="estado estado-erro">
+      <mat-icon>cloud_off</mat-icon>
+      <p>Não foi possível carregar a Central Operacional.</p>
+      <button mat-stroked-button (click)="carregar()">
+        <mat-icon>refresh</mat-icon> Tentar novamente
       </button>
     </div>
+  } @else if (resumo()) {
+    <!-- KPIs -->
+    @if (kpis.length) {
+      <div class="kpis">
+        @for (k of kpis; track k.label) {
+          <mat-card class="kpi" appearance="outlined">
+            <div class="kpi-icone"><mat-icon>{{ k.icone }}</mat-icon></div>
+            <div class="kpi-dados">
+              <div class="kpi-valor">{{ k.valor }}</div>
+              <div class="kpi-label">{{ k.label }}</div>
+            </div>
+          </mat-card>
+        }
+      </div>
+    }
 
-    @if (faltantes.length) {
-      <div class="falta-banner">
-        <mat-icon>warning_amber</mat-icon>
-        <div>
-          <div class="fb-tit">
-            {{ faltantes.length }} ingrediente{{ faltantes.length > 1 ? 's' : '' }} em falta
-          </div>
-          <div class="fb-txt">{{ bannerTexto }}</div>
+    <!-- Calendário de entregas -->
+    <mat-card class="card" appearance="outlined">
+      <div class="card-head">
+        <mat-icon>event</mat-icon>
+        <h2>Calendário de entregas · próximos 7 dias</h2>
+      </div>
+      @if (entregas7.length) {
+        <div class="cal-grid">
+          @for (d of entregas7; track d.data) {
+            <div class="cal-dia" [class.hoje]="d.hoje">
+              <div class="cal-sem">{{ d.diaSemana }}</div>
+              <div class="cal-data">{{ d.data }}</div>
+              <div class="cal-entregas">
+                <span class="ce-num">{{ d.entregas }}</span>
+                <span class="ce-lbl">entregas</span>
+              </div>
+            </div>
+          }
         </div>
-      </div>
-    }
+      } @else {
+        <p class="vazio">Sem entregas no período.</p>
+      }
+    </mat-card>
 
-    <div class="prod-wrap" [class.minimizado]="!producaoExpandida()">
-    <div class="prod-grid">
-      <!-- Esquerda: o que cozinhar -->
-      <div class="prod-bloco">
-        @if (producaoCasa.length) {
-          <div class="grupo">
-            <div class="bloco-head">
-              <h3 class="bloco-tit">Produção da casa</h3>
-              <span class="bloco-sub">{{ subtotalCasa }} pac.</span>
+    <!-- Produção do dia -->
+    <mat-card class="card" appearance="outlined">
+      <div class="card-head">
+        <mat-icon>factory</mat-icon>
+        <h2>Produção planejada · hoje ({{ diaSelecionado }})</h2>
+        @if (temProducao) {
+          <span class="badge">{{ totalPacotes }} pacotes · {{ totalReceitas }} receitas</span>
+          <button mat-button class="toggle-prod" (click)="producaoExpandida.set(!producaoExpandida())">
+            {{ producaoExpandida() ? 'Recolher' : 'Ver tudo' }}
+            <mat-icon>{{ producaoExpandida() ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+        }
+      </div>
+
+      @if (!temProducao) {
+        <p class="vazio">Nenhuma produção planejada para hoje.</p>
+      } @else {
+        @if (faltantes.length) {
+          <div class="falta-banner">
+            <mat-icon>warning_amber</mat-icon>
+            <div>
+              <div class="fb-tit">
+                {{ faltantes.length }} ingrediente{{ faltantes.length > 1 ? 's' : '' }} em falta
+              </div>
+              <div class="fb-txt">{{ bannerTexto }}</div>
             </div>
-            <div class="casa-grid {{ casaDensidade }}">
-              @for (c of casaVisivel; track c.produto) {
-                <div class="casa-card">
-                  <div class="cc-nome">{{ c.produto }}</div>
-                  <div class="cc-qtd">{{ c.pacotes }}</div>
-                </div>
-              }
-            </div>
-            @if (casaExtra) {
-              <button mat-button class="ver-mais" matTooltip="Em breve">
-                +{{ casaExtra }} — abrir produção
-              </button>
-            }
           </div>
         }
 
-        @if (producaoPersonalizada.length) {
-          <div class="grupo">
-            <div class="bloco-head">
-              <h3 class="bloco-tit">Receitas personalizadas</h3>
-              <span class="bloco-sub">{{ subtotalPersonalizada }} pac.</span>
-            </div>
-            <div class="pers-lista {{ persDensidade }}">
-              @for (p of persVisivel; track p.codigo) {
-                <div class="pers-card">
-                  <div class="pers-avatar"><mat-icon>pets</mat-icon></div>
-                  <div class="pers-info">
-                    <div class="pers-linha">
-                      <span class="pers-pet">{{ p.pet }}</span>
-                      <span class="pers-cod">· {{ p.codigo }}</span>
-                    </div>
-                    <div class="pers-tutor">Tutor: {{ p.tutor }}</div>
+        <div class="prod-wrap" [class.minimizado]="!producaoExpandida()">
+          <div class="prod-grid">
+            <div class="prod-bloco">
+              @if (producaoCasa.length) {
+                <div class="grupo">
+                  <div class="bloco-head">
+                    <h3 class="bloco-tit">Produção da casa</h3>
+                    <span class="bloco-sub">{{ subtotalCasa }} pac.</span>
                   </div>
-                  <span class="pers-qtd">{{ p.pacotes }}</span>
+                  <div class="casa-grid {{ casaDensidade }}">
+                    @for (c of casaVisivel; track c.produto) {
+                      <div class="casa-card">
+                        <div class="cc-nome">{{ c.produto }}</div>
+                        <div class="cc-qtd">{{ c.pacotes }}</div>
+                      </div>
+                    }
+                  </div>
+                  @if (casaExtra) {
+                    <button mat-button class="ver-mais" matTooltip="Em breve">+{{ casaExtra }} — abrir produção</button>
+                  }
+                </div>
+              }
+
+              @if (producaoPersonalizada.length) {
+                <div class="grupo">
+                  <div class="bloco-head">
+                    <h3 class="bloco-tit">Receitas personalizadas</h3>
+                    <span class="bloco-sub">{{ subtotalPersonalizada }} pac.</span>
+                  </div>
+                  <div class="pers-lista {{ persDensidade }}">
+                    @for (p of persVisivel; track p.codigo) {
+                      <div class="pers-card">
+                        <div class="pers-avatar"><mat-icon>pets</mat-icon></div>
+                        <div class="pers-info">
+                          <div class="pers-linha">
+                            <span class="pers-pet">{{ p.pet }}</span>
+                            <span class="pers-cod">· {{ p.codigo }}</span>
+                          </div>
+                          <div class="pers-tutor">Tutor: {{ p.tutor }}</div>
+                        </div>
+                        <span class="pers-qtd">{{ p.pacotes }}</span>
+                      </div>
+                    }
+                  </div>
+                  @if (persExtra) {
+                    <button mat-button class="ver-mais" matTooltip="Em breve">+{{ persExtra }} — abrir produção</button>
+                  }
                 </div>
               }
             </div>
-            @if (persExtra) {
-              <button mat-button class="ver-mais" matTooltip="Em breve">
-                +{{ persExtra }} — abrir produção
-              </button>
-            }
-          </div>
-        }
-      </div>
 
-      <!-- Direita: tabela de ingredientes -->
-      <div class="prod-bloco">
-        <h3 class="bloco-tit">Ingredientes</h3>
-        <table class="ing-table">
-          <thead>
-            <tr>
-              <th class="t-left">Ingrediente</th>
-              <th class="t-num">Cozid.</th>
-              <th class="t-num">Crus</th>
-              <th class="t-num">Estoq.</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (i of ingredientes; track i.nome) {
-              <tr [class.linha-falta]="i.estoque < i.crus">
-                <td class="t-left">
-                  @if (i.estoque < i.crus) {
-                    <mat-icon class="ing-alerta">warning_amber</mat-icon>
-                  }
-                  {{ i.nome }}
-                </td>
-                <td class="t-num">{{ fmtKg(i.cozidos) }}</td>
-                <td class="t-num">{{ fmtKg(i.crus) }}</td>
-                <td class="t-num">{{ fmtKg(i.estoque) }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-    @if (!producaoExpandida()) {
-      <div class="prod-fade"></div>
-    }
-    </div>
-  </mat-card>
-
-  <div class="grid-2">
-    <!-- Estoque receitas da casa -->
-    <mat-card class="card" appearance="outlined">
-      <div class="card-head">
-        <mat-icon>inventory_2</mat-icon>
-        <h2>Estoque · receitas da casa</h2>
-      </div>
-      <div class="lista">
-        @for (e of estoque; track e.produto) {
-          <div class="lista-item">
-            <div class="li-info">
-              <span class="li-nome">{{ e.produto }}</span>
-              <span class="li-sub">mínimo {{ e.minimo }}</span>
-            </div>
-            <div class="li-dir">
-              <span class="li-qtd">{{ e.saldo }}</span>
-              <span class="chip" [class.chip-baixo]="e.status === 'baixo'">
-                {{ e.status === 'baixo' ? 'Baixo' : 'OK' }}
-              </span>
+            <div class="prod-bloco">
+              <h3 class="bloco-tit">Ingredientes</h3>
+              @if (ingredientes.length) {
+                <table class="ing-table">
+                  <thead>
+                    <tr>
+                      <th class="t-left">Ingrediente</th>
+                      <th class="t-num">Cozid.</th>
+                      <th class="t-num">Crus</th>
+                      <th class="t-num">Estoq.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (i of ingredientes; track i.nome) {
+                      <tr [class.linha-falta]="i.estoque < i.crus">
+                        <td class="t-left">
+                          @if (i.estoque < i.crus) {
+                            <mat-icon class="ing-alerta">warning_amber</mat-icon>
+                          }
+                          {{ i.nome }}
+                        </td>
+                        <td class="t-num">{{ fmtKg(i.cozidos) }}</td>
+                        <td class="t-num">{{ fmtKg(i.crus) }}</td>
+                        <td class="t-num">{{ fmtKg(i.estoque) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              } @else {
+                <p class="vazio">Sem ingredientes para hoje.</p>
+              }
             </div>
           </div>
-        }
-      </div>
+          @if (!producaoExpandida()) {
+            <div class="prod-fade"></div>
+          }
+        </div>
+      }
     </mat-card>
 
-    <!-- Alertas -->
-    <mat-card class="card" appearance="outlined">
-      <div class="card-head">
-        <mat-icon>notifications_active</mat-icon>
-        <h2>Alertas operacionais</h2>
-      </div>
-      <div class="alertas">
-        @for (al of alertas; track al.texto) {
-          <div class="alerta" [class]="'sev-' + al.tipo">
-            <mat-icon>{{ al.icone }}</mat-icon>
-            <span>{{ al.texto }}</span>
+    <div class="grid-2">
+      <!-- Estoque receitas da casa -->
+      <mat-card class="card" appearance="outlined">
+        <div class="card-head">
+          <mat-icon>inventory_2</mat-icon>
+          <h2>Estoque · receitas da casa</h2>
+        </div>
+        @if (estoque.length) {
+          <div class="lista">
+            @for (e of estoque; track e.produto) {
+              <div class="lista-item">
+                <div class="li-info">
+                  <span class="li-nome">{{ e.produto }}</span>
+                  <span class="li-sub">mínimo {{ e.minimo }}</span>
+                </div>
+                <div class="li-dir">
+                  <span class="li-qtd">{{ e.saldo }}</span>
+                  <span class="chip" [class.chip-baixo]="e.status === 'baixo'">
+                    {{ e.status === 'baixo' ? 'Baixo' : 'OK' }}
+                  </span>
+                </div>
+              </div>
+            }
           </div>
+        } @else {
+          <p class="vazio">Sem itens em estoque.</p>
         }
-      </div>
-    </mat-card>
-  </div>
+      </mat-card>
+
+      <!-- Alertas -->
+      <mat-card class="card" appearance="outlined">
+        <div class="card-head">
+          <mat-icon>notifications_active</mat-icon>
+          <h2>Alertas operacionais</h2>
+        </div>
+        @if (alertas.length) {
+          <div class="alertas">
+            @for (al of alertas; track al.texto) {
+              <div class="alerta" [class]="'sev-' + al.tipo">
+                <mat-icon>{{ al.icone }}</mat-icon>
+                <span>{{ al.texto }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="vazio">Nenhum alerta no momento.</p>
+        }
+      </mat-card>
+    </div>
+  }
 </section>
