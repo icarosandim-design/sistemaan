@@ -18,6 +18,17 @@ export interface ReceitaCasa {
   ativo: boolean;
   observacoes: string;
   itens: ItemReceita[];
+  rendimento: number;
+  custoTotal: number;
+  custoPorKgCozido: number;
+}
+
+export interface SalvarReceitaCasaRequest {
+  codigo: string;
+  nome: string;
+  ativo: boolean;
+  observacoes: string;
+  itens: ItemReceita[];
 }
 
 /** Base obrigatória da ficha técnica da Receita da Casa: 1 kg cozido. */

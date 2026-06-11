@@ -57,7 +57,7 @@
       <ng-container matColumnDef="custo">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="t-center"
             matTooltip="Custo estimado por kg cozido (gerencial)">Custo/kg cozido</th>
-        <td mat-cell *matCellDef="let r" class="t-center cel-custo">{{ fmtMoeda(custoDe(r)) }}</td>
+        <td mat-cell *matCellDef="let r" class="t-center cel-custo">{{ fmtMoeda(r.custoPorKgCozido) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="ativo">

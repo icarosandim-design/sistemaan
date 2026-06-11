@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { custoReceita, fmtMoeda, IngredienteAtivo, ReceitaCasa } from './receitas.model';
+import { fmtMoeda, IngredienteAtivo, ReceitaCasa, SalvarReceitaCasaRequest } from './receitas.model';
 import { ReceitasService } from './receitas.service';
 import { ReceitaDialogComponent } from './receita-dialog.component';
 
@@ -43,7 +44,6 @@ export class ReceitasComponent implements OnInit, AfterViewInit {
   readonly fmtMoeda = fmtMoeda;
 
   private ingredientes: IngredienteAtivo[] = [];
-  private mapa = new Map<number, IngredienteAtivo>();
 
   carregando = false;
   filtroTexto = '';
@@ -67,7 +67,7 @@ export class ReceitasComponent implements OnInit, AfterViewInit {
         case 'codigo':
           return item.codigo;
         case 'custo':
-          return this.custoDe(item);
+          return item.custoPorKgCozido;
         default:
           return item.nome;
       }
@@ -75,9 +75,9 @@ export class ReceitasComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.service.listarIngredientes().subscribe((ings) => {
-      this.ingredientes = ings;
-      this.mapa = new Map(ings.map((i) => [i.id, i]));
+    this.service.listarIngredientes().subscribe({
+      next: (ings) => (this.ingredientes = ings),
+      error: () => this.erro('Falha ao carregar ingredientes.'),
     });
     this.carregar();
   }
@@ -95,13 +95,9 @@ export class ReceitasComponent implements OnInit, AfterViewInit {
       },
       error: () => {
         this.carregando = false;
-        this.snack.open('Falha ao carregar receitas.', 'Fechar', { duration: 4000 });
+        this.erro('Falha ao carregar receitas.');
       },
     });
-  }
-
-  custoDe(r: ReceitaCasa): number {
-    return custoReceita(r.itens, this.mapa);
   }
 
   aplicarFiltro(): void {
@@ -131,9 +127,12 @@ export class ReceitasComponent implements OnInit, AfterViewInit {
 
   alternarStatus(r: ReceitaCasa, ev: Event): void {
     ev.stopPropagation();
-    this.service.alternarStatus(r.id).subscribe(() => {
-      this.snack.open(r.ativo ? 'Receita inativada.' : 'Receita ativada.', 'OK', { duration: 2500 });
-      this.carregar();
+    this.service.alternarStatus(r.id, !r.ativo).subscribe({
+      next: () => {
+        this.snack.open(r.ativo ? 'Receita inativada.' : 'Receita ativada.', 'OK', { duration: 2500 });
+        this.carregar();
+      },
+      error: () => this.erro('Não foi possível alterar o status.'),
     });
   }
 
@@ -144,14 +143,33 @@ export class ReceitasComponent implements OnInit, AfterViewInit {
       maxWidth: '96vw',
       autoFocus: false,
     });
-    ref.afterClosed().subscribe((res: ReceitaCasa | undefined) => {
-      if (!res) {
+    ref.afterClosed().subscribe((req: SalvarReceitaCasaRequest | undefined) => {
+      if (!req) {
         return;
       }
-      this.service.salvar(res).subscribe(() => {
-        this.snack.open(r ? 'Receita atualizada.' : 'Receita criada.', 'OK', { duration: 2500 });
-        this.carregar();
+      const obs = r ? this.service.atualizar(r.id, req) : this.service.criar(req);
+      obs.subscribe({
+        next: () => {
+          this.snack.open(r ? 'Receita atualizada.' : 'Receita criada.', 'OK', { duration: 2500 });
+          this.carregar();
+        },
+        error: (e: HttpErrorResponse) => this.erro(this.mensagemErro(e)),
       });
     });
+  }
+
+  private mensagemErro(e: HttpErrorResponse): string {
+    const errors = e.error?.errors as Record<string, string[]> | undefined;
+    if (errors) {
+      const primeira = Object.values(errors)[0]?.[0];
+      if (primeira) {
+        return primeira;
+      }
+    }
+    return e.error?.detail ?? 'Não foi possível salvar a receita.';
+  }
+
+  private erro(msg: string): void {
+    this.snack.open(msg, 'Fechar', { duration: 4000 });
   }
 }

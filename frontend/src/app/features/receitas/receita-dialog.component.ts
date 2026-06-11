@@ -13,6 +13,7 @@ import {
   fmtMoeda,
   IngredienteAtivo,
   ReceitaCasa,
+  SalvarReceitaCasaRequest,
 } from './receitas.model';
 
 export interface ReceitaDialogData {
@@ -53,7 +54,7 @@ export class ReceitaDialogComponent {
   });
 
   constructor(
-    private readonly ref: MatDialogRef<ReceitaDialogComponent, ReceitaCasa>,
+    private readonly ref: MatDialogRef<ReceitaDialogComponent, SalvarReceitaCasaRequest>,
     @Inject(MAT_DIALOG_DATA) readonly data: ReceitaDialogData,
   ) {
     this.ingredientes = data.ingredientes;
@@ -133,8 +134,7 @@ export class ReceitaDialogComponent {
       return;
     }
     const v = this.form.getRawValue();
-    const resultado: ReceitaCasa = {
-      id: this.data.receita?.id ?? 0,
+    const request: SalvarReceitaCasaRequest = {
       codigo: v.codigo.trim(),
       nome: v.nome.trim(),
       ativo: v.ativo,
@@ -144,7 +144,7 @@ export class ReceitaDialogComponent {
         gramas: Number(c.value.gramas),
       })),
     };
-    this.ref.close(resultado);
+    this.ref.close(request);
   }
 
   cancelar(): void {

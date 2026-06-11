@@ -31,6 +31,7 @@
 12. [Design System oficial](12-design-system.md)
 13. [Módulo de Ingredientes](13-modulo-ingredientes.md)
 14. [Módulo Tabela de Consumo](14-modulo-tabela-consumo.md)
+15. [Módulo Receitas da Casa](15-modulo-receitas-casa.md)
 
 ## Objetivo central do sistema
 

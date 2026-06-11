@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SistemaAN.Application.Catalog;
 using SistemaAN.Application.Consumo;
 using SistemaAN.Application.Identity;
+using SistemaAN.Application.Receitas;
 
 namespace SistemaAN.Application;
 
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIngredienteService, IngredienteService>();
         services.AddScoped<IFaixaConsumoService, FaixaConsumoService>();
+        services.AddScoped<IReceitaCasaService, ReceitaCasaService>();
         return services;
     }
 }

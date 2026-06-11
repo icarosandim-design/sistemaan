@@ -4,6 +4,7 @@ using SistemaAN.Application.Common.Interfaces;
 using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Identity;
+using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Infrastructure.Persistence;
 
@@ -29,6 +30,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Ingrediente> Ingredientes => Set<Ingrediente>();
 
     public DbSet<FaixaConsumo> FaixasConsumo => Set<FaixaConsumo>();
+
+    public DbSet<Receita> Receitas => Set<Receita>();
+
+    public DbSet<ItemReceita> ItensReceita => Set<ItemReceita>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
