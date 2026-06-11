@@ -74,10 +74,6 @@
         <h2>Produção planejada · hoje ({{ diaSelecionado }})</h2>
         @if (temProducao) {
           <span class="badge">{{ totalPacotes }} pacotes · {{ totalReceitas }} receitas</span>
-          <button mat-button class="toggle-prod" (click)="producaoExpandida.set(!producaoExpandida())">
-            {{ producaoExpandida() ? 'Recolher' : 'Ver tudo' }}
-            <mat-icon>{{ producaoExpandida() ? 'expand_less' : 'expand_more' }}</mat-icon>
-          </button>
         }
       </div>
 
@@ -183,6 +179,13 @@
           @if (!producaoExpandida()) {
             <div class="prod-fade"></div>
           }
+        </div>
+
+        <div class="prod-rodape">
+          <button mat-button class="toggle-prod" (click)="producaoExpandida.set(!producaoExpandida())">
+            {{ producaoExpandida() ? 'Recolher' : 'Ver tudo' }}
+            <mat-icon>{{ producaoExpandida() ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
         </div>
       }
     </mat-card>

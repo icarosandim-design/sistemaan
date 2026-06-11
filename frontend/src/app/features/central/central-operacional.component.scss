@@ -114,6 +114,14 @@
   font-weight: 600;
 }
 
+.prod-rodape {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--an-fundo);
+  margin-top: 0.5rem;
+  padding-top: 0.25rem;
+}
+
 .prod-wrap {
   position: relative;
 }

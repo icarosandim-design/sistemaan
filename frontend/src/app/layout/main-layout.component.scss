@@ -92,9 +92,11 @@ a.nav-disabled {
 .user-btn {
   color: #fff;
   font-weight: 600;
+  --mdc-text-button-label-text-color: #fff;
 
   .user-nome {
     margin: 0 0.25rem;
+    color: #fff;
   }
 }
 
