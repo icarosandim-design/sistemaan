@@ -28,10 +28,10 @@ export interface IngredienteMock {
   custoKg: number; // custo por kg cru
 }
 
-/** Distribuição de uma Receita da Casa dentro do ciclo. */
+/** Distribuição de uma Receita da Casa dentro do ciclo. A gramagem por receita
+ * é calculada (divisão igual do total); o operador ajusta os pacotes. */
 export interface ItemCasa {
   receitaId: number | null;
-  gramasCiclo: number;
   pacotes250: number;
   pacotes500: number;
 }

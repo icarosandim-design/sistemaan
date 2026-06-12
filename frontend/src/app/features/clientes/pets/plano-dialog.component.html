@@ -12,7 +12,7 @@
     <div class="linha">
       <mat-form-field appearance="outline">
         <mat-label>Frequência de entrega</mat-label>
-        <mat-select [(ngModel)]="frequenciaId" [ngModelOptions]="{ standalone: true }">
+        <mat-select [(ngModel)]="frequenciaId" [ngModelOptions]="{ standalone: true }" (ngModelChange)="onConfigChange()">
           @for (f of frequencias; track f.id) {
             <mat-option [value]="f.id">{{ f.nome }}</mat-option>
           }
@@ -35,7 +35,8 @@
 
       <mat-form-field appearance="outline">
         <mat-label>Gramas/dia ajustadas</mat-label>
-        <input matInput type="number" step="10" [(ngModel)]="gramasDiaAjustadas" [ngModelOptions]="{ standalone: true }" />
+        <input matInput type="number" step="10" [(ngModel)]="gramasDiaAjustadas"
+               [ngModelOptions]="{ standalone: true }" (ngModelChange)="onConfigChange()" />
         <span matTextSuffix>g/dia</span>
       </mat-form-field>
     </div>
@@ -77,6 +78,11 @@
           <mat-icon>add</mat-icon> Adicionar receita
         </button>
       </div>
+      <p class="nota">
+        O total do ciclo é dividido igualmente entre as receitas escolhidas
+        ({{ itensCasa.length || 1 }} receita(s) → <strong>{{ fmtPeso(gramasPorReceita) }}</strong> por receita).
+        Os pacotes são sugeridos para cobrir cada parte (nunca menos) e podem ser ajustados.
+      </p>
 
       @for (item of itensCasa; track $index) {
         <div class="casa-card">
@@ -90,21 +96,19 @@
               </mat-select>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="f-gramas">
-              <mat-label>Gramas no ciclo</mat-label>
-              <input matInput type="number" step="50" [(ngModel)]="item.gramasCiclo"
-                     [ngModelOptions]="{ standalone: true }" (ngModelChange)="aoMudarGramasCasa(item)" />
-              <span matTextSuffix>g</span>
-            </mat-form-field>
+            <div class="necessario">
+              <span class="rotulo">Necessário no ciclo</span>
+              <span class="valor">{{ fmtPeso(gramasPorReceita) }}</span>
+            </div>
 
             <button mat-icon-button type="button" class="rm" (click)="removerReceitaCasa($index)" matTooltip="Remover">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
 
-          <!-- Sugestão de pacotes desta receita -->
+          <!-- Pacotes desta receita (sugeridos, editáveis) -->
           <div class="pacotes">
-            <span class="pac-tit"><mat-icon>inventory_2</mat-icon> Pacotes sugeridos</span>
+            <span class="pac-tit"><mat-icon>inventory_2</mat-icon> Pacotes</span>
             <mat-form-field appearance="outline" class="f-pac">
               <mat-label>250g</mat-label>
               <input matInput type="number" min="0" [(ngModel)]="item.pacotes250" [ngModelOptions]="{ standalone: true }" />
@@ -114,33 +118,31 @@
               <input matInput type="number" min="0" [(ngModel)]="item.pacotes500" [ngModelOptions]="{ standalone: true }" />
             </mat-form-field>
             <div class="pac-resumo">
-              <span>Enviado: <strong>{{ fmtPeso(gramasPacotes(item.pacotes250, item.pacotes500)) }}</strong></span>
-              <span [class]="gramasPacotes(item.pacotes250, item.pacotes500) - item.gramasCiclo >= 0 ? 'pos' : 'neg'">
-                {{ gramasPacotes(item.pacotes250, item.pacotes500) - item.gramasCiclo >= 0 ? '+' : '' }}{{ fmtPeso(gramasPacotes(item.pacotes250, item.pacotes500) - item.gramasCiclo) }}
+              <span>Enviado: <strong>{{ fmtPeso(enviadoItemCasa(item)) }}</strong></span>
+              <span [class]="enviadoItemCasa(item) - gramasPorReceita >= 0 ? 'pos' : 'neg'">
+                {{ enviadoItemCasa(item) - gramasPorReceita >= 0 ? '+' : '' }}{{ fmtPeso(enviadoItemCasa(item) - gramasPorReceita) }}
               </span>
             </div>
           </div>
         </div>
       }
 
-      <!-- Status da distribuição -->
+      <!-- Status do plano -->
       <div class="status" [class]="statusCasa">
         <div class="st-item"><span>Total necessário</span><strong>{{ fmtPeso(totalCiclo) }}</strong></div>
-        <div class="st-item"><span>Distribuído</span><strong>{{ fmtPeso(distribuidoCasa) }}</strong></div>
+        <div class="st-item"><span>Total enviado (pacotes)</span><strong>{{ fmtPeso(totalEnviadoCasa) }}</strong></div>
         <div class="st-item">
           <span>
             @switch (statusCasa) {
-              @case ('valido') { Situação }
+              @case ('atendido') { Situação }
               @case ('faltando') { Faltam }
-              @case ('excedido') { Excedeu }
               @default { Situação }
             }
           </span>
           <strong>
             @switch (statusCasa) {
-              @case ('valido') { Plano válido ✓ }
+              @case ('atendido') { Atendido ✓ (+{{ fmtPeso(diferencaCasa) }}) }
               @case ('faltando') { {{ fmtPeso(-diferencaCasa) }} }
-              @case ('excedido') { {{ fmtPeso(diferencaCasa) }} }
               @default { defina o ciclo }
             }
           </strong>

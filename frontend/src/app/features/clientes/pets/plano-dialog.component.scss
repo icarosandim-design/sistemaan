@@ -139,9 +139,25 @@ mat-dialog-content {
   .f-codigo {
     flex: 2;
   }
+}
 
-  .f-gramas {
-    flex: 1;
+.necessario {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 120px;
+
+  .rotulo {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--an-texto-secundario);
+  }
+
+  .valor {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--an-primaria);
   }
 }
 

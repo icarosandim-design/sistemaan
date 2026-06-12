@@ -92,41 +92,53 @@ export class PlanoDialogComponent {
   }
 
   // ===== Receita da Casa =====
-  nomeReceita(id: number | null): string {
-    const r = this.receitasCasa.find((x) => x.id === id);
-    return r ? `${r.codigo} · ${r.nome}` : '—';
+  /** Recalcula a divisão/pacotes quando muda frequência, consumo ou nº de receitas. */
+  onConfigChange(): void {
+    this.recomputeCasa();
   }
 
   adicionarReceitaCasa(): void {
-    this.itensCasa.push({ receitaId: null, gramasCiclo: 0, pacotes250: 0, pacotes500: 0 });
+    this.itensCasa.push({ receitaId: null, pacotes250: 0, pacotes500: 0 });
+    this.recomputeCasa();
   }
 
   removerReceitaCasa(i: number): void {
     this.itensCasa.splice(i, 1);
+    this.recomputeCasa();
   }
 
-  aoMudarGramasCasa(item: ItemCasa): void {
-    const s = sugerirPacotes(item.gramasCiclo || 0);
-    item.pacotes250 = s.p250;
-    item.pacotes500 = s.p500;
+  /** Gramas que cabem a cada receita (divisão igual do total do ciclo). */
+  get gramasPorReceita(): number {
+    return this.itensCasa.length ? this.totalCiclo / this.itensCasa.length : 0;
   }
 
-  get distribuidoCasa(): number {
-    return this.itensCasa.reduce((s, i) => s + (i.gramasCiclo || 0), 0);
+  /** (Re)aplica a sugestão de pacotes para a parte de cada receita. */
+  recomputeCasa(): void {
+    const share = this.gramasPorReceita;
+    for (const item of this.itensCasa) {
+      const s = sugerirPacotes(share);
+      item.pacotes250 = s.p250;
+      item.pacotes500 = s.p500;
+    }
+  }
+
+  enviadoItemCasa(item: ItemCasa): number {
+    return gramasPacotes(item.pacotes250, item.pacotes500);
+  }
+
+  get totalEnviadoCasa(): number {
+    return this.itensCasa.reduce((s, i) => s + this.enviadoItemCasa(i), 0);
   }
 
   get diferencaCasa(): number {
-    return this.distribuidoCasa - this.totalCiclo;
+    return this.totalEnviadoCasa - this.totalCiclo;
   }
 
-  get statusCasa(): 'vazio' | 'faltando' | 'valido' | 'excedido' {
+  get statusCasa(): 'vazio' | 'faltando' | 'atendido' {
     if (this.totalCiclo <= 0) {
       return 'vazio';
     }
-    if (this.diferencaCasa === 0) {
-      return 'valido';
-    }
-    return this.diferencaCasa < 0 ? 'faltando' : 'excedido';
+    return this.totalEnviadoCasa < this.totalCiclo ? 'faltando' : 'atendido';
   }
 
   // ===== Receita Personalizada =====
