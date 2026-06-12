@@ -59,7 +59,7 @@ export class MainLayoutComponent {
     },
     { label: 'Produção', icone: 'factory', rota: null },
     { label: 'Estoque', icone: 'inventory_2', rota: null },
-    { label: 'Entregas', icone: 'local_shipping', rota: null },
+    { label: 'Entregas', icone: 'local_shipping', rota: '/entregas' },
     {
       label: 'Cadastros',
       icone: 'tune',

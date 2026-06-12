@@ -463,7 +463,7 @@ public sealed class EntregaService : IEntregaService
             .SelectMany(p => p.Itens)
             .Sum(i => i.Tipo == TipoReceita.Casa ? i.Pacotes.Sum(x => x.Quantidade) : i.QuantidadePacotes ?? 0);
         return new EntregaResumoDto(
-            e.Id, e.ClienteId, e.ClienteNome, e.DataPrevista, e.Status.ToString(), e.Bairro, e.Cidade,
+            e.Id, e.ClienteId, e.ClienteNome, e.Telefone, e.DataPrevista, e.Status.ToString(), e.Bairro, e.Cidade,
             string.Join(", ", tipos), e.Pets.Sum(p => p.QuantidadeTotalGramas), totalPacotes, e.EntregadorId,
             e.Pets.Select(p => p.PetNome).ToList());
     }

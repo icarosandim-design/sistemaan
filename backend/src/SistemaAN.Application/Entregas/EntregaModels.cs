@@ -60,6 +60,7 @@ public sealed record EntregaResumoDto(
     long Id,
     long ClienteId,
     string ClienteNome,
+    string? Telefone,
     DateOnly DataPrevista,
     string Status,
     string? Bairro,

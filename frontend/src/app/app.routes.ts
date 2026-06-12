@@ -9,6 +9,7 @@ import { ReceitasComponent } from './features/receitas/receitas.component';
 import { FrequenciasComponent } from './features/frequencias/frequencias.component';
 import { ClientesComponent } from './features/clientes/clientes.component';
 import { TamanhosPacoteComponent } from './features/tamanhos-pacote/tamanhos-pacote.component';
+import { EntregasComponent } from './features/entregas/entregas.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -19,6 +20,7 @@ export const routes: Routes = [
     children: [
       { path: 'central', component: CentralOperacionalComponent },
       { path: 'clientes', component: ClientesComponent },
+      { path: 'entregas', component: EntregasComponent },
       { path: 'ingredientes', component: IngredientesComponent },
       { path: 'tabela-consumo', component: ConsumoComponent },
       { path: 'receitas', component: ReceitasComponent },

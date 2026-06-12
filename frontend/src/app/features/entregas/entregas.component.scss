@@ -1,0 +1,185 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+.subtitulo { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--an-texto-secundario); }
+
+.conteudo {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .conteudo { grid-template-columns: 1fr; }
+}
+
+/* Calendário */
+.calendario-card {
+  background: var(--an-superficie);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
+  padding: 0.75rem;
+  position: sticky;
+  top: 80px;
+}
+
+.cal-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cal-mes {
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--an-texto-titulo);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.cal-cabecalho { margin: 0.4rem 0 0.2rem; }
+
+.cal-dow {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--an-texto-secundario);
+}
+
+.cal-vazio { aspect-ratio: 1; }
+
+.cal-dia {
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--an-fundo);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2px;
+  cursor: default;
+  color: var(--an-texto-secundario);
+  overflow: hidden;
+
+  .num { font-size: 0.72rem; font-weight: 600; }
+
+  &.cheio {
+    cursor: pointer;
+    background: rgba(168, 177, 126, 0.18);
+    color: var(--an-texto-titulo);
+  }
+
+  &.cheio:hover { background: rgba(168, 177, 126, 0.32); }
+
+  &.sel {
+    border-color: var(--an-primaria);
+    background: rgba(63, 79, 45, 0.18);
+  }
+
+  &.pend { box-shadow: inset 0 -3px 0 #e6a23c; }
+}
+
+.qtd { font-size: 0.8rem; font-weight: 800; color: var(--an-primaria); line-height: 1; }
+
+.mini {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 0.6rem;
+  line-height: 1;
+  margin-top: 1px;
+
+  .ok { color: #3f4f2d; }
+  .prog { color: #6b7280; }
+  .pendb { color: #b3261e; font-weight: 700; }
+}
+
+.cal-legenda {
+  margin: 0.5rem 0 0;
+  font-size: 0.7rem;
+  color: var(--an-texto-secundario);
+}
+
+/* Filtros */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.filtros mat-form-field { flex: 1 1 150px; margin-bottom: -1.1em; }
+.f-data { flex: 0 0 150px; }
+
+.atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0.75rem;
+
+  .ativo { background: rgba(63, 79, 45, 0.16); color: var(--an-primaria); }
+  .limpar { color: var(--an-texto-secundario); }
+}
+
+/* Tabela */
+.tabela-card {
+  background: var(--an-superficie);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
+}
+
+.tabela { width: 100%; background: var(--an-superficie); }
+
+th.mat-mdc-header-cell {
+  font-weight: 700;
+  color: var(--an-texto-secundario);
+  background: var(--an-fundo);
+}
+
+.cel-data { font-weight: 700; color: var(--an-primaria); font-variant-numeric: tabular-nums; }
+.cel-nome { font-weight: 600; color: var(--an-texto-titulo); }
+.t-center { text-align: center !important; }
+.t-right { text-align: right !important; font-variant-numeric: tabular-nums; }
+
+.linha { cursor: pointer; }
+.linha:hover { background: rgba(168, 177, 126, 0.12); }
+
+.chip {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+}
+
+.st-prog { background: rgba(63, 79, 45, 0.12); color: var(--an-primaria); }
+.st-ok { background: rgba(63, 79, 45, 0.16); color: var(--an-primaria); }
+.st-rota { background: #e8eef7; color: #2a5599; }
+.st-erro { background: #fbeceb; color: #b3261e; }
+.st-aviso { background: #fdf4e3; color: #8c6b3f; }
+.st-cancel { background: var(--an-fundo-secundario); color: var(--an-texto-secundario); }
+
+.sem-dados td {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--an-texto-secundario);
+}
