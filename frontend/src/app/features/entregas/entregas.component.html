@@ -126,58 +126,125 @@
       </div>
     </div>
 
-    <div class="tabela-card">
-      <table mat-table [dataSource]="lista" class="tabela">
-        <ng-container matColumnDef="cliente">
-          <th mat-header-cell *matHeaderCellDef>Cliente</th>
-          <td mat-cell *matCellDef="let e" class="cel-nome">
-            {{ e.clienteNome }}
-            @if (e.foraDaRota) {
-              <span class="badge-fora" matTooltip="Ainda não incluída em uma rota planejada">
-                <mat-icon>alt_route</mat-icon> Fora da rota
-              </span>
-            }
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="pets">
-          <th mat-header-cell *matHeaderCellDef>Pets</th>
-          <td mat-cell *matCellDef="let e">{{ e.pets.length ? e.pets.join(', ') : '—' }}</td>
-        </ng-container>
-        <ng-container matColumnDef="endereco">
-          <th mat-header-cell *matHeaderCellDef>Endereço</th>
-          <td mat-cell *matCellDef="let e" class="cel-endereco">{{ enderecoResumo(e) }}</td>
-        </ng-container>
-        <ng-container matColumnDef="bairro">
-          <th mat-header-cell *matHeaderCellDef>Bairro</th>
-          <td mat-cell *matCellDef="let e">{{ e.bairro || '—' }}</td>
-        </ng-container>
-        <ng-container matColumnDef="cidade">
-          <th mat-header-cell *matHeaderCellDef>Cidade</th>
-          <td mat-cell *matCellDef="let e">{{ e.cidade || '—' }}</td>
-        </ng-container>
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef class="t-center">Status</th>
-          <td mat-cell *matCellDef="let e" class="t-center">
-            <span class="chip" [class]="classeStatus(e.status)">{{ labelStatus(e.status) }}</span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="acoes">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let e" class="t-acoes">
-            <button mat-icon-button (click)="abrir(e); $event.stopPropagation()" matTooltip="Abrir detalhe">
-              <mat-icon>chevron_right</mat-icon>
-            </button>
-          </td>
-        </ng-container>
+    @if (carregandoOperacional()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns" class="linha" (click)="abrir(row)"></tr>
-        <tr class="sem-dados" *matNoDataRow>
-          <td [attr.colspan]="displayedColumns.length">
-            {{ diaSelecionado ? 'Nenhuma entrega neste dia (ou filtro).' : 'Selecione um dia no calendário.' }}
-          </td>
-        </tr>
-      </table>
+    <!-- Linhas-card das entregas do dia -->
+    <div class="lista-dia">
+      @for (e of lista; track e.id) {
+        <article class="entrega-card" (click)="abrir(e)">
+          <header class="ec-head">
+            <div class="ec-cliente">
+              <span class="ec-nome">{{ e.clienteNome }}</span>
+              @if (e.foraDaRota) {
+                <span class="badge-fora" matTooltip="Ainda não incluída em uma rota planejada">
+                  <mat-icon>alt_route</mat-icon> Fora da rota
+                </span>
+              }
+            </div>
+            <div class="ec-head-dir">
+              <span class="chip" [class]="classeStatus(e.status)">{{ labelStatus(e.status) }}</span>
+              <mat-icon class="ec-chevron">chevron_right</mat-icon>
+            </div>
+          </header>
+
+          <div class="ec-sub">
+            <span class="ec-meta"><mat-icon>pets</mat-icon>{{ e.pets.length ? e.pets.join(', ') : '—' }}</span>
+            <span class="ec-meta"><mat-icon>place</mat-icon>{{ enderecoResumo(e) }}</span>
+            <span class="ec-meta"><mat-icon>map</mat-icon>{{ e.bairro || '—' }}{{ e.cidade ? ' · ' + e.cidade : '' }}</span>
+          </div>
+
+          @if (e.operacional; as op) {
+            <div class="ec-op">
+              @if (op.casa.length) {
+                <div class="op-bloco">
+                  <h4 class="op-titulo casa"><mat-icon>soup_kitchen</mat-icon> Receitas da Casa</h4>
+                  <ul class="op-itens">
+                    @for (c of op.casa; track $index) {
+                      <li [class.atencao]="c.pacotes > c.estoqueDisponivel">
+                        <span class="op-rec">{{ c.receitaNome }}</span>
+                        <span class="op-qtd">{{ c.pacotes }} {{ c.pacotes === 1 ? 'pacote' : 'pacotes' }} de {{ fmtPeso(c.tamanhoGramas) }}</span>
+                        <span class="op-estoque">estoque: {{ c.estoqueDisponivel }}</span>
+                        @if (c.pacotes > c.estoqueDisponivel) {
+                          <span class="op-falta"><mat-icon>warning</mat-icon> faltam {{ c.pacotes - c.estoqueDisponivel }}</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+              @if (op.personalizadas.length) {
+                <div class="op-bloco">
+                  <h4 class="op-titulo pers"><mat-icon>restaurant</mat-icon> Personalizadas</h4>
+                  <ul class="op-itens">
+                    @for (p of op.personalizadas; track $index) {
+                      <li>
+                        <span class="op-rec">{{ p.petNome }} · {{ p.receitaCodigo }}</span>
+                        <span class="op-qtd">{{ p.pacotes }} {{ p.pacotes === 1 ? 'pacote' : 'pacotes' }} de {{ fmtPeso(p.tamanhoGramas) }}</span>
+                        <span class="op-prontidao" [class.pronta]="p.pronta" [class.naopronta]="!p.pronta">
+                          <mat-icon>{{ p.pronta ? 'check_circle' : 'schedule' }}</mat-icon>
+                          {{ p.pronta ? 'Pronta' : 'Não pronta' }}
+                        </span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="sem-dados-card">
+          {{ diaSelecionado ? 'Nenhuma entrega neste dia (ou filtro).' : 'Selecione um dia no calendário.' }}
+        </div>
+      }
     </div>
+
+    <!-- Resumo do dia — Receitas da Casa -->
+    @if (resumoCasaDia.length) {
+      <section class="resumo-card">
+        <h3 class="resumo-titulo"><mat-icon>inventory_2</mat-icon> Resumo do dia — Receitas da Casa</h3>
+        <ul class="resumo-itens">
+          @for (r of resumoCasaDia; track $index) {
+            <li [class.atencao]="r.falta > 0">
+              <span class="r-rec">{{ r.receitaNome }} {{ fmtPeso(r.tamanhoGramas) }}</span>
+              <span class="r-nec">necessário {{ r.necessario }} pac.</span>
+              <span class="r-est">estoque {{ r.estoque }}</span>
+              @if (r.falta > 0) {
+                <span class="op-falta"><mat-icon>warning</mat-icon> faltam {{ r.falta }}</span>
+              } @else {
+                <span class="op-ok"><mat-icon>check_circle</mat-icon> ok</span>
+              }
+            </li>
+          }
+        </ul>
+        <p class="resumo-nota">* estoque simulado — integração com Estoque em breve</p>
+      </section>
+    }
+
+    <!-- Resumo do dia — Personalizadas -->
+    @if (resumoPersonalizadasDia.total) {
+      <section class="resumo-card">
+        <h3 class="resumo-titulo"><mat-icon>restaurant</mat-icon> Resumo do dia — Personalizadas</h3>
+        <div class="resumo-pers-tot">
+          <span class="pp-total">{{ resumoPersonalizadasDia.total }} {{ resumoPersonalizadasDia.total === 1 ? 'receita personalizada' : 'receitas personalizadas' }}</span>
+          <span class="pp-ok"><mat-icon>check_circle</mat-icon> {{ resumoPersonalizadasDia.prontas }} prontas</span>
+          <span class="pp-no"><mat-icon>schedule</mat-icon> {{ resumoPersonalizadasDia.naoProntas }} não prontas</span>
+        </div>
+        <ul class="resumo-itens">
+          @for (p of resumoPersonalizadasDia.itens; track $index) {
+            <li>
+              <span class="r-rec">{{ p.petNome }} · {{ p.receitaCodigo }}</span>
+              <span class="r-nec">{{ p.pacotes }} pac. de {{ fmtPeso(p.tamanhoGramas) }}</span>
+              <span class="op-prontidao" [class.pronta]="p.pronta" [class.naopronta]="!p.pronta">
+                <mat-icon>{{ p.pronta ? 'check_circle' : 'schedule' }}</mat-icon> {{ p.pronta ? 'Pronta' : 'Não pronta' }}
+              </span>
+            </li>
+          }
+        </ul>
+        <p class="resumo-nota">* prontidão simulada — integração com Produção em breve</p>
+      </section>
+    }
   </section>
 </section>

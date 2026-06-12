@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -10,12 +9,19 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { forkJoin } from 'rxjs';
 import {
   classeStatus,
   enderecoResumo,
   EntregaResumo,
+  fmtPeso,
   gerarEntregasMock,
   labelStatus,
+  operacionalDeDetalhe,
+  ResumoCasaDia,
+  ResumoPersonalizadasDia,
+  resumoCasaDoDia,
+  resumoPersonalizadasDoDia,
   STATUS_ENTREGA,
 } from './entregas.model';
 import { EntregasService } from './entregas.service';
@@ -35,7 +41,6 @@ interface DiaCalendario {
   standalone: true,
   imports: [
     FormsModule,
-    MatTableModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -56,12 +61,14 @@ export class EntregasComponent implements OnInit {
   readonly labelStatus = labelStatus;
   readonly classeStatus = classeStatus;
   readonly enderecoResumo = enderecoResumo;
-  readonly displayedColumns = ['cliente', 'pets', 'endereco', 'bairro', 'cidade', 'status', 'acoes'];
+  readonly fmtPeso = fmtPeso;
   readonly diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   readonly todas = signal<EntregaResumo[]>([]);
   readonly carregando = signal(false);
   readonly gerando = signal(false);
+  // Carregamento sob demanda do resumo operacional (detalhe) das entregas do dia.
+  readonly carregandoOperacional = signal(false);
   // ⚠️ TEMPORÁRIO: indica que a tela está exibindo dados MOCK (não reais).
   readonly usandoMock = signal(false);
 
@@ -92,6 +99,7 @@ export class EntregasComponent implements OnInit {
         if (inicial || !this.diaSelecionado) {
           this.selecionarDiaInicial();
         }
+        this.carregarOperacionalDoDia();
       },
       error: () => {
         this.carregando.set(false);
@@ -245,10 +253,45 @@ export class EntregasComponent implements OnInit {
   selecionarDia(c: DiaCalendario | null): void {
     if (c && c.total > 0) {
       this.diaSelecionado = c.dataIso;
+      this.carregarOperacionalDoDia();
     }
   }
 
   hojeIso = EntregasComponent.iso(new Date());
+
+  // ===== Resumo operacional (Casa / Personalizada) =====
+  /**
+   * Carrega o detalhe das entregas reais do dia selecionado (sob demanda)
+   * para montar o resumo operacional. Mock já traz o operacional embutido.
+   */
+  private carregarOperacionalDoDia(): void {
+    if (this.usandoMock() || !this.diaSelecionado) {
+      return;
+    }
+    const pendentes = this.todas().filter((e) => e.dataPrevista === this.diaSelecionado && !e.operacional);
+    if (!pendentes.length) {
+      return;
+    }
+    this.carregandoOperacional.set(true);
+    forkJoin(pendentes.map((e) => this.service.obter(e.id))).subscribe({
+      next: (detalhes) => {
+        const ops = new Map(detalhes.map((d) => [d.id, operacionalDeDetalhe(d)]));
+        this.todas.update((arr) =>
+          arr.map((e) => (ops.has(e.id) ? { ...e, operacional: ops.get(e.id) } : e)),
+        );
+        this.carregandoOperacional.set(false);
+      },
+      error: () => this.carregandoOperacional.set(false),
+    });
+  }
+
+  get resumoCasaDia(): ResumoCasaDia[] {
+    return resumoCasaDoDia(this.lista);
+  }
+
+  get resumoPersonalizadasDia(): ResumoPersonalizadasDia {
+    return resumoPersonalizadasDoDia(this.lista);
+  }
 
   // ===== Detalhe =====
   abrir(e: EntregaResumo): void {

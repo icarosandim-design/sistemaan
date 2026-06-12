@@ -212,25 +212,214 @@
   .limpar { color: var(--an-texto-secundario); }
 }
 
-.tabela-card {
+/* ===== Linhas-card das entregas do dia ===== */
+.lista-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.entrega-card {
   background: var(--an-superficie);
   border: 1px solid var(--an-fundo-secundario);
-  border-radius: var(--an-raio);
-  margin-top: 0.5rem;
+  border-radius: var(--an-raio-sm, 10px);
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s;
+
+  &:hover {
+    border-color: rgba(168, 177, 126, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
 }
 
-.tabela { width: 100%; background: var(--an-superficie); }
+.ec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
 
-th.mat-mdc-header-cell {
-  font-weight: 700;
+.ec-cliente { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.ec-nome { font-weight: 700; font-size: 1rem; color: var(--an-texto-titulo); }
+
+.ec-head-dir { display: flex; align-items: center; gap: 0.4rem; }
+.ec-chevron { color: var(--an-texto-secundario); }
+
+.ec-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
   color: var(--an-texto-secundario);
-  background: var(--an-fundo);
+
+  .ec-meta { display: inline-flex; align-items: center; gap: 0.25rem; }
+  .mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: var(--an-cta); }
 }
 
-.cel-nome { font-weight: 600; color: var(--an-texto-titulo); }
-.cel-endereco { color: var(--an-texto-secundario); max-width: 240px; }
-.t-center { text-align: center !important; }
-.t-acoes { text-align: right !important; width: 56px; }
+/* Bloco operacional dentro da linha-card */
+.ec-op {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--an-fundo-secundario);
+}
+
+.op-bloco { flex: 1 1 260px; min-width: 240px; }
+
+.op-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 0 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--an-texto-secundario);
+
+  .mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; }
+  &.casa .mat-icon { color: #8c6b3f; }
+  &.pers .mat-icon { color: #2a5599; }
+}
+
+.op-itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.6rem;
+    padding: 0.18rem 0;
+    font-size: 0.88rem;
+
+    &.atencao .op-rec { color: #b3261e; }
+  }
+
+  .op-rec { font-weight: 700; color: var(--an-texto-titulo); }
+  .op-qtd { color: var(--an-texto-secundario); }
+  .op-estoque { color: var(--an-texto-secundario); font-variant-numeric: tabular-nums; }
+}
+
+.op-falta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #b3261e;
+  background: #fbeceb;
+  border-radius: 999px;
+  padding: 0.05rem 0.45rem;
+
+  .mat-icon { font-size: 0.85rem; width: 0.85rem; height: 0.85rem; }
+}
+
+.op-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #3f4f2d;
+
+  .mat-icon { font-size: 0.85rem; width: 0.85rem; height: 0.85rem; }
+}
+
+.op-prontidao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+
+  .mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+  &.pronta { color: #3f4f2d; background: rgba(63, 79, 45, 0.14); }
+  &.naopronta { color: #8c6b3f; background: #fdf4e3; }
+}
+
+.sem-dados-card {
+  background: var(--an-superficie);
+  border: 1px dashed var(--an-fundo-secundario);
+  border-radius: var(--an-raio-sm, 10px);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--an-texto-secundario);
+}
+
+/* ===== Resumos do dia ===== */
+.resumo-card {
+  background: var(--an-fundo);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio-sm, 10px);
+  padding: 0.8rem 0.95rem;
+  margin-top: 0.8rem;
+}
+
+.resumo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--an-texto-titulo);
+
+  .mat-icon { font-size: 1.15rem; width: 1.15rem; height: 1.15rem; color: var(--an-cta); }
+}
+
+.resumo-itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.9rem;
+    padding: 0.22rem 0;
+    border-bottom: 1px dashed var(--an-fundo-secundario);
+    font-size: 0.88rem;
+
+    &:last-child { border-bottom: none; }
+    &.atencao .r-rec { color: #b3261e; }
+  }
+
+  .r-rec { font-weight: 700; color: var(--an-texto-titulo); min-width: 140px; }
+  .r-nec { color: var(--an-texto-secundario); }
+  .r-est { color: var(--an-texto-secundario); font-variant-numeric: tabular-nums; }
+}
+
+.resumo-pers-tot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.88rem;
+
+  .pp-total { font-weight: 700; color: var(--an-texto-titulo); }
+  .pp-ok, .pp-no { display: inline-flex; align-items: center; gap: 0.2rem; font-weight: 700; }
+  .pp-ok { color: #3f4f2d; }
+  .pp-no { color: #8c6b3f; }
+  .mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+}
+
+.resumo-nota {
+  margin: 0.5rem 0 0;
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--an-texto-secundario);
+}
 
 .badge-fora {
   display: inline-flex;
@@ -251,9 +440,6 @@ th.mat-mdc-header-cell {
   .mat-icon { font-size: 0.85rem; width: 0.85rem; height: 0.85rem; }
 }
 
-.linha { cursor: pointer; }
-.linha:hover { background: rgba(168, 177, 126, 0.12); }
-
 .chip {
   font-size: 0.7rem;
   font-weight: 700;
@@ -267,9 +453,3 @@ th.mat-mdc-header-cell {
 .st-erro { background: #fbeceb; color: #b3261e; }
 .st-aviso { background: #fdf4e3; color: #8c6b3f; }
 .st-cancel { background: var(--an-fundo-secundario); color: var(--an-texto-secundario); }
-
-.sem-dados td {
-  padding: 1.5rem;
-  text-align: center;
-  color: var(--an-texto-secundario);
-}
