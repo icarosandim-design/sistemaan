@@ -337,8 +337,14 @@ export class EntregasComponent implements OnInit {
     return this.lista.filter((e) => e.foraDaRota).length;
   }
 
-  get temPendencias(): boolean {
-    return this.lista.some((e) => e.status === 'Programada' || e.status === 'NaoEntregue' || e.status === 'Reagendada');
+  /** Entregas do dia ainda não confirmadas com o cliente. */
+  get naoConfirmadasCount(): number {
+    return this.lista.filter((e) => e.status === 'Programada').length;
+  }
+
+  /** Entregas do dia com alguma receita da casa sem estoque suficiente. */
+  get estoqueInsuficienteCount(): number {
+    return this.lista.filter((e) => prontidaoEntrega(e.operacional).casaFalta > 0).length;
   }
 
   /**
@@ -360,11 +366,6 @@ export class EntregasComponent implements OnInit {
       'OK',
       { duration: 4000 },
     );
-  }
-
-  /** Aplica o atalho de pendências sobre o dia selecionado. */
-  verPendencias(): void {
-    this.atalho = 'naoConfirmadas';
   }
 
   private erro(msg: string): void {

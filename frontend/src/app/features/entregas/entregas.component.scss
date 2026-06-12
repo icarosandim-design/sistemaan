@@ -141,9 +141,12 @@
 }
 
 /* ===== Lista do dia ===== */
+.btn-refresh { color: var(--an-texto-secundario); }
+
+/* Linha 1: título do dia + ação principal */
 .lista-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
@@ -153,47 +156,56 @@
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0.4rem 0.9rem;
+  gap: 0.4rem 0.7rem;
 }
 
 .lista-titulo { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--an-texto-titulo); }
 .lista-contador { font-size: 0.85rem; color: var(--an-texto-secundario); }
 
-.fora-rota-topo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #b45309;
-  background: #fff3e0;
-  border-radius: 999px;
-  padding: 0.1rem 0.6rem;
+.btn-rota {
+  background: var(--an-cta);
+  color: #fff;
+  font-weight: 600;
+  flex: 0 0 auto;
 
-  .mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+  .mat-icon { font-size: 1.15rem; width: 1.15rem; height: 1.15rem; }
 }
 
-.acoes-dia {
+/* Alertas de pendências do dia */
+.pendencias-dia {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-
-  button { font-size: 0.8rem; }
-  .mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
-  .btn-rota { background: var(--an-cta); color: #fff; }
+  margin-top: 0.55rem;
 }
 
-/* ===== Filtros compactos ===== */
+.pend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.12rem 0.6rem;
+
+  .mat-icon { font-size: 0.95rem; width: 0.95rem; height: 0.95rem; }
+  &.aviso { color: #8c6b3f; background: #fdf4e3; }
+  &.rota { color: #b45309; background: #fff3e0; }
+  &.erro { color: #b3261e; background: #fbeceb; }
+}
+
+/* Linha 2: filtros compactos */
 .filtros {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0.5rem 0 0.1rem;
+  gap: 0.45rem;
+  margin: 0.65rem 0 0;
 }
 
 .f-min {
-  flex: 0 1 132px;
+  flex: 1 1 140px;
+  max-width: 180px;
   margin-bottom: -1.25em;
   font-size: 0.85rem;
 
@@ -201,13 +213,15 @@
   ::ng-deep .mat-mdc-text-field-wrapper { height: 40px; }
 }
 
+/* Linha 3: chips rápidos */
 .atalhos {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem;
+  margin-top: 0.5rem;
 
-  button { font-size: 0.78rem; line-height: 30px; min-height: 30px; padding: 0 0.6rem; }
+  button { font-size: 0.78rem; line-height: 30px; min-height: 30px; padding: 0 0.7rem; border-radius: 999px; }
   .ativo { background: rgba(63, 79, 45, 0.16); color: var(--an-primaria); }
   .limpar { color: var(--an-texto-secundario); }
 }

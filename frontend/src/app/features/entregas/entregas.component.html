@@ -4,9 +4,9 @@
       <h1>Entregas</h1>
       <p class="subtitulo">Selecione um dia no calendário para ver as entregas.</p>
     </div>
-    <button mat-stroked-button [disabled]="gerando()" (click)="gerar()" matTooltip="Gera/atualiza entregas dos próximos 45 dias (manutenção)">
-      <mat-icon>autorenew</mat-icon>
-      {{ gerando() ? 'Gerando…' : 'Gerar entregas' }}
+    <!-- Atualização é automática; refresh apenas discreto para recarregar a lista -->
+    <button mat-icon-button class="btn-refresh" [disabled]="carregando()" (click)="carregar()" matTooltip="Recarregar lista">
+      <mat-icon>refresh</mat-icon>
     </button>
   </header>
 
@@ -62,33 +62,40 @@
 
   <!-- Lista do dia -->
   <section class="lista-secao">
+    <!-- Linha 1: título do dia + ação principal -->
     <div class="lista-head">
       <div class="lista-head-info">
         <h2 class="lista-titulo">{{ tituloLista }}</h2>
-        <span class="lista-contador">{{ lista.length }} entrega(s)</span>
-        @if (foraDaRotaCount > 0) {
-          <span class="fora-rota-topo">
-            <mat-icon>alt_route</mat-icon>
-            {{ foraDaRotaCount }} {{ foraDaRotaCount === 1 ? 'entrega fora da rota planejada' : 'entregas fora da rota planejada' }}
+        <span class="lista-contador">{{ lista.length }} {{ lista.length === 1 ? 'entrega' : 'entregas' }}</span>
+      </div>
+      <button mat-flat-button class="btn-rota" [disabled]="!diaSelecionado || lista.length === 0" (click)="planejarRota()"
+              matTooltip="Monta a rota das entregas do dia selecionado (Módulo de Rotas em breve)">
+        <mat-icon>route</mat-icon> Planejar rota do dia
+      </button>
+    </div>
+
+    <!-- Alertas de pendências do dia (sem botão) -->
+    @if (diaSelecionado && (naoConfirmadasCount || foraDaRotaCount || estoqueInsuficienteCount)) {
+      <div class="pendencias-dia">
+        @if (naoConfirmadasCount) {
+          <span class="pend-chip aviso"><mat-icon>schedule</mat-icon>
+            {{ naoConfirmadasCount }} {{ naoConfirmadasCount === 1 ? 'entrega não confirmada' : 'entregas não confirmadas' }}
+          </span>
+        }
+        @if (foraDaRotaCount) {
+          <span class="pend-chip rota"><mat-icon>alt_route</mat-icon>
+            {{ foraDaRotaCount }} {{ foraDaRotaCount === 1 ? 'entrega não roteirizada' : 'entregas não roteirizadas' }}
+          </span>
+        }
+        @if (estoqueInsuficienteCount) {
+          <span class="pend-chip erro"><mat-icon>warning</mat-icon>
+            {{ estoqueInsuficienteCount }} {{ estoqueInsuficienteCount === 1 ? 'entrega com estoque insuficiente' : 'entregas com estoque insuficiente' }}
           </span>
         }
       </div>
+    }
 
-      <!-- Área de ações do dia -->
-      <div class="acoes-dia">
-        <button mat-flat-button class="btn-rota" [disabled]="!diaSelecionado || lista.length === 0" (click)="planejarRota()"
-                matTooltip="Monta a rota das entregas do dia selecionado (Módulo de Rotas em breve)">
-          <mat-icon>route</mat-icon> Planejar rota do dia
-        </button>
-        <button mat-stroked-button [disabled]="carregando()" (click)="carregar()" matTooltip="Recarrega as entregas">
-          <mat-icon>refresh</mat-icon> Atualizar entregas
-        </button>
-        <button mat-stroked-button [disabled]="!temPendencias" (click)="verPendencias()" matTooltip="Filtra as entregas pendentes do dia">
-          <mat-icon>pending_actions</mat-icon> Ver pendências
-        </button>
-      </div>
-    </div>
-
+    <!-- Linha 2: filtros compactos -->
     <div class="filtros">
       <mat-form-field appearance="outline" class="f-min">
         <mat-label>Status</mat-label>
@@ -115,15 +122,16 @@
         <mat-label>Cidade</mat-label>
         <input matInput [(ngModel)]="filtroCidade" />
       </mat-form-field>
+    </div>
 
-      <div class="atalhos">
-        <button mat-stroked-button [class.ativo]="atalho === 'naoConfirmadas'" (click)="alternarAtalho('naoConfirmadas')">Não confirmadas</button>
-        <button mat-stroked-button [class.ativo]="atalho === 'reagendadas'" (click)="alternarAtalho('reagendadas')">Reagendadas</button>
-        <button mat-stroked-button [class.ativo]="atalho === 'naoEntregues'" (click)="alternarAtalho('naoEntregues')">Não entregues</button>
-        @if (temFiltro) {
-          <button mat-button class="limpar" (click)="limparFiltros()"><mat-icon>close</mat-icon> Limpar</button>
-        }
-      </div>
+    <!-- Linha 3: chips rápidos -->
+    <div class="atalhos">
+      <button mat-stroked-button [class.ativo]="atalho === 'naoConfirmadas'" (click)="alternarAtalho('naoConfirmadas')">Não confirmadas</button>
+      <button mat-stroked-button [class.ativo]="atalho === 'reagendadas'" (click)="alternarAtalho('reagendadas')">Reagendadas</button>
+      <button mat-stroked-button [class.ativo]="atalho === 'naoEntregues'" (click)="alternarAtalho('naoEntregues')">Não entregues</button>
+      @if (temFiltro) {
+        <button mat-button class="limpar" (click)="limparFiltros()"><mat-icon>close</mat-icon> Limpar</button>
+      }
     </div>
 
     @if (carregandoOperacional()) {
