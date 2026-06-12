@@ -3,10 +3,10 @@
 <mat-dialog-content>
   <p class="aviso">
     <mat-icon>info</mat-icon>
-    Tela de validação (mock) · plano não é salvo · os tamanhos de pacote vêm do cadastro real.
+    Plano vinculado ao pet · dados reais (frequências, receitas, ingredientes e tamanhos de pacote).
   </p>
 
-  @if (carregandoTamanhos) {
+  @if (carregando) {
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   }
 
@@ -280,8 +280,8 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="fechar()">Fechar</button>
-  <button mat-flat-button class="btn-cta" disabled matTooltip="Disponível quando o backend do Plano for criado">
-    Salvar plano (em breve)
+  <button mat-button (click)="fechar()" [disabled]="salvando">Cancelar</button>
+  <button mat-flat-button class="btn-cta" (click)="salvar()" [disabled]="carregando || salvando">
+    {{ salvando ? 'Salvando…' : 'Salvar plano' }}
   </button>
 </mat-dialog-actions>
