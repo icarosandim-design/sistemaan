@@ -99,10 +99,19 @@
 
   <!-- 5. Ações -->
   <mat-dialog-actions class="acoes">
+    @if (podeFluxo && bloqueadoPorPendencia) {
+      <p class="aviso-bloqueio">
+        <mat-icon>block</mat-icon>
+        Não é possível avançar o status: há pendências de preparo/estoque.
+        Use “Alterar data”, “Não entregue” ou “Cancelar” se necessário.
+      </p>
+    }
     <div class="acoes-esq">
       @if (podeFluxo) {
         @if (proximoStatus(); as prox) {
-          <button mat-flat-button class="btn-cta" [disabled]="salvando()" (click)="avancar(prox.status)">
+          <button mat-flat-button class="btn-cta" [disabled]="salvando() || bloqueadoPorPendencia"
+                  [matTooltip]="bloqueadoPorPendencia ? 'Resolva as pendências de preparo/estoque para avançar' : ''"
+                  (click)="avancar(prox.status)">
             <mat-icon>arrow_forward</mat-icon> {{ prox.label }}
           </button>
         }

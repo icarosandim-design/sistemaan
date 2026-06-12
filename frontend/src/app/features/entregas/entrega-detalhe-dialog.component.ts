@@ -13,6 +13,9 @@ import {
   fmtPeso,
   labelStatus,
   MOTIVOS_NAO_ENTREGA,
+  operacionalDeDetalhe,
+  ProntidaoEntrega,
+  prontidaoEntrega,
 } from './entregas.model';
 import { EntregasService } from './entregas.service';
 import { MotivoDialogComponent } from './motivo-dialog.component';
@@ -67,6 +70,18 @@ export class EntregaDetalheDialogComponent {
     return s !== 'Entregue' && s !== 'Cancelada' && s !== 'Reagendada';
   }
 
+  /** Prontidão consolidada (estoque da Casa + prontidão das Personalizadas). */
+  prontidao(): ProntidaoEntrega {
+    const d = this.detalhe();
+    return prontidaoEntrega(d ? operacionalDeDetalhe(d) : undefined);
+  }
+
+  /** Bloqueia o avanço de status enquanto houver pendência (não pronta / sem estoque). */
+  get bloqueadoPorPendencia(): boolean {
+    const p = this.prontidao();
+    return p.temConteudo && !p.tudoPronto;
+  }
+
   proximoStatus(): { status: string; label: string } | null {
     switch (this.detalhe()?.status) {
       case 'Programada':
@@ -81,6 +96,10 @@ export class EntregaDetalheDialogComponent {
   }
 
   avancar(status: string): void {
+    if (this.bloqueadoPorPendencia) {
+      this.snack.open('Resolva as pendências (produção/estoque) antes de avançar o status.', 'OK', { duration: 4000 });
+      return;
+    }
     this.executar(this.service.mudarStatus(this.data.id, status));
   }
 
