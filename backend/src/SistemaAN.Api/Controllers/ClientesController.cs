@@ -36,11 +36,19 @@ public sealed class ClientesController : ControllerBase
     public async Task<ActionResult<ClienteDto>> Atualizar(long id, SalvarClienteRequest request, CancellationToken ct)
         => Ok(await _service.AtualizarAsync(id, request, ct));
 
-    /// <summary>Ativa/inativa um cliente.</summary>
-    [HttpPut("{id:long}/status")]
-    public async Task<IActionResult> AlternarStatus(long id, AlternarStatusClienteRequest request, CancellationToken ct)
+    /// <summary>Cancela o cliente/assinatura, registrando o motivo.</summary>
+    [HttpPut("{id:long}/cancelar")]
+    public async Task<IActionResult> Cancelar(long id, CancelarClienteRequest request, CancellationToken ct)
     {
-        await _service.AlternarStatusAsync(id, request.Ativo, ct);
+        await _service.CancelarAsync(id, request.Motivo, ct);
+        return NoContent();
+    }
+
+    /// <summary>Reativa um cliente cancelado.</summary>
+    [HttpPut("{id:long}/reativar")]
+    public async Task<IActionResult> Reativar(long id, CancellationToken ct)
+    {
+        await _service.ReativarAsync(id, ct);
         return NoContent();
     }
 }

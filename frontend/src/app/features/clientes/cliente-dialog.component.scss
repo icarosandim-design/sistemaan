@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 0.25rem;
   padding-top: 1rem;
-  min-width: 520px;
+  min-width: 560px;
 }
 
 .full {
@@ -19,6 +19,35 @@
   }
 }
 
+.f-nome {
+  flex: 2;
+}
+
+.f-rua {
+  flex: 3;
+}
+
+.f-num {
+  flex: 1;
+}
+
+.f-cep {
+  flex: 1;
+}
+
+.f-uf {
+  flex: 0 0 90px;
+}
+
+.secao {
+  margin: 0.25rem 0 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--an-texto-secundario);
+}
+
 .btn-cta {
   background: var(--an-cta);
   color: #fff;
@@ -28,7 +57,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .aba {
     min-width: auto;
   }
@@ -36,5 +65,9 @@
   .linha {
     flex-direction: column;
     gap: 0.25rem;
+  }
+
+  .f-uf {
+    flex: 1;
   }
 }

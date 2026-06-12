@@ -10,5 +10,7 @@ public interface IClienteService
 
     Task<ClienteDto> AtualizarAsync(long id, SalvarClienteRequest request, CancellationToken cancellationToken = default);
 
-    Task AlternarStatusAsync(long id, bool ativo, CancellationToken cancellationToken = default);
+    Task CancelarAsync(long id, string motivo, CancellationToken cancellationToken = default);
+
+    Task ReativarAsync(long id, CancellationToken cancellationToken = default);
 }

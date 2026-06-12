@@ -21,7 +21,11 @@ export class ClientesService {
     return this.http.put<Cliente>(`${this.base}/${id}`, req);
   }
 
-  alternarStatus(id: number, ativo: boolean): Observable<void> {
-    return this.http.put<void>(`${this.base}/${id}/status`, { ativo });
+  cancelar(id: number, motivo: string): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}/cancelar`, { motivo });
+  }
+
+  reativar(id: number): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}/reativar`, {});
   }
 }

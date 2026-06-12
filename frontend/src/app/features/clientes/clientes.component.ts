@@ -14,12 +14,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   Cliente,
+  fmtCpf,
   labelStatusFinanceiro,
   labelTipo,
   SalvarClienteRequest,
 } from './clientes.model';
 import { ClientesService } from './clientes.service';
 import { ClienteDialogComponent } from './cliente-dialog.component';
+import { CancelarDialogComponent } from './cancelar-dialog.component';
 
 @Component({
   selector: 'app-clientes',
@@ -44,10 +46,11 @@ export class ClientesComponent implements OnInit, AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['nome', 'telefone', 'cidade', 'tipo', 'financeiro', 'ativo', 'acoes'];
+  readonly displayedColumns = ['nome', 'cpf', 'telefone', 'cidade', 'tipo', 'financeiro', 'situacao', 'acoes'];
   readonly dataSource = new MatTableDataSource<Cliente>([]);
   readonly labelTipo = labelTipo;
   readonly labelStatusFinanceiro = labelStatusFinanceiro;
+  readonly fmtCpf = fmtCpf;
 
   carregando = false;
   filtroTexto = '';
@@ -61,19 +64,12 @@ export class ClientesComponent implements OnInit, AfterViewInit {
         return true;
       }
       const f = JSON.parse(filter);
-      const texto = `${d.nome} ${d.telefone ?? ''} ${d.email ?? ''} ${d.cidade ?? ''}`.toLowerCase();
+      const texto = `${d.nome} ${d.cpf ?? ''} ${d.telefone ?? ''} ${d.email ?? ''} ${d.cidade ?? ''}`.toLowerCase();
       const textoOk = !f.texto || texto.includes(f.texto);
       const statusOk = !f.status || (f.status === 'ativo' ? d.ativo : !d.ativo);
       return textoOk && statusOk;
     };
-    this.dataSource.sortingDataAccessor = (item, prop) => {
-      switch (prop) {
-        case 'cidade':
-          return item.cidade ?? '';
-        default:
-          return item.nome;
-      }
-    };
+    this.dataSource.sortingDataAccessor = (item, prop) => (prop === 'cidade' ? item.cidade ?? '' : item.nome);
   }
 
   ngOnInit(): void {
@@ -123,25 +119,47 @@ export class ClientesComponent implements OnInit, AfterViewInit {
     this.abrir(c);
   }
 
-  alternarStatus(c: Cliente, ev: Event): void {
+  cancelar(c: Cliente, ev: Event): void {
     ev.stopPropagation();
-    this.service.alternarStatus(c.id, !c.ativo).subscribe({
-      next: () => {
-        this.snack.open(c.ativo ? 'Cliente inativado.' : 'Cliente ativado.', 'OK', { duration: 2500 });
-        this.carregar();
-      },
-      error: () => this.erro('Não foi possível alterar o status.'),
+    const ref = this.dialog.open(CancelarDialogComponent, {
+      data: { nome: c.nome },
+      width: '460px',
+      maxWidth: '95vw',
+      autoFocus: false,
+    });
+    ref.afterClosed().subscribe((motivo: string | undefined) => {
+      if (!motivo) {
+        return;
+      }
+      this.service.cancelar(c.id, motivo).subscribe({
+        next: () => {
+          this.snack.open('Cliente cancelado.', 'OK', { duration: 2500 });
+          this.carregar();
+        },
+        error: (e: HttpErrorResponse) => this.erro(this.mensagemErro(e)),
+      });
     });
   }
 
-  statusClasse(c: Cliente): string {
+  reativar(c: Cliente, ev: Event): void {
+    ev.stopPropagation();
+    this.service.reativar(c.id).subscribe({
+      next: () => {
+        this.snack.open('Cliente reativado.', 'OK', { duration: 2500 });
+        this.carregar();
+      },
+      error: () => this.erro('Não foi possível reativar o cliente.'),
+    });
+  }
+
+  statusFinClasse(c: Cliente): string {
     return c.statusFinanceiro === 'EmDia' ? 'fin-ok' : c.statusFinanceiro === 'Pendente' ? 'fin-pend' : 'fin-inad';
   }
 
   private abrir(c: Cliente | null): void {
     const ref = this.dialog.open(ClienteDialogComponent, {
       data: { cliente: c },
-      width: '620px',
+      width: '680px',
       maxWidth: '96vw',
       autoFocus: false,
     });
@@ -168,7 +186,7 @@ export class ClientesComponent implements OnInit, AfterViewInit {
         return primeira;
       }
     }
-    return e.error?.detail ?? 'Não foi possível salvar o cliente.';
+    return e.error?.detail ?? 'Não foi possível concluir a operação.';
   }
 
   private erro(msg: string): void {

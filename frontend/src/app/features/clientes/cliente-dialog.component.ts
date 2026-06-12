@@ -5,17 +5,18 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
   Cliente,
   FormaPagamento,
   FORMAS_PAGAMENTO,
+  ORIGENS_VENDA,
   SalvarClienteRequest,
   STATUS_FINANCEIRO,
   StatusFinanceiro,
   TipoCliente,
   TIPOS_CLIENTE,
+  UFS,
 } from './clientes.model';
 
 export interface ClienteDialogData {
@@ -32,7 +33,6 @@ export interface ClienteDialogData {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatSlideToggleModule,
     MatTabsModule,
   ],
   templateUrl: './cliente-dialog.component.html',
@@ -44,17 +44,24 @@ export class ClienteDialogComponent {
   readonly tipos = TIPOS_CLIENTE;
   readonly formas = FORMAS_PAGAMENTO;
   readonly statusFin = STATUS_FINANCEIRO;
+  readonly origens = ORIGENS_VENDA;
+  readonly ufs = UFS;
   readonly edicao: boolean;
 
   readonly form = this.fb.nonNullable.group({
     nome: ['', [Validators.required]],
+    cpf: [''],
     telefone: [''],
     email: ['', [Validators.email]],
-    endereco: [''],
+    origemVenda: ['' as string | null],
+    rua: [''],
+    numero: [''],
+    complemento: [''],
+    cep: [''],
     bairro: [''],
     cidade: [''],
+    estado: ['' as string | null],
     observacoes: [''],
-    ativo: [true],
     tipoCliente: ['Assinante' as TipoCliente],
     formaPagamento: ['Pix' as FormaPagamento | null],
     diaCobranca: [null as number | null, [Validators.min(1), Validators.max(31)]],
@@ -72,13 +79,18 @@ export class ClienteDialogComponent {
       const c = data.cliente;
       this.form.patchValue({
         nome: c.nome,
+        cpf: c.cpf ?? '',
         telefone: c.telefone ?? '',
         email: c.email ?? '',
-        endereco: c.endereco ?? '',
+        origemVenda: c.origemVenda ?? null,
+        rua: c.rua ?? '',
+        numero: c.numero ?? '',
+        complemento: c.complemento ?? '',
+        cep: c.cep ?? '',
         bairro: c.bairro ?? '',
         cidade: c.cidade ?? '',
+        estado: c.estado ?? null,
         observacoes: c.observacoes ?? '',
-        ativo: c.ativo,
         tipoCliente: c.tipoCliente,
         formaPagamento: c.formaPagamento ?? null,
         diaCobranca: c.diaCobranca ?? null,
@@ -95,21 +107,27 @@ export class ClienteDialogComponent {
       return;
     }
     const v = this.form.getRawValue();
+    const txt = (s: string) => (s.trim() ? s.trim() : null);
     const req: SalvarClienteRequest = {
       nome: v.nome.trim(),
-      telefone: v.telefone.trim() || null,
-      email: v.email.trim() || null,
-      endereco: v.endereco.trim() || null,
-      bairro: v.bairro.trim() || null,
-      cidade: v.cidade.trim() || null,
-      observacoes: v.observacoes.trim() || null,
-      ativo: v.ativo,
+      cpf: txt(v.cpf),
+      telefone: txt(v.telefone),
+      email: txt(v.email),
+      origemVenda: v.origemVenda || null,
+      observacoes: txt(v.observacoes),
+      rua: txt(v.rua),
+      numero: txt(v.numero),
+      complemento: txt(v.complemento),
+      cep: txt(v.cep),
+      bairro: txt(v.bairro),
+      cidade: txt(v.cidade),
+      estado: v.estado || null,
       tipoCliente: v.tipoCliente,
       formaPagamento: v.formaPagamento || null,
       diaCobranca: v.diaCobranca ?? null,
       valorRecorrenteMensal: Number(v.valorRecorrenteMensal) || 0,
       statusFinanceiro: v.statusFinanceiro,
-      observacoesFinanceiras: v.observacoesFinanceiras.trim() || null,
+      observacoesFinanceiras: txt(v.observacoesFinanceiras),
     };
     this.ref.close(req);
   }

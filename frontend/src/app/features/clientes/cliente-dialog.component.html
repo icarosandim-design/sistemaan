@@ -6,13 +6,19 @@
       <!-- Dados cadastrais -->
       <mat-tab label="Dados">
         <div class="aba">
-          <mat-form-field appearance="outline" class="full">
-            <mat-label>Nome</mat-label>
-            <input matInput formControlName="nome" />
-            @if (form.controls.nome.hasError('required')) {
-              <mat-error>Informe o nome.</mat-error>
-            }
-          </mat-form-field>
+          <div class="linha">
+            <mat-form-field appearance="outline" class="f-nome">
+              <mat-label>Nome</mat-label>
+              <input matInput formControlName="nome" />
+              @if (form.controls.nome.hasError('required')) {
+                <mat-error>Informe o nome.</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>CPF</mat-label>
+              <input matInput formControlName="cpf" placeholder="000.000.000-00" />
+            </mat-form-field>
+          </div>
 
           <div class="linha">
             <mat-form-field appearance="outline">
@@ -26,13 +32,38 @@
                 <mat-error>E-mail inválido.</mat-error>
               }
             </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Origem da venda</mat-label>
+              <mat-select formControlName="origemVenda">
+                <mat-option [value]="null">—</mat-option>
+                @for (o of origens; track o) {
+                  <mat-option [value]="o">{{ o }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
 
-          <mat-form-field appearance="outline" class="full">
-            <mat-label>Endereço</mat-label>
-            <input matInput formControlName="endereco" />
-          </mat-form-field>
-
+          <h3 class="secao">Endereço</h3>
+          <div class="linha">
+            <mat-form-field appearance="outline" class="f-rua">
+              <mat-label>Rua</mat-label>
+              <input matInput formControlName="rua" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="f-num">
+              <mat-label>Número</mat-label>
+              <input matInput formControlName="numero" />
+            </mat-form-field>
+          </div>
+          <div class="linha">
+            <mat-form-field appearance="outline">
+              <mat-label>Complemento</mat-label>
+              <input matInput formControlName="complemento" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="f-cep">
+              <mat-label>CEP</mat-label>
+              <input matInput formControlName="cep" placeholder="00000-000" />
+            </mat-form-field>
+          </div>
           <div class="linha">
             <mat-form-field appearance="outline">
               <mat-label>Bairro</mat-label>
@@ -42,14 +73,21 @@
               <mat-label>Cidade</mat-label>
               <input matInput formControlName="cidade" />
             </mat-form-field>
+            <mat-form-field appearance="outline" class="f-uf">
+              <mat-label>UF</mat-label>
+              <mat-select formControlName="estado">
+                <mat-option [value]="null">—</mat-option>
+                @for (uf of ufs; track uf) {
+                  <mat-option [value]="uf">{{ uf }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
 
           <mat-form-field appearance="outline" class="full">
             <mat-label>Observações</mat-label>
             <textarea matInput rows="2" formControlName="observacoes"></textarea>
           </mat-form-field>
-
-          <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>
         </div>
       </mat-tab>
 
@@ -89,16 +127,15 @@
               <span matTextPrefix>R$&nbsp;</span>
               <input matInput type="number" step="0.01" formControlName="valorRecorrenteMensal" />
             </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Status financeiro</mat-label>
+              <mat-select formControlName="statusFinanceiro">
+                @for (s of statusFin; track s.valor) {
+                  <mat-option [value]="s.valor">{{ s.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
-
-          <mat-form-field appearance="outline" class="full">
-            <mat-label>Status financeiro</mat-label>
-            <mat-select formControlName="statusFinanceiro">
-              @for (s of statusFin; track s.valor) {
-                <mat-option [value]="s.valor">{{ s.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
 
           <mat-form-field appearance="outline" class="full">
             <mat-label>Observações financeiras</mat-label>
