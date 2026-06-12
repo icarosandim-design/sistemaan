@@ -76,6 +76,28 @@ export interface ResumoPersonalizadasDia {
   itens: ItemPersonalizadaOperacional[];
 }
 
+/** Prontidão consolidada de uma entrega (para o cartão minimizado). */
+export interface ProntidaoEntrega {
+  temConteudo: boolean;
+  tudoPronto: boolean;
+  casaFalta: number; // receitas da casa sem estoque suficiente
+  persNaoProntas: number; // personalizadas ainda não prontas
+}
+
+/** Avalia se a entrega está pronta para separar (estoque + prontidão). */
+export function prontidaoEntrega(op?: ResumoOperacional): ProntidaoEntrega {
+  const casa = op?.casa ?? [];
+  const pers = op?.personalizadas ?? [];
+  const casaFalta = casa.filter((c) => c.pacotes > c.estoqueDisponivel).length;
+  const persNaoProntas = pers.filter((p) => !p.pronta).length;
+  return {
+    temConteudo: casa.length > 0 || pers.length > 0,
+    tudoPronto: casaFalta === 0 && persNaoProntas === 0,
+    casaFalta,
+    persNaoProntas,
+  };
+}
+
 /**
  * Endereço resumido para a lista do dia, SEM estado.
  * Ex.: "Morro Dois Irmãos, 139 — casa"

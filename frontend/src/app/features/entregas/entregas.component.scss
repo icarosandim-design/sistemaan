@@ -225,10 +225,10 @@
   border: 1px solid var(--an-fundo-secundario);
   border-radius: var(--an-raio-sm, 10px);
   padding: 0.7rem 0.9rem;
-  cursor: pointer;
   transition: border-color 0.12s, box-shadow 0.12s;
 
-  &:hover {
+  &:hover { border-color: rgba(168, 177, 126, 0.6); }
+  &.expandida {
     border-color: rgba(168, 177, 126, 0.6);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
@@ -237,15 +237,54 @@
 .ec-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
-.ec-cliente { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.ec-toggle { color: var(--an-texto-secundario); flex: 0 0 auto; }
+
+.ec-cliente { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 .ec-nome { font-weight: 700; font-size: 1rem; color: var(--an-texto-titulo); }
 
-.ec-head-dir { display: flex; align-items: center; gap: 0.4rem; }
-.ec-chevron { color: var(--an-texto-secundario); }
+.ec-head-dir { display: flex; align-items: center; gap: 0.4rem; flex: 0 0 auto; }
+
+/* Chip de prontidão consolidada no cabeçalho */
+.chip-pronto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+
+  .mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+  &.ok { color: #3f4f2d; background: rgba(63, 79, 45, 0.14); }
+  &.pend { color: #b45309; background: #fff3e0; }
+}
+
+/* Resumo de prontidão quando minimizado */
+.ec-prontidao {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+
+  .pr-ok, .pr-pend { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .pr-ok { color: #3f4f2d; font-weight: 600; }
+  .pr-pend { color: #b45309; font-weight: 600; }
+  .pr-sep { color: var(--an-texto-secundario); }
+  strong { font-weight: 800; }
+  .mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; }
+}
+
+/* Ações do cartão expandido */
+.ec-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.6rem;
+
+  button { font-size: 0.8rem; }
+  .mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; }
+}
 
 .ec-sub {
   display: flex;

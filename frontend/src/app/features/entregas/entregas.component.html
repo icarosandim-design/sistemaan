@@ -130,11 +130,14 @@
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     }
 
-    <!-- Linhas-card das entregas do dia -->
+    <!-- Linhas-card das entregas do dia (minimizadas por padrão) -->
     <div class="lista-dia">
       @for (e of lista; track e.id) {
-        <article class="entrega-card" (click)="abrir(e)">
-          <header class="ec-head">
+        @let aberta = estaExpandida(e.id);
+        @let pr = prontidao(e);
+        <article class="entrega-card" [class.expandida]="aberta">
+          <header class="ec-head" (click)="alternarExpandir(e.id)">
+            <mat-icon class="ec-toggle">{{ aberta ? 'expand_less' : 'expand_more' }}</mat-icon>
             <div class="ec-cliente">
               <span class="ec-nome">{{ e.clienteNome }}</span>
               @if (e.foraDaRota) {
@@ -144,8 +147,14 @@
               }
             </div>
             <div class="ec-head-dir">
+              @if (pr.temConteudo) {
+                @if (pr.tudoPronto) {
+                  <span class="chip-pronto ok"><mat-icon>check_circle</mat-icon> Tudo pronto</span>
+                } @else {
+                  <span class="chip-pronto pend"><mat-icon>warning</mat-icon> Pendências</span>
+                }
+              }
               <span class="chip" [class]="classeStatus(e.status)">{{ labelStatus(e.status) }}</span>
-              <mat-icon class="ec-chevron">chevron_right</mat-icon>
             </div>
           </header>
 
@@ -155,7 +164,28 @@
             <span class="ec-meta"><mat-icon>map</mat-icon>{{ e.bairro || '—' }}{{ e.cidade ? ' · ' + e.cidade : '' }}</span>
           </div>
 
-          @if (e.operacional; as op) {
+          <!-- Minimizado: resumo de prontidão -->
+          @if (!aberta && pr.temConteudo) {
+            <div class="ec-prontidao">
+              @if (pr.tudoPronto) {
+                <span class="pr-ok"><mat-icon>check_circle</mat-icon> Tudo pronto para separar</span>
+              } @else {
+                <span class="pr-pend"><mat-icon>error</mat-icon>
+                  Falta preparar:
+                  @if (pr.persNaoProntas) {
+                    <strong>{{ pr.persNaoProntas }}</strong> {{ pr.persNaoProntas === 1 ? 'personalizada não pronta' : 'personalizadas não prontas' }}
+                  }
+                  @if (pr.persNaoProntas && pr.casaFalta) { <span class="pr-sep">·</span> }
+                  @if (pr.casaFalta) {
+                    <strong>{{ pr.casaFalta }}</strong> {{ pr.casaFalta === 1 ? 'receita sem estoque' : 'receitas sem estoque' }}
+                  }
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Expandido: conteúdo operacional completo -->
+          @if (aberta && e.operacional; as op) {
             <div class="ec-op">
               @if (op.casa.length) {
                 <div class="op-bloco">
@@ -191,6 +221,11 @@
                   </ul>
                 </div>
               }
+            </div>
+            <div class="ec-acoes">
+              <button mat-stroked-button (click)="abrir(e); $event.stopPropagation()">
+                <mat-icon>open_in_new</mat-icon> Ver detalhe completo
+              </button>
             </div>
           }
         </article>

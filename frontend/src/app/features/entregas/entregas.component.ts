@@ -18,6 +18,8 @@ import {
   gerarEntregasMock,
   labelStatus,
   operacionalDeDetalhe,
+  ProntidaoEntrega,
+  prontidaoEntrega,
   ResumoCasaDia,
   ResumoPersonalizadasDia,
   resumoCasaDoDia,
@@ -62,7 +64,11 @@ export class EntregasComponent implements OnInit {
   readonly classeStatus = classeStatus;
   readonly enderecoResumo = enderecoResumo;
   readonly fmtPeso = fmtPeso;
+  readonly prontidao = (e: EntregaResumo): ProntidaoEntrega => prontidaoEntrega(e.operacional);
   readonly diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  // Cartões expandidos (por id). Por padrão todos minimizados.
+  readonly expandidas = signal<Set<number>>(new Set());
 
   readonly todas = signal<EntregaResumo[]>([]);
   readonly carregando = signal(false);
@@ -291,6 +297,23 @@ export class EntregasComponent implements OnInit {
 
   get resumoPersonalizadasDia(): ResumoPersonalizadasDia {
     return resumoPersonalizadasDoDia(this.lista);
+  }
+
+  // ===== Expandir / minimizar cartão =====
+  estaExpandida(id: number): boolean {
+    return this.expandidas().has(id);
+  }
+
+  alternarExpandir(id: number): void {
+    this.expandidas.update((set) => {
+      const novo = new Set(set);
+      if (novo.has(id)) {
+        novo.delete(id);
+      } else {
+        novo.add(id);
+      }
+      return novo;
+    });
   }
 
   // ===== Detalhe =====
