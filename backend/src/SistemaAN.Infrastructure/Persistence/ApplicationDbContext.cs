@@ -6,6 +6,7 @@ using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
+using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Infrastructure.Persistence;
@@ -40,6 +41,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FrequenciaEntrega> FrequenciasEntrega => Set<FrequenciaEntrega>();
 
     public DbSet<Cliente> Clientes => Set<Cliente>();
+
+    public DbSet<Pet> Pets => Set<Pet>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

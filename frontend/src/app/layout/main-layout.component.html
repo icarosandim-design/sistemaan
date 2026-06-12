@@ -18,9 +18,6 @@
           <a mat-list-item class="grupo" (click)="alternarGrupo(item.label)">
             <mat-icon matListItemIcon>{{ item.icone }}</mat-icon>
             <span matListItemTitle>{{ item.label }}</span>
-            <mat-icon matListItemMeta class="chevron">
-              {{ isAberto(item.label) ? 'expand_less' : 'expand_more' }}
-            </mat-icon>
           </a>
           @if (isAberto(item.label)) {
             @for (f of item.filhos; track f.label) {

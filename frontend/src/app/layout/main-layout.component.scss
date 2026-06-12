@@ -67,10 +67,6 @@ a.nav-disabled {
 
 .grupo {
   cursor: pointer;
-
-  .chevron {
-    color: var(--an-texto-secundario);
-  }
 }
 
 .subitem {
@@ -85,7 +81,7 @@ a.nav-disabled {
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 200;
   background: var(--an-primaria);
   color: #fff;
 

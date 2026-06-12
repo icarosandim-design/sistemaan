@@ -105,3 +105,15 @@ h6 {
   direction: ltr;
   font-feature-settings: 'liga';
 }
+
+/* Cabeçalho fixo das tabelas: gruda logo abaixo do topbar (64px),
+   sem passar por cima dele ao rolar a página. */
+.mat-mdc-table th.mat-mdc-header-cell {
+  top: 64px !important;
+}
+
+@media (max-width: 600px) {
+  .mat-mdc-table th.mat-mdc-header-cell {
+    top: 56px !important;
+  }
+}

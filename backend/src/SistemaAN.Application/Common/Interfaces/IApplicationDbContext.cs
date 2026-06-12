@@ -4,6 +4,7 @@ using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
+using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Application.Common.Interfaces;
@@ -32,6 +33,8 @@ public interface IApplicationDbContext
     DbSet<FrequenciaEntrega> FrequenciasEntrega { get; }
 
     DbSet<Cliente> Clientes { get; }
+
+    DbSet<Pet> Pets { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
