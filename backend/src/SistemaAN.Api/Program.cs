@@ -107,6 +107,9 @@ using (var scope = app.Services.CreateScope())
 
     var frequenciasSeeder = scope.ServiceProvider.GetRequiredService<FrequenciasDataSeeder>();
     await frequenciasSeeder.SeedAsync();
+
+    var pacotesSeeder = scope.ServiceProvider.GetRequiredService<PacotesDataSeeder>();
+    await pacotesSeeder.SeedAsync();
 }
 
 app.UseExceptionHandler();

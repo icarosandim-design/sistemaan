@@ -4,6 +4,7 @@ using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
+using SistemaAN.Domain.Pacotes;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Receitas;
 
@@ -35,6 +36,8 @@ public interface IApplicationDbContext
     DbSet<Cliente> Clientes { get; }
 
     DbSet<Pet> Pets { get; }
+
+    DbSet<TamanhoPacote> TamanhosPacote { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

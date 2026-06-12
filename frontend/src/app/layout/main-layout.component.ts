@@ -64,7 +64,8 @@ export class MainLayoutComponent {
       label: 'Cadastros',
       icone: 'tune',
       filhos: [
-        { label: 'Receitas', icone: 'menu_book', rota: '/receitas' },
+        { label: 'Receitas da Casa', icone: 'menu_book', rota: '/receitas' },
+        { label: 'Tamanhos de Pacote', icone: 'inventory_2', rota: '/tamanhos-pacote' },
         { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes' },
         { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo' },
         { label: 'Frequências de Entrega', icone: 'event_repeat', rota: '/frequencias-entrega' },

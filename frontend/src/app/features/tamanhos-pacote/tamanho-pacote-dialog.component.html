@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar tamanho' : 'Novo tamanho de pacote' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Nome do pacote</mat-label>
+      <input matInput formControlName="nome" placeholder="Ex.: Pacote 250g" />
+      @if (form.controls.nome.hasError('required')) {
+        <mat-error>Informe o nome.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Peso em gramas</mat-label>
+      <input matInput type="number" step="50" formControlName="pesoGramas" />
+      <span matTextSuffix>g</span>
+      @if (form.controls.pesoGramas.hasError('min') || form.controls.pesoGramas.hasError('required')) {
+        <mat-error>O peso deve ser maior que zero.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Observação (opcional)</mat-label>
+      <textarea matInput rows="2" formControlName="observacao"></textarea>
+    </mat-form-field>
+
+    <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" (click)="salvar()">
+    {{ edicao ? 'Salvar' : 'Cadastrar' }}
+  </button>
+</mat-dialog-actions>

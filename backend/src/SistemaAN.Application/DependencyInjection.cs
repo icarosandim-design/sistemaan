@@ -4,6 +4,7 @@ using SistemaAN.Application.Clientes;
 using SistemaAN.Application.Consumo;
 using SistemaAN.Application.Entregas;
 using SistemaAN.Application.Identity;
+using SistemaAN.Application.Pacotes;
 using SistemaAN.Application.Pets;
 using SistemaAN.Application.Receitas;
 
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IFrequenciaEntregaService, FrequenciaEntregaService>();
         services.AddScoped<IClienteService, ClienteService>();
         services.AddScoped<IPetService, PetService>();
+        services.AddScoped<ITamanhoPacoteService, TamanhoPacoteService>();
         return services;
     }
 }

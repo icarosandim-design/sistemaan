@@ -6,6 +6,7 @@ using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
+using SistemaAN.Domain.Pacotes;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Receitas;
 
@@ -43,6 +44,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Cliente> Clientes => Set<Cliente>();
 
     public DbSet<Pet> Pets => Set<Pet>();
+
+    public DbSet<TamanhoPacote> TamanhosPacote => Set<TamanhoPacote>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
