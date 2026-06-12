@@ -417,15 +417,15 @@ function isoSomaDias(base: Date, dias: number): string {
 }
 
 /**
- * Gera entregas hipotéticas em 3 dias distintos (5, 6 e 9 entregas)
+ * Gera entregas hipotéticas em 3 dias distintos (6, 9 e 12 entregas)
  * a partir de hoje, para validar o layout. TEMPORÁRIO.
  */
 export function gerarEntregasMock(): EntregaResumo[] {
   const hoje = new Date();
   const plano: { offset: number; qtd: number }[] = [
-    { offset: 0, qtd: 5 },
-    { offset: 2, qtd: 6 },
-    { offset: 5, qtd: 9 },
+    { offset: 0, qtd: 6 },
+    { offset: 2, qtd: 9 },
+    { offset: 5, qtd: 12 },
   ];
   const lista: EntregaResumo[] = [];
   let id = 90001; // faixa alta p/ não colidir com ids reais
