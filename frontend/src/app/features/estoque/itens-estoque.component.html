@@ -81,7 +81,7 @@
 
       <ng-container matColumnDef="minimo">
         <th mat-header-cell *matHeaderCellDef class="t-right">Mínimo</th>
-        <td mat-cell *matCellDef="let i" class="t-right cel-sec">{{ fmtQtd(i.quantidadeMinima) }}</td>
+        <td mat-cell *matCellDef="let i" class="t-right cel-sec">{{ fmtQtd(i.quantidadeMinima) }} {{ rotulo(i.unidadeMedida) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="ativo">

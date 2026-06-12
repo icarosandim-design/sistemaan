@@ -78,6 +78,7 @@
       <mat-form-field appearance="outline">
         <mat-label>Estoque mínimo</mat-label>
         <input matInput type="number" step="1" formControlName="quantidadeMinima" />
+        <span matTextSuffix>{{ unidadeLabel }}</span>
         @if (form.controls.quantidadeMinima.hasError('min')) { <mat-error>Não pode ser negativo.</mat-error> }
       </mat-form-field>
       <mat-form-field appearance="outline">

@@ -82,6 +82,11 @@ export class ItemEstoqueDialogComponent implements OnInit {
     return this.form.controls.tipo.value;
   }
 
+  /** Rótulo da unidade atual do item (para sufixos de quantidade). */
+  get unidadeLabel(): string {
+    return this.tipo === 'ProdutoAcabadoCasa' ? rotulo('Pacote') : rotulo(this.form.controls.unidadeMedida.value);
+  }
+
   ngOnInit(): void {
     this.service.listarFornecedores(true).subscribe((fs) => this.fornecedores.set(fs.map((f) => ({ id: f.id, nome: f.nome }))));
 
