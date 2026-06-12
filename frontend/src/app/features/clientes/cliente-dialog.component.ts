@@ -15,12 +15,17 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { FrequenciaEntrega } from '../frequencias/frequencias.model';
 import { FrequenciasService } from '../frequencias/frequencias.service';
+import { ReceitaCasa } from '../receitas/receitas.model';
+import { ReceitasService } from '../receitas/receitas.service';
+import { TamanhoPacote } from '../tamanhos-pacote/tamanhos-pacote.model';
+import { TamanhosPacoteService } from '../tamanhos-pacote/tamanhos-pacote.service';
 import { labelSexo, Pet, SalvarPetRequest } from './pets/pet.model';
 import { PetDialogComponent } from './pets/pet-dialog.component';
 import { PlanoDialogComponent } from './pets/plano-dialog.component';
 import { PetService } from './pets/pet.service';
 import { PlanoService } from './pets/plano.service';
-import { fmtPeso, PlanoAlimentar } from './pets/plano.model';
+import { ReceitaPersonalizadaService } from './pets/receita-personalizada.service';
+import { fmtPeso, PlanoAlimentar, ReceitaPersonalizada } from './pets/plano.model';
 import {
   Cliente,
   FormaPagamento,
@@ -63,17 +68,23 @@ export class ClienteDialogComponent {
   private readonly petService = inject(PetService);
   private readonly planoService = inject(PlanoService);
   private readonly frequenciasService = inject(FrequenciasService);
+  private readonly receitasService = inject(ReceitasService);
+  private readonly tamanhosService = inject(TamanhosPacoteService);
+  private readonly receitaPersService = inject(ReceitaPersonalizadaService);
   private readonly snack = inject(MatSnackBar);
 
   // Pets (persistidos via API — apenas para clientes já salvos)
   readonly pets = signal<Pet[]>([]);
   readonly planos = signal<Record<number, PlanoAlimentar>>({});
+  readonly receitasPersPorPet = signal<Record<number, ReceitaPersonalizada[]>>({});
   readonly carregandoPets = signal(false);
   readonly clienteId: number | null;
   readonly labelSexo = labelSexo;
   readonly fmtPeso = fmtPeso;
 
   readonly frequencias = signal<FrequenciaEntrega[]>([]);
+  readonly receitasCasa = signal<ReceitaCasa[]>([]);
+  readonly tamanhos = signal<TamanhoPacote[]>([]);
 
   readonly tipos = TIPOS_CLIENTE;
   readonly formas = FORMAS_PAGAMENTO;
@@ -113,8 +124,16 @@ export class ClienteDialogComponent {
     this.edicao = !!data.cliente;
     this.clienteId = data.cliente?.id ?? null;
 
-    this.frequenciasService.listar().subscribe({
-      next: (fs) => this.frequencias.set(fs.filter((f) => f.ativo)),
+    forkJoin({
+      freq: this.frequenciasService.listar(),
+      rec: this.receitasService.listar(),
+      tam: this.tamanhosService.listar(),
+    }).subscribe({
+      next: ({ freq, rec, tam }) => {
+        this.frequencias.set(freq.filter((f) => f.ativo));
+        this.receitasCasa.set(rec);
+        this.tamanhos.set(tam);
+      },
       error: () => undefined,
     });
 
@@ -206,19 +225,71 @@ export class ClienteDialogComponent {
   private carregarPlanos(lista: Pet[]): void {
     if (lista.length === 0) {
       this.planos.set({});
+      this.receitasPersPorPet.set({});
       return;
     }
-    forkJoin(lista.map((p) => this.planoService.obterPorPet(p.id))).subscribe({
+    forkJoin(
+      lista.map((p) =>
+        forkJoin({
+          plano: this.planoService.obterPorPet(p.id),
+          pers: this.receitaPersService.listarPorPet(p.id),
+        }),
+      ),
+    ).subscribe({
       next: (resultados) => {
-        const mapa: Record<number, PlanoAlimentar> = {};
-        resultados.forEach((plano, i) => {
+        const planosMapa: Record<number, PlanoAlimentar> = {};
+        const persMapa: Record<number, ReceitaPersonalizada[]> = {};
+        resultados.forEach(({ plano, pers }, i) => {
           if (plano) {
-            mapa[lista[i].id] = plano;
+            planosMapa[lista[i].id] = plano;
           }
+          persMapa[lista[i].id] = pers;
         });
-        this.planos.set(mapa);
+        this.planos.set(planosMapa);
+        this.receitasPersPorPet.set(persMapa);
       },
       error: () => undefined,
+    });
+  }
+
+  // ===== Detalhe das receitas no card =====
+  private nomeReceitaCasa(id: number): string {
+    return this.receitasCasa().find((r) => r.id === id)?.nome ?? 'Receita';
+  }
+
+  private labelTamanho(id: number): string {
+    const t = this.tamanhos().find((x) => x.id === id);
+    return t ? this.fmtPeso(t.pesoGramas) : '?';
+  }
+
+  /** Casa: por receita, nome + pacotes por tamanho (ex.: "4×500 g, 1×250 g"). */
+  resumoCasa(petId: number): { receita: string; pacotes: string }[] {
+    const plano = this.planoDoPet(petId);
+    if (!plano || plano.tipo !== 'Casa') {
+      return [];
+    }
+    return plano.itens.map((it) => ({
+      receita: this.nomeReceitaCasa(it.receitaId),
+      pacotes: it.pacotes.length
+        ? it.pacotes.map((p) => `${p.quantidade}×${this.labelTamanho(p.tamanhoPacoteId)}`).join(', ')
+        : '—',
+    }));
+  }
+
+  /** Personalizada: por receita, código + tamanho (g) + nº de pacotes no ciclo. */
+  resumoPers(petId: number): { receita: string; peso: string; pacotes: number }[] {
+    const plano = this.planoDoPet(petId);
+    if (!plano || plano.tipo !== 'Personalizada') {
+      return [];
+    }
+    const receitas = this.receitasPersPorPet()[petId] ?? [];
+    return plano.itens.map((it) => {
+      const r = receitas.find((x) => x.id === it.receitaId);
+      return {
+        receita: r?.codigo ?? 'Receita',
+        peso: this.fmtPeso(r?.pesoTotalGramas ?? 0),
+        pacotes: it.quantidadePacotes ?? 0,
+      };
     });
   }
 

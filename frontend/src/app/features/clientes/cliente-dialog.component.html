@@ -245,6 +245,29 @@
                   <div><span class="rotulo">Receitas</span><span class="valor">{{ planoDoPet(p.id) ? planoDoPet(p.id)!.itens.length : '—' }}</span></div>
                   <div><span class="rotulo">Total / ciclo</span><span class="valor">{{ totalCicloPet(p) }}</span></div>
                 </div>
+
+                @if (planoDoPet(p.id)?.tipo === 'Casa' && resumoCasa(p.id).length) {
+                  <div class="plano-detalhe">
+                    <span class="rotulo">Receitas no ciclo</span>
+                    <ul class="plano-lista">
+                      @for (it of resumoCasa(p.id); track $index) {
+                        <li><strong>{{ it.receita }}</strong> — {{ it.pacotes }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+
+                @if (planoDoPet(p.id)?.tipo === 'Personalizada' && resumoPers(p.id).length) {
+                  <div class="plano-detalhe">
+                    <span class="rotulo">Receitas no ciclo</span>
+                    <ul class="plano-lista">
+                      @for (it of resumoPers(p.id); track $index) {
+                        <li><strong>{{ it.receita }}</strong> — {{ it.peso }} × {{ it.pacotes }} pacote(s)</li>
+                      }
+                    </ul>
+                  </div>
+                }
+
                 <button mat-stroked-button type="button" class="plano-btn" (click)="abrirPlano(p, $event)">
                   <mat-icon>tune</mat-icon> {{ planoDoPet(p.id) ? 'Editar plano alimentar' : 'Configurar plano alimentar' }}
                 </button>

@@ -256,6 +256,32 @@
   color: var(--an-texto-secundario);
 }
 
+.plano-detalhe {
+  margin-top: 0.6rem;
+
+  .rotulo {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--an-texto-secundario);
+  }
+}
+
+.plano-lista {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  color: var(--an-texto-primario, #1f2412);
+
+  li {
+    margin: 0.1rem 0;
+  }
+
+  strong {
+    color: var(--an-primaria);
+  }
+}
+
 .plano-btn {
   margin-top: 0.6rem;
 }
