@@ -202,19 +202,18 @@
             </div>
             @for (it of r.itens; track $index) {
               <div class="ing-linha">
-                <mat-form-field appearance="outline" class="c-ing">
-                  <mat-label>Ingrediente</mat-label>
-                  <mat-select [(ngModel)]="it.ingredienteId" [ngModelOptions]="{ standalone: true }">
+                <mat-form-field appearance="outline" class="c-ing" subscriptSizing="dynamic">
+                  <mat-select placeholder="Selecione o ingrediente" [(ngModel)]="it.ingredienteId" [ngModelOptions]="{ standalone: true }">
                     @for (ing of ingredientes; track ing.id) {
                       <mat-option [value]="ing.id">{{ ing.nome }}</mat-option>
                     }
                   </mat-select>
                 </mat-form-field>
                 <span class="c-cat">{{ ingrediente(it.ingredienteId)?.categoria || '—' }}</span>
-                <mat-form-field appearance="outline" class="c-g">
-                  <mat-label>g cozidas</mat-label>
-                  <input matInput type="number" step="50" [(ngModel)]="it.gramasCozidas"
+                <mat-form-field appearance="outline" class="c-g" subscriptSizing="dynamic">
+                  <input matInput type="number" step="50" placeholder="0" [(ngModel)]="it.gramasCozidas"
                          [ngModelOptions]="{ standalone: true }" />
+                  <span matTextSuffix>g</span>
                 </mat-form-field>
                 <span class="c-custo">{{ fmtMoeda(custoItemPers(it)) }}</span>
                 <button mat-icon-button type="button" class="c-rm rm" (click)="removerItemPers(r, $index)" matTooltip="Remover">

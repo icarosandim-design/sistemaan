@@ -280,45 +280,76 @@ mat-dialog-content {
 }
 
 /* Receita personalizada — tabela de ingredientes */
+/* Tabela de ingredientes (Receita Personalizada) */
 .ing-tabela {
+  display: flex;
+  flex-direction: column;
   margin: 0.25rem 0 0.5rem;
+  border: 1px solid var(--an-fundo-secundario, rgba(0, 0, 0, 0.12));
+  border-radius: var(--an-raio-sm, 8px);
+  overflow: hidden;
+}
+
+// Grade compartilhada entre cabeçalho e linhas (mantém colunas alinhadas).
+%ing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr) 130px 100px 44px;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .ing-cab {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.1fr 0.9fr 40px;
-  gap: 0.5rem;
-  padding: 0 0.25rem 0.25rem;
+  @extend %ing-grid;
+  padding: 0.55rem 0.85rem;
+  background: var(--an-fundo);
+  border-bottom: 1px solid var(--an-fundo-secundario, rgba(0, 0, 0, 0.12));
   font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--an-texto-secundario);
+
+  .c-cat,
+  .c-g {
+    text-align: center;
+  }
+
+  .c-custo {
+    text-align: right;
+  }
 }
 
 .ing-linha {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.1fr 0.9fr 40px;
-  gap: 0.5rem;
-  align-items: center;
+  @extend %ing-grid;
+  padding: 0.5rem 0.85rem;
+  border-bottom: 1px solid var(--an-fundo, rgba(0, 0, 0, 0.05));
 
   .c-cat {
-    font-size: 0.85rem;
+    text-align: center;
+    font-size: 0.88rem;
     color: var(--an-texto-secundario);
   }
 
   .c-custo {
+    text-align: right;
     font-size: 0.9rem;
     font-weight: 600;
-    text-align: right;
+    color: var(--an-texto-titulo, #1f2412);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .c-rm {
+    justify-self: center;
   }
 
   .mat-mdc-form-field {
-    margin-bottom: -1.1rem; /* compacta as linhas */
+    width: 100%;
   }
 }
 
 .add-ing {
-  margin-top: 0.25rem;
+  align-self: flex-start;
+  margin: 0.15rem 0.45rem;
   color: var(--an-primaria);
 }
 
