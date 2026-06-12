@@ -10,7 +10,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { classeStatus, EntregaResumo, labelStatus, STATUS_ENTREGA } from './entregas.model';
+import {
+  classeStatus,
+  enderecoResumo,
+  EntregaResumo,
+  gerarEntregasMock,
+  labelStatus,
+  STATUS_ENTREGA,
+} from './entregas.model';
 import { EntregasService } from './entregas.service';
 import { EntregaDetalheDialogComponent } from './entrega-detalhe-dialog.component';
 
@@ -48,12 +55,18 @@ export class EntregasComponent implements OnInit {
   readonly statusOpcoes = STATUS_ENTREGA;
   readonly labelStatus = labelStatus;
   readonly classeStatus = classeStatus;
-  readonly displayedColumns = ['cliente', 'pets', 'bairro', 'cidade', 'status', 'acoes'];
+  readonly enderecoResumo = enderecoResumo;
+  readonly displayedColumns = ['cliente', 'pets', 'endereco', 'bairro', 'cidade', 'status', 'acoes'];
   readonly diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   readonly todas = signal<EntregaResumo[]>([]);
   readonly carregando = signal(false);
   readonly gerando = signal(false);
+  // ⚠️ TEMPORÁRIO: indica que a tela está exibindo dados MOCK (não reais).
+  readonly usandoMock = signal(false);
+
+  // Quantidade mínima de entregas reais para dispensar o mock de validação visual.
+  private static readonly MIN_REAIS = 3;
 
   mesRef = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   diaSelecionado = '';
@@ -74,7 +87,7 @@ export class EntregasComponent implements OnInit {
     this.carregando.set(true);
     this.service.listar().subscribe({
       next: (lista) => {
-        this.todas.set(lista);
+        this.aplicarDados(lista);
         this.carregando.set(false);
         if (inicial || !this.diaSelecionado) {
           this.selecionarDiaInicial();
@@ -82,9 +95,23 @@ export class EntregasComponent implements OnInit {
       },
       error: () => {
         this.carregando.set(false);
-        this.erro('Falha ao carregar entregas.');
+        // Sem backend disponível: cai no mock para validação visual.
+        this.aplicarDados([]);
+        this.selecionarDiaInicial();
       },
     });
+  }
+
+  // ⚠️ TEMPORÁRIO: usa dados reais quando existirem; caso contrário (poucas
+  // entregas reais), preenche com mock só para validar o layout.
+  private aplicarDados(reais: EntregaResumo[]): void {
+    if (reais.length >= EntregasComponent.MIN_REAIS) {
+      this.usandoMock.set(false);
+      this.todas.set(reais);
+    } else {
+      this.usandoMock.set(true);
+      this.todas.set(gerarEntregasMock());
+    }
   }
 
   gerar(): void {
@@ -236,6 +263,42 @@ export class EntregasComponent implements OnInit {
         this.carregar();
       }
     });
+  }
+
+  // ===== Ações do dia =====
+  /** Entregas do dia selecionado ainda não incluídas em uma rota planejada. */
+  get foraDaRotaCount(): number {
+    return this.lista.filter((e) => e.foraDaRota).length;
+  }
+
+  get temPendencias(): boolean {
+    return this.lista.some((e) => e.status === 'Programada' || e.status === 'NaoEntregue' || e.status === 'Reagendada');
+  }
+
+  /**
+   * Planejar a rota do dia selecionado (qualquer data, hoje ou futura).
+   * Visual/preparatório: o backend de Rotas ainda não existe.
+   */
+  planejarRota(): void {
+    if (!this.diaSelecionado) {
+      this.snack.open('Selecione um dia no calendário para planejar a rota.', 'OK', { duration: 3000 });
+      return;
+    }
+    const total = this.lista.length;
+    const fora = this.foraDaRotaCount;
+    const [y, m, d] = this.diaSelecionado.split('-').map(Number);
+    const dataBr = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+    this.snack.open(
+      `Planejamento de rota para ${dataBr}: ${total} entrega(s)` + (fora ? `, ${fora} fora da rota.` : '.') +
+        ' (Módulo de Rotas em breve)',
+      'OK',
+      { duration: 4000 },
+    );
+  }
+
+  /** Aplica o atalho de pendências sobre o dia selecionado. */
+  verPendencias(): void {
+    this.atalho = 'naoConfirmadas';
   }
 
   private erro(msg: string): void {

@@ -14,6 +14,13 @@
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   }
 
+  @if (usandoMock()) {
+    <div class="mock-banner">
+      <mat-icon>science</mat-icon>
+      Exibindo dados <strong>hipotéticos (mock)</strong> para validação visual — serão substituídos pelas entregas reais assim que existirem.
+    </div>
+  }
+
   <!-- Calendário (protagonista) -->
   <section class="calendario-card">
     <div class="cal-topo">
@@ -56,8 +63,30 @@
   <!-- Lista do dia -->
   <section class="lista-secao">
     <div class="lista-head">
-      <h2 class="lista-titulo">{{ tituloLista }}</h2>
-      <span class="lista-contador">{{ lista.length }} entrega(s)</span>
+      <div class="lista-head-info">
+        <h2 class="lista-titulo">{{ tituloLista }}</h2>
+        <span class="lista-contador">{{ lista.length }} entrega(s)</span>
+        @if (foraDaRotaCount > 0) {
+          <span class="fora-rota-topo">
+            <mat-icon>alt_route</mat-icon>
+            {{ foraDaRotaCount }} {{ foraDaRotaCount === 1 ? 'entrega fora da rota planejada' : 'entregas fora da rota planejada' }}
+          </span>
+        }
+      </div>
+
+      <!-- Área de ações do dia -->
+      <div class="acoes-dia">
+        <button mat-flat-button class="btn-rota" [disabled]="!diaSelecionado || lista.length === 0" (click)="planejarRota()"
+                matTooltip="Monta a rota das entregas do dia selecionado (Módulo de Rotas em breve)">
+          <mat-icon>route</mat-icon> Planejar rota do dia
+        </button>
+        <button mat-stroked-button [disabled]="carregando()" (click)="carregar()" matTooltip="Recarrega as entregas">
+          <mat-icon>refresh</mat-icon> Atualizar entregas
+        </button>
+        <button mat-stroked-button [disabled]="!temPendencias" (click)="verPendencias()" matTooltip="Filtra as entregas pendentes do dia">
+          <mat-icon>pending_actions</mat-icon> Ver pendências
+        </button>
+      </div>
     </div>
 
     <div class="filtros">
@@ -101,11 +130,22 @@
       <table mat-table [dataSource]="lista" class="tabela">
         <ng-container matColumnDef="cliente">
           <th mat-header-cell *matHeaderCellDef>Cliente</th>
-          <td mat-cell *matCellDef="let e" class="cel-nome">{{ e.clienteNome }}</td>
+          <td mat-cell *matCellDef="let e" class="cel-nome">
+            {{ e.clienteNome }}
+            @if (e.foraDaRota) {
+              <span class="badge-fora" matTooltip="Ainda não incluída em uma rota planejada">
+                <mat-icon>alt_route</mat-icon> Fora da rota
+              </span>
+            }
+          </td>
         </ng-container>
         <ng-container matColumnDef="pets">
           <th mat-header-cell *matHeaderCellDef>Pets</th>
           <td mat-cell *matCellDef="let e">{{ e.pets.length ? e.pets.join(', ') : '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="endereco">
+          <th mat-header-cell *matHeaderCellDef>Endereço</th>
+          <td mat-cell *matCellDef="let e" class="cel-endereco">{{ enderecoResumo(e) }}</td>
         </ng-container>
         <ng-container matColumnDef="bairro">
           <th mat-header-cell *matHeaderCellDef>Bairro</th>
