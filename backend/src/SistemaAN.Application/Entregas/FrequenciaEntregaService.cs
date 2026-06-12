@@ -60,7 +60,7 @@ public sealed class FrequenciaEntregaService : IFrequenciaEntregaService
         {
             throw new ValidationException(new Dictionary<string, string[]>
             {
-                ["ativo"] = ["Não é possível inativar: a frequência está em um plano alimentar vigente."],
+                ["ativo"] = ["Frequência em uso por um cliente — não pode ser inativada."],
             });
         }
 

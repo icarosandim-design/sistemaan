@@ -66,7 +66,7 @@ public sealed class IngredienteService : IIngredienteService
         {
             throw new ValidationException(new Dictionary<string, string[]>
             {
-                ["ativo"] = ["Não é possível inativar: o ingrediente está em uma receita de um plano alimentar vigente."],
+                ["ativo"] = ["Ingrediente em uso em um plano vigente — não pode ser inativado."],
             });
         }
 

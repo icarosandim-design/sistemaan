@@ -80,7 +80,7 @@ export class FrequenciasComponent implements OnInit {
         this.snack.open(f.ativo ? 'Frequência inativada.' : 'Frequência ativada.', 'OK', { duration: 2500 });
         this.carregar();
       },
-      error: () => this.erro('Não foi possível alterar o status.'),
+      error: (e: HttpErrorResponse) => this.erro(this.mensagemErro(e)),
     });
   }
 

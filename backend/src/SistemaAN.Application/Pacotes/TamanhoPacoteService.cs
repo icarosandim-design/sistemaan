@@ -59,7 +59,7 @@ public sealed class TamanhoPacoteService : ITamanhoPacoteService
         {
             throw new ValidationException(new Dictionary<string, string[]>
             {
-                ["ativo"] = ["Não é possível inativar: o tamanho está em um plano alimentar vigente."],
+                ["ativo"] = ["Tamanho em uso em um plano vigente — não pode ser inativado."],
             });
         }
 

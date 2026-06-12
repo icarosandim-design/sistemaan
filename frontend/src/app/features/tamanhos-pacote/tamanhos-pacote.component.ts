@@ -81,7 +81,7 @@ export class TamanhosPacoteComponent implements OnInit {
         this.snack.open(t.ativo ? 'Tamanho inativado.' : 'Tamanho reativado.', 'OK', { duration: 2500 });
         this.carregar();
       },
-      error: () => this.erro('Não foi possível alterar o status.'),
+      error: (e: HttpErrorResponse) => this.erro(this.mensagemErro(e)),
     });
   }
 

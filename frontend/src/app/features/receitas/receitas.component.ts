@@ -132,7 +132,7 @@ export class ReceitasComponent implements OnInit, AfterViewInit {
         this.snack.open(r.ativo ? 'Receita inativada.' : 'Receita ativada.', 'OK', { duration: 2500 });
         this.carregar();
       },
-      error: () => this.erro('Não foi possível alterar o status.'),
+      error: (e: HttpErrorResponse) => this.erro(this.mensagemErro(e)),
     });
   }
 

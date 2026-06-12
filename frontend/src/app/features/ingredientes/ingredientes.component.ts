@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, OnInit, ViewChild, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -188,9 +189,20 @@ export class IngredientesComponent implements OnInit, AfterViewInit {
           this.snack.open(ing ? 'Ingrediente atualizado.' : 'Ingrediente criado.', 'OK', { duration: 2500 });
           this.carregar();
         },
-        error: () => this.erro('Não foi possível salvar o ingrediente.'),
+        error: (e: HttpErrorResponse) => this.erro(this.mensagemErro(e)),
       });
     });
+  }
+
+  private mensagemErro(e: HttpErrorResponse): string {
+    const errors = e.error?.errors as Record<string, string[]> | undefined;
+    if (errors) {
+      const primeira = Object.values(errors)[0]?.[0];
+      if (primeira) {
+        return primeira;
+      }
+    }
+    return e.error?.detail ?? 'Não foi possível salvar o ingrediente.';
   }
 
   private erro(msg: string): void {

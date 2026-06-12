@@ -77,7 +77,7 @@ public sealed class ReceitaPersonalizadaService : IReceitaPersonalizadaService
         {
             throw new ValidationException(new Dictionary<string, string[]>
             {
-                ["ativo"] = ["Não é possível inativar: a receita está em um plano alimentar vigente."],
+                ["ativo"] = ["Receita em uso em um plano vigente — não pode ser inativada."],
             });
         }
 
