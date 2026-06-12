@@ -1,0 +1,93 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar fornecedor' : 'Novo fornecedor' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    <h3 class="secao">Identificação</h3>
+    <div class="grade">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Nome / Razão social</mat-label>
+        <input matInput formControlName="nome" />
+        @if (form.controls.nome.hasError('required')) { <mat-error>Informe o nome.</mat-error> }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Nome fantasia</mat-label>
+        <input matInput formControlName="nomeFantasia" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>CPF/CNPJ</mat-label>
+        <input matInput formControlName="documento" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Categoria</mat-label>
+        <mat-select formControlName="categoria">
+          <mat-option value="">—</mat-option>
+          @for (c of categorias; track c) { <mat-option [value]="c">{{ rotulo(c) }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <h3 class="secao">Contato</h3>
+    <div class="grade">
+      <mat-form-field appearance="outline">
+        <mat-label>Telefone</mat-label>
+        <input matInput formControlName="telefone" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>WhatsApp</mat-label>
+        <input matInput formControlName="whatsApp" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input matInput formControlName="email" />
+        @if (form.controls.email.hasError('email')) { <mat-error>E-mail inválido.</mat-error> }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Pessoa de contato</mat-label>
+        <input matInput formControlName="pessoaContato" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Endereço</mat-label>
+        <input matInput formControlName="endereco" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Cidade</mat-label>
+        <input matInput formControlName="cidade" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>UF</mat-label>
+        <input matInput maxlength="2" formControlName="estado" />
+      </mat-form-field>
+    </div>
+
+    <h3 class="secao">Financeiro (opcional)</h3>
+    <div class="grade">
+      <mat-form-field appearance="outline">
+        <mat-label>Prazo de pagamento (dias)</mat-label>
+        <input matInput type="number" formControlName="prazoPagamentoDias" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Forma de pagamento</mat-label>
+        <input matInput formControlName="formaPagamentoPreferida" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Chave Pix</mat-label>
+        <input matInput formControlName="chavePix" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Dados bancários</mat-label>
+        <input matInput formControlName="dadosBancarios" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Observações</mat-label>
+        <textarea matInput rows="2" formControlName="observacoes"></textarea>
+      </mat-form-field>
+    </div>
+
+    <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" (click)="salvar()">{{ edicao ? 'Salvar' : 'Cadastrar' }}</button>
+</mat-dialog-actions>

@@ -1,0 +1,85 @@
+@if (item(); as i) {
+  <h2 mat-dialog-title class="titulo">
+    {{ i.nome }}
+    <span class="chip">{{ rotulo(i.tipo) }}</span>
+    @if (i.abaixoDoMinimo) { <span class="chip alerta"><mat-icon>warning</mat-icon> abaixo do mínimo</span> }
+  </h2>
+
+  <mat-dialog-content>
+    @if (carregando()) { <mat-progress-bar mode="indeterminate"></mat-progress-bar> }
+
+    <!-- Resumo -->
+    <div class="resumo">
+      <div class="bloco"><span class="rot">Saldo atual</span><span class="val grande">{{ fmtQtd(i.quantidadeAtual) }} {{ rotulo(i.unidadeMedida) }}</span></div>
+      <div class="bloco"><span class="rot">Custo médio</span><span class="val">{{ fmtMoeda(i.custoMedio) }}</span></div>
+      <div class="bloco"><span class="rot">Estoque mínimo</span><span class="val">{{ fmtQtd(i.quantidadeMinima) }}</span></div>
+      <div class="bloco"><span class="rot">Categoria</span><span class="val">{{ rotulo(i.categoria) }}</span></div>
+      @if (i.ingredienteNome) { <div class="bloco"><span class="rot">Ingrediente</span><span class="val">{{ i.ingredienteNome }}</span></div> }
+      @if (i.receitaNome) { <div class="bloco"><span class="rot">Receita / tamanho</span><span class="val">{{ i.receitaNome }} · {{ i.tamanhoPacoteNome }}</span></div> }
+      @if (i.fornecedorPrincipalNome) { <div class="bloco"><span class="rot">Fornecedor principal</span><span class="val">{{ i.fornecedorPrincipalNome }}</span></div> }
+      @if (i.localArmazenamento) { <div class="bloco"><span class="rot">Local</span><span class="val">{{ i.localArmazenamento }}</span></div> }
+    </div>
+
+    <!-- Ações -->
+    <div class="acoes-op">
+      <button mat-flat-button class="btn-cta" (click)="entrada()" [disabled]="carregando()"><mat-icon>add</mat-icon> Entrada</button>
+      <button mat-stroked-button (click)="saida()" [disabled]="carregando()"><mat-icon>remove</mat-icon> Saída</button>
+      <button mat-stroked-button (click)="ajuste()" [disabled]="carregando()"><mat-icon>tune</mat-icon> Ajuste</button>
+    </div>
+
+    <mat-tab-group>
+      <!-- Lotes -->
+      <mat-tab label="Lotes ({{ lotes().length }})">
+        <div class="tab-conteudo">
+          @for (l of lotes(); track l.id) {
+            <div class="lote" [class.esgotado]="l.status !== 'Ativo'">
+              <div class="lote-top">
+                <strong>{{ l.codigo }}</strong>
+                <span class="lote-status">{{ rotulo(l.status) }}</span>
+              </div>
+              <div class="lote-info">
+                <span>{{ fmtQtd(l.quantidadeAtual) }} / {{ fmtQtd(l.quantidadeInicial) }}</span>
+                <span>{{ fmtMoeda(l.custoUnitario) }} /un</span>
+                <span>entrada {{ l.dataEntrada | date: 'dd/MM/yyyy' }}</span>
+                <span>{{ l.validade ? ('val. ' + (l.validade | date: 'dd/MM/yyyy')) : 'sem validade' }}</span>
+                @if (l.fornecedorNome) { <span>{{ l.fornecedorNome }}</span> }
+              </div>
+            </div>
+          } @empty {
+            <p class="vazio">Nenhum lote ainda. Registre uma entrada.</p>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Movimentações -->
+      <mat-tab label="Movimentações ({{ movimentacoes().length }})">
+        <div class="tab-conteudo">
+          @for (m of movimentacoes(); track m.id) {
+            <div class="mov">
+              <div class="mov-l">
+                <span class="mov-tipo" [class.entrada]="m.sentido === 'Entrada'" [class.saida]="m.sentido === 'Saida'">
+                  {{ m.sentido === 'Entrada' ? '+' : '−' }}{{ fmtQtd(m.quantidade) }}
+                </span>
+                <span class="mov-desc">
+                  {{ rotulo(m.tipo) }}
+                  @if (m.loteCodigo) { · {{ m.loteCodigo }} }
+                  @if (m.motivo) { · {{ m.motivo }} }
+                </span>
+              </div>
+              <div class="mov-r">
+                <span class="mov-saldo">saldo {{ fmtQtd(m.saldoPosteriorItem) }}</span>
+                <span class="mov-meta">{{ m.dataHora | date: 'dd/MM/yyyy HH:mm' }} · {{ m.usuario }}</span>
+              </div>
+            </div>
+          } @empty {
+            <p class="vazio">Nenhuma movimentação ainda.</p>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="fechar()">Fechar</button>
+  </mat-dialog-actions>
+}

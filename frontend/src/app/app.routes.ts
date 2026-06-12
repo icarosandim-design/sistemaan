@@ -10,6 +10,8 @@ import { FrequenciasComponent } from './features/frequencias/frequencias.compone
 import { ClientesComponent } from './features/clientes/clientes.component';
 import { TamanhosPacoteComponent } from './features/tamanhos-pacote/tamanhos-pacote.component';
 import { EntregasComponent } from './features/entregas/entregas.component';
+import { ItensEstoqueComponent } from './features/estoque/itens-estoque.component';
+import { FornecedoresComponent } from './features/estoque/fornecedores.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -21,6 +23,8 @@ export const routes: Routes = [
       { path: 'central', component: CentralOperacionalComponent },
       { path: 'clientes', component: ClientesComponent },
       { path: 'entregas', component: EntregasComponent },
+      { path: 'estoque/itens', component: ItensEstoqueComponent },
+      { path: 'estoque/fornecedores', component: FornecedoresComponent },
       { path: 'ingredientes', component: IngredientesComponent },
       { path: 'tabela-consumo', component: ConsumoComponent },
       { path: 'receitas', component: ReceitasComponent },

@@ -1,0 +1,226 @@
+// ===== Tipos e enums (espelham o backend) =====
+export type TipoItemEstoque = 'Insumo' | 'ProdutoAcabadoCasa';
+
+export const CATEGORIAS_ESTOQUE = [
+  'Proteinas', 'Carboidratos', 'Legumes', 'Visceras', 'Suplementos',
+  'Embalagens', 'Etiquetas', 'MateriaisLimpeza', 'MateriaisAuxiliares', 'ProdutoAcabado', 'Outros',
+] as const;
+
+export const UNIDADES_MEDIDA = ['Kg', 'G', 'Unidade', 'Pacote', 'Caixa', 'Litro', 'Ml', 'Outro'] as const;
+
+export const CATEGORIAS_FORNECEDOR = ['Ingredientes', 'Embalagens', 'Etiquetas', 'MaterialLimpeza', 'Servicos', 'Outros'] as const;
+
+export const TIPOS_SAIDA = ['SaidaProducao', 'Descarte', 'Perda', 'Vencimento', 'TransferenciaSaida', 'ConsumoInterno'] as const;
+
+const ROTULOS: Record<string, string> = {
+  // Categorias de estoque
+  Proteinas: 'Proteínas', Carboidratos: 'Carboidratos', Legumes: 'Legumes', Visceras: 'Vísceras',
+  Suplementos: 'Suplementos', Embalagens: 'Embalagens', Etiquetas: 'Etiquetas',
+  MateriaisLimpeza: 'Materiais de limpeza', MateriaisAuxiliares: 'Materiais auxiliares',
+  ProdutoAcabado: 'Produto acabado', Outros: 'Outros',
+  // Unidades
+  Kg: 'kg', G: 'g', Unidade: 'unidade', Pacote: 'pacote', Caixa: 'caixa', Litro: 'litro', Ml: 'ml', Outro: 'outro',
+  // Categorias de fornecedor
+  Ingredientes: 'Ingredientes', MaterialLimpeza: 'Material de limpeza', Servicos: 'Serviços',
+  // Tipo de item
+  Insumo: 'Insumo', ProdutoAcabadoCasa: 'Produto acabado (Casa)',
+  // Tipos de movimentação
+  EntradaCompra: 'Entrada (compra)', EntradaProducao: 'Entrada (produção)', AjustePositivo: 'Ajuste +',
+  TransferenciaEntrada: 'Transferência (entrada)', SaidaProducao: 'Saída (produção)', Descarte: 'Descarte',
+  Perda: 'Perda', Vencimento: 'Vencimento', AjusteNegativo: 'Ajuste −', TransferenciaSaida: 'Transferência (saída)',
+  ConsumoInterno: 'Consumo interno', BaixaEntrega: 'Baixa (entrega)',
+  // Status de lote
+  Ativo: 'Ativo', Esgotado: 'Esgotado', Vencido: 'Vencido', Bloqueado: 'Bloqueado',
+};
+
+export function rotulo(valor: string | null | undefined): string {
+  if (!valor) {
+    return '—';
+  }
+  return ROTULOS[valor] ?? valor;
+}
+
+// ===== Fornecedor =====
+export interface Fornecedor {
+  id: number;
+  nome: string;
+  nomeFantasia: string | null;
+  documento: string | null;
+  telefone: string | null;
+  whatsApp: string | null;
+  email: string | null;
+  pessoaContato: string | null;
+  endereco: string | null;
+  cidade: string | null;
+  estado: string | null;
+  categoria: string | null;
+  observacoes: string | null;
+  prazoPagamentoDias: number | null;
+  formaPagamentoPreferida: string | null;
+  chavePix: string | null;
+  dadosBancarios: string | null;
+  ativo: boolean;
+}
+
+export interface SalvarFornecedorRequest {
+  nome: string;
+  nomeFantasia: string | null;
+  documento: string | null;
+  telefone: string | null;
+  whatsApp: string | null;
+  email: string | null;
+  pessoaContato: string | null;
+  endereco: string | null;
+  cidade: string | null;
+  estado: string | null;
+  categoria: string | null;
+  observacoes: string | null;
+  prazoPagamentoDias: number | null;
+  formaPagamentoPreferida: string | null;
+  chavePix: string | null;
+  dadosBancarios: string | null;
+  ativo: boolean;
+}
+
+// ===== Item de estoque =====
+export interface ItemEstoque {
+  id: number;
+  tipo: TipoItemEstoque;
+  nome: string;
+  categoria: string;
+  unidadeMedida: string;
+  ingredienteId: number | null;
+  ingredienteNome: string | null;
+  receitaId: number | null;
+  receitaNome: string | null;
+  tamanhoPacoteId: number | null;
+  tamanhoPacoteNome: string | null;
+  quantidadeAtual: number;
+  quantidadeMinima: number;
+  custoMedio: number;
+  fornecedorPrincipalId: number | null;
+  fornecedorPrincipalNome: string | null;
+  localArmazenamento: string | null;
+  controlaValidade: boolean;
+  ativo: boolean;
+  observacoes: string | null;
+  abaixoDoMinimo: boolean;
+}
+
+export interface CriarItemInsumoRequest {
+  nome: string;
+  categoria: string;
+  unidadeMedida: string;
+  ingredienteId: number | null;
+  quantidadeMinima: number;
+  fornecedorPrincipalId: number | null;
+  localArmazenamento: string | null;
+  controlaValidade: boolean;
+  observacoes: string | null;
+  ativo: boolean;
+}
+
+export interface CriarItemProdutoAcabadoRequest {
+  nome: string;
+  receitaId: number;
+  tamanhoPacoteId: number;
+  quantidadeMinima: number;
+  localArmazenamento: string | null;
+  controlaValidade: boolean;
+  observacoes: string | null;
+  ativo: boolean;
+}
+
+export interface AtualizarItemEstoqueRequest {
+  nome: string;
+  categoria: string;
+  unidadeMedida: string;
+  quantidadeMinima: number;
+  fornecedorPrincipalId: number | null;
+  localArmazenamento: string | null;
+  controlaValidade: boolean;
+  observacoes: string | null;
+  ativo: boolean;
+}
+
+// ===== Lote / Movimentação =====
+export interface LoteEstoque {
+  id: number;
+  itemEstoqueId: number;
+  codigo: string;
+  dataEntrada: string;
+  validade: string | null;
+  quantidadeInicial: number;
+  quantidadeAtual: number;
+  custoUnitario: number;
+  fornecedorId: number | null;
+  fornecedorNome: string | null;
+  origem: string;
+  status: string;
+}
+
+export interface MovimentacaoEstoque {
+  id: number;
+  itemEstoqueId: number;
+  itemNome: string;
+  loteEstoqueId: number | null;
+  loteCodigo: string | null;
+  tipo: string;
+  sentido: string;
+  quantidade: number;
+  saldoAnteriorItem: number;
+  saldoPosteriorItem: number;
+  custoUnitario: number;
+  valorTotal: number;
+  usuario: string;
+  dataHora: string;
+  motivoCodigo: string | null;
+  motivo: string | null;
+  observacao: string | null;
+}
+
+// ===== Operações =====
+export interface RegistrarEntradaRequest {
+  itemEstoqueId: number;
+  quantidade: number;
+  valorUnitario: number | null;
+  valorTotal: number | null;
+  fornecedorId: number | null;
+  dataCompra: string;
+  dataEntrada: string;
+  validade: string | null;
+  loteCodigo: string | null;
+  localArmazenamento: string | null;
+  observacoes: string | null;
+}
+
+export interface RegistrarSaidaRequest {
+  itemEstoqueId: number;
+  quantidade: number;
+  tipo: string;
+  motivoCodigo: string | null;
+  motivo: string | null;
+  observacao: string | null;
+}
+
+export interface RegistrarAjusteRequest {
+  itemEstoqueId: number;
+  loteEstoqueId: number | null;
+  novaQuantidade: number;
+  motivo: string;
+  observacao: string | null;
+}
+
+export interface OpcaoSimples {
+  id: number;
+  nome: string;
+}
+
+// ===== Helpers de formatação =====
+export function fmtQtd(n: number): string {
+  return n.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+}
+
+export function fmtMoeda(n: number): string {
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}

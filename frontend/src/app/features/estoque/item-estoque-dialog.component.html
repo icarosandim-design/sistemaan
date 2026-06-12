@@ -1,0 +1,99 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar item de estoque' : 'Novo item de estoque' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    @if (!edicao) {
+      <mat-button-toggle-group formControlName="tipo" class="tipo-toggle">
+        <mat-button-toggle value="Insumo">Insumo</mat-button-toggle>
+        <mat-button-toggle value="ProdutoAcabadoCasa">Produto acabado (Casa)</mat-button-toggle>
+      </mat-button-toggle-group>
+    }
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Nome do item</mat-label>
+      <input matInput formControlName="nome" placeholder="Ex.: Frango peito cru / Embalagem 500g" />
+      @if (form.controls.nome.hasError('required')) { <mat-error>Informe o nome.</mat-error> }
+    </mat-form-field>
+
+    @if (tipo === 'Insumo') {
+      <div class="grade">
+        <mat-form-field appearance="outline">
+          <mat-label>Categoria</mat-label>
+          <mat-select formControlName="categoria">
+            @for (c of categorias; track c) { <mat-option [value]="c">{{ rotulo(c) }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Unidade de medida</mat-label>
+          <mat-select formControlName="unidadeMedida">
+            @for (u of unidades; track u) { <mat-option [value]="u">{{ rotulo(u) }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        @if (!edicao) {
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Ingrediente vinculado (opcional)</mat-label>
+            <mat-select formControlName="ingredienteId">
+              <mat-option [value]="null">— Sem vínculo (embalagem, etiqueta, etc.)</mat-option>
+              @for (i of ingredientes(); track i.id) { <mat-option [value]="i.id">{{ i.nome }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+        }
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Fornecedor principal (opcional)</mat-label>
+          <mat-select formControlName="fornecedorPrincipalId">
+            <mat-option [value]="null">—</mat-option>
+            @for (f of fornecedores(); track f.id) { <mat-option [value]="f.id">{{ f.nome }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    } @else {
+      <div class="grade">
+        @if (!edicao) {
+          <mat-form-field appearance="outline">
+            <mat-label>Receita da Casa</mat-label>
+            <mat-select formControlName="receitaId">
+              @for (r of receitas(); track r.id) { <mat-option [value]="r.id">{{ r.nome }}</mat-option> }
+            </mat-select>
+            @if (form.controls.receitaId.hasError('required')) { <mat-error>Selecione a receita.</mat-error> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Tamanho do pacote</mat-label>
+            <mat-select formControlName="tamanhoPacoteId">
+              @for (t of tamanhos(); track t.id) { <mat-option [value]="t.id">{{ t.nome }}</mat-option> }
+            </mat-select>
+            @if (form.controls.tamanhoPacoteId.hasError('required')) { <mat-error>Selecione o tamanho.</mat-error> }
+          </mat-form-field>
+        }
+        <p class="nota full">Produto acabado é controlado em <strong>pacotes</strong> e por receita + tamanho.</p>
+      </div>
+    }
+
+    <div class="grade">
+      <mat-form-field appearance="outline">
+        <mat-label>Estoque mínimo</mat-label>
+        <input matInput type="number" step="1" formControlName="quantidadeMinima" />
+        @if (form.controls.quantidadeMinima.hasError('min')) { <mat-error>Não pode ser negativo.</mat-error> }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Local de armazenamento</mat-label>
+        <input matInput formControlName="localArmazenamento" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Observações</mat-label>
+        <textarea matInput rows="2" formControlName="observacoes"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="toggles">
+      <mat-slide-toggle formControlName="controlaValidade" color="primary">Controla validade</mat-slide-toggle>
+      <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()" [disabled]="salvando()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" (click)="salvar()" [disabled]="salvando()">
+    {{ edicao ? 'Salvar' : 'Cadastrar' }}
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,117 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Itens de Estoque</h1>
+      <p class="subtitulo">Insumos e produto acabado da casa. Saldo, custo médio e lotes vêm das movimentações.</p>
+    </div>
+    <button mat-flat-button class="btn-cta" (click)="novo()">
+      <mat-icon>add</mat-icon>
+      Novo item
+    </button>
+  </header>
+
+  @if (qtdAbaixoMinimo > 0) {
+    <div class="alerta-minimo">
+      <mat-icon>warning</mat-icon>
+      {{ qtdAbaixoMinimo }} {{ qtdAbaixoMinimo === 1 ? 'item abaixo do estoque mínimo' : 'itens abaixo do estoque mínimo' }}.
+    </div>
+  }
+
+  <div class="filtros">
+    <mat-form-field appearance="outline" class="f-min">
+      <mat-label>Tipo</mat-label>
+      <mat-select [(ngModel)]="filtroTipo">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="Insumo">Insumo</mat-option>
+        <mat-option value="ProdutoAcabadoCasa">Produto acabado (Casa)</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f-min">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="filtroStatus">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="ativo">Ativos</mat-option>
+        <mat-option value="inativo">Inativos</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f-min">
+      <mat-label>Alerta</mat-label>
+      <mat-select [(ngModel)]="filtroAlerta">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="minimo">Abaixo do mínimo</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="tabela-card">
+    @if (carregando) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    <table mat-table [dataSource]="lista" class="tabela">
+      <ng-container matColumnDef="nome">
+        <th mat-header-cell *matHeaderCellDef>Item</th>
+        <td mat-cell *matCellDef="let i" class="cel-nome">
+          {{ i.nome }}
+          @if (i.ingredienteNome) { <span class="sub">{{ i.ingredienteNome }}</span> }
+          @if (i.receitaNome) { <span class="sub">{{ i.receitaNome }} · {{ i.tamanhoPacoteNome }}</span> }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef>Tipo</th>
+        <td mat-cell *matCellDef="let i" class="cel-sec">{{ rotulo(i.tipo) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef>Categoria</th>
+        <td mat-cell *matCellDef="let i" class="cel-sec">{{ rotulo(i.categoria) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="saldo">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Saldo</th>
+        <td mat-cell *matCellDef="let i" class="t-right cel-saldo" [class.alerta]="i.abaixoDoMinimo">
+          {{ fmtQtd(i.quantidadeAtual) }} {{ rotulo(i.unidadeMedida) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="custo">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Custo médio</th>
+        <td mat-cell *matCellDef="let i" class="t-right">{{ fmtMoeda(i.custoMedio) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="minimo">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Mínimo</th>
+        <td mat-cell *matCellDef="let i" class="t-right cel-sec">{{ fmtQtd(i.quantidadeMinima) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="ativo">
+        <th mat-header-cell *matHeaderCellDef class="t-center">Status</th>
+        <td mat-cell *matCellDef="let i" class="t-center">
+          <span class="chip" [class.chip-inativo]="!i.ativo">{{ i.ativo ? 'Ativo' : 'Inativo' }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let i" class="t-acoes">
+          <button mat-icon-button (click)="abrirDetalhe(i); $event.stopPropagation()" matTooltip="Movimentar / detalhe">
+            <mat-icon>sync_alt</mat-icon>
+          </button>
+          <button mat-icon-button (click)="editar(i, $event)" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="alternarStatus(i, $event)" [matTooltip]="i.ativo ? 'Inativar' : 'Reativar'">
+            <mat-icon>{{ i.ativo ? 'block' : 'check_circle' }}</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="linha" (click)="abrirDetalhe(row)"></tr>
+
+      <tr class="sem-dados" *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length">Nenhum item de estoque encontrado.</td>
+      </tr>
+    </table>
+  </div>
+</section>

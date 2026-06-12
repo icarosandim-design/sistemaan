@@ -1,0 +1,43 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.5rem;
+  min-width: 540px;
+}
+
+.tipo-toggle {
+  align-self: center;
+  margin-bottom: 0.5rem;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem 0.75rem;
+}
+
+.full { grid-column: 1 / -1; }
+
+.nota {
+  margin: 0.1rem 0 0.4rem;
+  font-size: 0.82rem;
+  color: var(--an-texto-secundario);
+}
+
+.toggles {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn-cta {
+  background: var(--an-cta);
+  color: #fff;
+  &:hover { background: var(--an-cta-hover); }
+}
+
+@media (max-width: 580px) {
+  .form { min-width: auto; }
+  .grade { grid-template-columns: 1fr; }
+}

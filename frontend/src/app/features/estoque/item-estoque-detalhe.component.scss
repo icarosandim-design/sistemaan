@@ -1,0 +1,115 @@
+mat-dialog-content { min-width: 640px; }
+
+@media (max-width: 680px) {
+  mat-dialog-content { min-width: auto; }
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.12rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(63, 79, 45, 0.12);
+  color: var(--an-primaria);
+
+  &.alerta { background: #fbeceb; color: #b3261e; }
+  .mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+}
+
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.6rem 1rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+
+  .rot { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--an-texto-secundario); }
+  .val { font-weight: 600; color: var(--an-texto-titulo); }
+  .val.grande { font-size: 1.15rem; color: var(--an-primaria); }
+}
+
+.acoes-op {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  .btn-cta { background: var(--an-cta); color: #fff; }
+  .mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+}
+
+.tab-conteudo { padding: 0.8rem 0.2rem; }
+
+.vazio { color: var(--an-texto-secundario); text-align: center; padding: 1rem; }
+
+/* Lotes */
+.lote {
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio-sm, 8px);
+  padding: 0.5rem 0.7rem;
+  margin-bottom: 0.5rem;
+
+  &.esgotado { opacity: 0.65; }
+}
+
+.lote-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  strong { color: var(--an-texto-titulo); }
+  .lote-status { font-size: 0.72rem; font-weight: 700; color: var(--an-texto-secundario); text-transform: uppercase; }
+}
+
+.lote-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  margin-top: 0.25rem;
+  font-size: 0.84rem;
+  color: var(--an-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Movimentações */
+.mov {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.2rem;
+  border-bottom: 1px dashed var(--an-fundo-secundario);
+
+  &:last-child { border-bottom: none; }
+}
+
+.mov-l { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+
+.mov-tipo {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &.entrada { color: #3f4f2d; }
+  &.saida { color: #b3261e; }
+}
+
+.mov-desc { color: var(--an-texto-titulo); font-size: 0.88rem; }
+
+.mov-r { text-align: right; white-space: nowrap; }
+.mov-saldo { display: block; font-weight: 600; color: var(--an-primaria); font-variant-numeric: tabular-nums; }
+.mov-meta { font-size: 0.74rem; color: var(--an-texto-secundario); }

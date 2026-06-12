@@ -58,7 +58,14 @@ export class MainLayoutComponent {
       ],
     },
     { label: 'Produção', icone: 'factory', rota: null },
-    { label: 'Estoque', icone: 'inventory_2', rota: null },
+    {
+      label: 'Estoque',
+      icone: 'inventory_2',
+      filhos: [
+        { label: 'Itens de Estoque', icone: 'inventory', rota: '/estoque/itens' },
+        { label: 'Fornecedores', icone: 'local_shipping', rota: '/estoque/fornecedores' },
+      ],
+    },
     { label: 'Entregas', icone: 'local_shipping', rota: '/entregas' },
     {
       label: 'Cadastros',
