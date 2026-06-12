@@ -46,13 +46,15 @@ export interface ItemPersonalizado {
   gramasCozidas: number;
 }
 
-/** Receita Personalizada — pertence a um único pet. */
+/** Receita Personalizada — pertence a um único pet. O "pacote" tem o tamanho
+ * da própria receita (soma dos ingredientes cozidos); o operador informa quantos
+ * pacotes daquela receita entram no ciclo. */
 export interface ReceitaPersonalizada {
   uid: number;
   codigo: string;
   observacoesPreparo: string;
   itens: ItemPersonalizado[];
-  pacotes: Pacotes;
+  quantidadePacotes: number;
 }
 
 // ---------------------------------------------------------------------------

@@ -200,8 +200,7 @@
               <div class="ing-linha">
                 <mat-form-field appearance="outline" class="c-ing">
                   <mat-label>Ingrediente</mat-label>
-                  <mat-select [(ngModel)]="it.ingredienteId" [ngModelOptions]="{ standalone: true }"
-                              (ngModelChange)="aoMudarReceitaPers(r)">
+                  <mat-select [(ngModel)]="it.ingredienteId" [ngModelOptions]="{ standalone: true }">
                     @for (ing of ingredientes; track ing.id) {
                       <mat-option [value]="ing.id">{{ ing.nome }}</mat-option>
                     }
@@ -211,7 +210,7 @@
                 <mat-form-field appearance="outline" class="c-g">
                   <mat-label>g cozidas</mat-label>
                   <input matInput type="number" step="50" [(ngModel)]="it.gramasCozidas"
-                         [ngModelOptions]="{ standalone: true }" (ngModelChange)="aoMudarReceitaPers(r)" />
+                         [ngModelOptions]="{ standalone: true }" />
                 </mat-form-field>
                 <span class="c-custo">{{ fmtMoeda(custoItemPers(it)) }}</span>
                 <button mat-icon-button type="button" class="c-rm rm" (click)="removerItemPers(r, $index)" matTooltip="Remover">
@@ -229,36 +228,62 @@
             <textarea matInput rows="2" [(ngModel)]="r.observacoesPreparo" [ngModelOptions]="{ standalone: true }"></textarea>
           </mat-form-field>
 
-          <!-- Totais + custo gerencial + pacotes -->
+          <!-- Pacote da receita (tamanho = ingredientes) + quantidade no ciclo -->
           <div class="pers-rodape">
             <div class="pr-dado">
+              <span class="rotulo">Tamanho do pacote</span>
+              <span class="valor">{{ fmtPeso(tamanhoPacotePers(r)) }}</span>
+            </div>
+            <mat-icon class="op">close</mat-icon>
+            <mat-form-field appearance="outline" class="f-qtd">
+              <mat-label>Pacotes no ciclo</mat-label>
+              <input matInput type="number" min="0" [(ngModel)]="r.quantidadePacotes" [ngModelOptions]="{ standalone: true }" />
+            </mat-form-field>
+            <mat-icon class="op">drag_handle</mat-icon>
+            <div class="pr-dado destaque">
               <span class="rotulo">Total no ciclo</span>
-              <span class="valor">{{ fmtPeso(totalGramasPers(r)) }}</span>
+              <span class="valor">{{ fmtPeso(totalCicloPers(r)) }}</span>
             </div>
             <div class="pr-dado discreto">
-              <span class="rotulo">Custo estimado</span>
+              <span class="rotulo">Custo/pacote</span>
               <span class="valor">{{ fmtMoeda(custoReceitaPers(r)) }}</span>
             </div>
             <div class="pr-dado discreto">
               <span class="rotulo">Custo/kg cozido</span>
               <span class="valor">{{ fmtMoeda(custoPorKgPers(r)) }}</span>
             </div>
-            <div class="pr-pacotes">
-              <span class="pac-tit"><mat-icon>inventory_2</mat-icon> Pacotes</span>
-              @if (semTamanhos) {
-                <span class="pac-aviso">Cadastre um tamanho de pacote ativo.</span>
-              } @else {
-                @for (t of tamanhos; track t.id) {
-                  <mat-form-field appearance="outline" class="f-pac">
-                    <mat-label>{{ fmtPeso(t.pesoGramas) }}</mat-label>
-                    <input matInput type="number" min="0" [(ngModel)]="r.pacotes[t.id]" [ngModelOptions]="{ standalone: true }" />
-                  </mat-form-field>
-                }
-                <span class="pac-env">Enviado: <strong>{{ fmtPeso(enviadoPers(r)) }}</strong></span>
-              }
+            <div class="pr-dado discreto">
+              <span class="rotulo">Custo no ciclo</span>
+              <span class="valor">{{ fmtMoeda(custoCicloPers(r)) }}</span>
             </div>
           </div>
         </div>
+      }
+
+      @if (receitasPers.length > 0) {
+        <div class="status" [class]="statusPers">
+          <div class="st-item"><span>Total necessário</span><strong>{{ fmtPeso(totalCiclo) }}</strong></div>
+          <div class="st-item"><span>Total informado (pacotes)</span><strong>{{ fmtPeso(totalInformadoPers) }}</strong></div>
+          <div class="st-item">
+            <span>
+              @switch (statusPers) {
+                @case ('faltando') { Faltam }
+                @default { Situação }
+              }
+            </span>
+            <strong>
+              @switch (statusPers) {
+                @case ('atendido') { Atendido ✓ (+{{ fmtPeso(diferencaPers) }}) }
+                @case ('faltando') { {{ fmtPeso(-diferencaPers) }} }
+                @default { defina o ciclo }
+              }
+            </strong>
+          </div>
+        </div>
+        <p class="nota">
+          A quantidade de pacotes por receita é livre (distribua como quiser). Cada pacote = a receita
+          inteira; o planejamento de produção somará os ingredientes por pacote × quantidade.
+        </p>
       }
     </section>
   }

@@ -87,7 +87,6 @@ export class PlanoDialogComponent {
         this.tamanhos = lista.filter((t) => t.ativo).sort((a, b) => a.pesoGramas - b.pesoGramas);
         this.carregandoTamanhos = false;
         this.recomputeCasa();
-        this.receitasPers.forEach((r) => this.aoMudarReceitaPers(r));
       },
       error: () => {
         this.carregandoTamanhos = false;
@@ -171,10 +170,9 @@ export class PlanoDialogComponent {
       codigo: `VET-${n} ${this.pet.nome}`,
       observacoesPreparo: '',
       itens: [{ ingredienteId: null, gramasCozidas: 0 }],
-      pacotes: {},
+      quantidadePacotes: 1,
     };
     this.receitasPers.push(r);
-    this.aoMudarReceitaPers(r);
   }
 
   removerReceitaPers(uid: number): void {
@@ -187,7 +185,6 @@ export class PlanoDialogComponent {
 
   removerItemPers(r: ReceitaPersonalizada, idx: number): void {
     r.itens.splice(idx, 1);
-    this.aoMudarReceitaPers(r);
   }
 
   ingrediente(id: number | null): IngredienteMock | undefined {
@@ -198,8 +195,14 @@ export class PlanoDialogComponent {
     return custoIngrediente(it.gramasCozidas || 0, this.ingrediente(it.ingredienteId));
   }
 
-  totalGramasPers(r: ReceitaPersonalizada): number {
+  /** Tamanho do pacote da receita = soma dos ingredientes cozidos. */
+  tamanhoPacotePers(r: ReceitaPersonalizada): number {
     return r.itens.reduce((s, it) => s + (it.gramasCozidas || 0), 0);
+  }
+
+  /** Total da receita no ciclo = tamanho do pacote × quantidade de pacotes. */
+  totalCicloPers(r: ReceitaPersonalizada): number {
+    return this.tamanhoPacotePers(r) * (r.quantidadePacotes || 0);
   }
 
   custoReceitaPers(r: ReceitaPersonalizada): number {
@@ -207,17 +210,28 @@ export class PlanoDialogComponent {
   }
 
   custoPorKgPers(r: ReceitaPersonalizada): number {
-    const g = this.totalGramasPers(r);
+    const g = this.tamanhoPacotePers(r);
     return g > 0 ? this.custoReceitaPers(r) / (g / 1000) : 0;
   }
 
-  /** Reaplica a sugestão de pacotes quando os ingredientes mudam. */
-  aoMudarReceitaPers(r: ReceitaPersonalizada): void {
-    r.pacotes = sugerirPacotes(this.totalGramasPers(r), this.tamanhos);
+  /** Custo da receita no ciclo = custo por pacote × quantidade de pacotes. */
+  custoCicloPers(r: ReceitaPersonalizada): number {
+    return this.custoReceitaPers(r) * (r.quantidadePacotes || 0);
   }
 
-  enviadoPers(r: ReceitaPersonalizada): number {
-    return gramasPacotes(r.pacotes, this.tamanhos);
+  get totalInformadoPers(): number {
+    return this.receitasPers.reduce((s, r) => s + this.totalCicloPers(r), 0);
+  }
+
+  get diferencaPers(): number {
+    return this.totalInformadoPers - this.totalCiclo;
+  }
+
+  get statusPers(): 'vazio' | 'faltando' | 'atendido' {
+    if (this.totalCiclo <= 0 || this.receitasPers.length === 0) {
+      return 'vazio';
+    }
+    return this.totalInformadoPers < this.totalCiclo ? 'faltando' : 'atendido';
   }
 
   fechar(): void {

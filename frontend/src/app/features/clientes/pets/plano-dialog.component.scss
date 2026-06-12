@@ -354,6 +354,19 @@ mat-dialog-content {
     font-size: 0.9rem;
     color: var(--an-texto-secundario);
   }
+
+  &.destaque .valor {
+    color: var(--an-primaria);
+    font-size: 1.1rem;
+  }
+}
+
+.f-qtd {
+  width: 130px;
+}
+
+.pers-rodape .op {
+  color: var(--an-texto-secundario);
 }
 
 .btn-cta {
