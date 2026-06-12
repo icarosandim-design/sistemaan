@@ -15,10 +15,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   Cliente,
   fmtCpf,
+  fmtMoeda,
   labelStatusFinanceiro,
   labelTipo,
   SalvarClienteRequest,
 } from './clientes.model';
+import { petsMockDoCliente } from './pets/pet.model';
 import { ClientesService } from './clientes.service';
 import { ClienteDialogComponent } from './cliente-dialog.component';
 import { CancelarDialogComponent } from './cancelar-dialog.component';
@@ -46,11 +48,13 @@ export class ClientesComponent implements OnInit, AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['nome', 'cpf', 'telefone', 'cidade', 'tipo', 'financeiro', 'situacao', 'acoes'];
+  readonly displayedColumns = ['nome', 'pets', 'telefone', 'cidade', 'tipo', 'mensalidade', 'financeiro', 'situacao', 'acoes'];
   readonly dataSource = new MatTableDataSource<Cliente>([]);
   readonly labelTipo = labelTipo;
   readonly labelStatusFinanceiro = labelStatusFinanceiro;
   readonly fmtCpf = fmtCpf;
+  readonly fmtMoeda = fmtMoeda;
+  readonly petsDoCliente = petsMockDoCliente;
 
   carregando = false;
   filtroTexto = '';

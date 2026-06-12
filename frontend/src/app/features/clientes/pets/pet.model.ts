@@ -67,3 +67,19 @@ export const MOCK_PETS: Pet[] = [
     gramasDiaAjustadas: null,
   },
 ];
+
+/**
+ * MOCK: nomes dos pets de um cliente, só para exibição na listagem nesta fase.
+ * Determinístico pelo id do cliente. Será substituído pela relação real
+ * Cliente → Pets quando o backend de Pets existir.
+ */
+export function petsMockDoCliente(clienteId: number): string[] {
+  const pools = [
+    ['Thor', 'Luna'],
+    ['Mel'],
+    ['Bidu', 'Nina'],
+    ['Rex'],
+    [],
+  ];
+  return pools[clienteId % pools.length];
+}
