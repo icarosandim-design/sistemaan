@@ -9,9 +9,12 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
   Cliente,
+  FormaPagamento,
   FORMAS_PAGAMENTO,
   SalvarClienteRequest,
   STATUS_FINANCEIRO,
+  StatusFinanceiro,
+  TipoCliente,
   TIPOS_CLIENTE,
 } from './clientes.model';
 
@@ -52,11 +55,11 @@ export class ClienteDialogComponent {
     cidade: [''],
     observacoes: [''],
     ativo: [true],
-    tipoCliente: ['Assinante' as const],
-    formaPagamento: ['Pix' as string | null],
+    tipoCliente: ['Assinante' as TipoCliente],
+    formaPagamento: ['Pix' as FormaPagamento | null],
     diaCobranca: [null as number | null, [Validators.min(1), Validators.max(31)]],
     valorRecorrenteMensal: [0, [Validators.min(0)]],
-    statusFinanceiro: ['EmDia' as const],
+    statusFinanceiro: ['EmDia' as StatusFinanceiro],
     observacoesFinanceiras: [''],
   });
 

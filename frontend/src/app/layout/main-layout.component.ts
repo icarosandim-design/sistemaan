@@ -53,7 +53,7 @@ export class MainLayoutComponent {
       label: 'Clientes',
       icone: 'group',
       filhos: [
-        { label: 'Clientes', icone: 'badge', rota: null },
+        { label: 'Clientes', icone: 'badge', rota: '/clientes' },
         { label: 'Pets', icone: 'pets', rota: null },
       ],
     },
