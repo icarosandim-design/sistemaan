@@ -5,6 +5,7 @@ using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
+using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Pacotes;
 using SistemaAN.Domain.Pets;
@@ -55,6 +56,18 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PlanoItemPacote> PlanoItemPacotes => Set<PlanoItemPacote>();
 
     public DbSet<Entrega> Entregas => Set<Entrega>();
+
+    public DbSet<Fornecedor> Fornecedores => Set<Fornecedor>();
+
+    public DbSet<ItemEstoque> ItensEstoque => Set<ItemEstoque>();
+
+    public DbSet<LoteEstoque> LotesEstoque => Set<LoteEstoque>();
+
+    public DbSet<MovimentacaoEstoque> MovimentacoesEstoque => Set<MovimentacaoEstoque>();
+
+    public DbSet<EntradaEstoque> EntradasEstoque => Set<EntradaEstoque>();
+
+    public DbSet<AjusteEstoque> AjustesEstoque => Set<AjusteEstoque>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

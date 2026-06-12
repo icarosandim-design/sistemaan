@@ -3,6 +3,7 @@ using SistemaAN.Application.Catalog;
 using SistemaAN.Application.Clientes;
 using SistemaAN.Application.Consumo;
 using SistemaAN.Application.Entregas;
+using SistemaAN.Application.Estoque;
 using SistemaAN.Application.Identity;
 using SistemaAN.Application.Pacotes;
 using SistemaAN.Application.Pets;
@@ -30,6 +31,9 @@ public static class DependencyInjection
         services.AddScoped<IReceitaPersonalizadaService, ReceitaPersonalizadaService>();
         services.AddScoped<IPlanoAlimentarService, PlanoAlimentarService>();
         services.AddScoped<IEntregaService, EntregaService>();
+        services.AddScoped<IFornecedorService, FornecedorService>();
+        services.AddScoped<IItemEstoqueService, ItemEstoqueService>();
+        services.AddScoped<IEstoqueMovimentacaoService, EstoqueMovimentacaoService>();
         return services;
     }
 }

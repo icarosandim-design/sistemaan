@@ -1,8 +1,16 @@
 # 20 — Módulo de Estoque
 
-> Status: **modelagem em validação**. Nenhum código/migration/endpoint/tela ainda.
+> Status: **modelagem aprovada**. **Fase 1 (backend núcleo) implementada** —
+> Fornecedor, ItemEstoque, LoteEstoque, MovimentacaoEstoque, EntradaEstoque,
+> AjusteEstoque, custo médio ponderado móvel, FIFO, bloqueio de saldo negativo,
+> estoque mínimo e endpoints. Sem telas ainda; aguardando validação de build/migration.
 > O Estoque é a **fonte de verdade do saldo físico** e substituirá, no futuro, os
 > mocks da tela de Entregas (estoque das Receitas da Casa e prontidão das Personalizadas).
+>
+> Decisões aprovadas: custo médio ponderado móvel (sem snapshot mensal agora);
+> Ingrediente↔ItemEstoque **1:1 opcional**; categoria **enum**; **bloquear** saldo
+> negativo; entrada **simplificada** por item/lote; Casa = necessário do dia × saldo
+> atual (sem reserva); Fornecedor = cadastro-base **global**.
 
 ## 1. Princípios da modelagem
 

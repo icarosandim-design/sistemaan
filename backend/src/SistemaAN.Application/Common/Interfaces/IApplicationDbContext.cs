@@ -3,6 +3,7 @@ using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
+using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Pacotes;
 using SistemaAN.Domain.Pets;
@@ -47,6 +48,18 @@ public interface IApplicationDbContext
     DbSet<PlanoItemPacote> PlanoItemPacotes { get; }
 
     DbSet<Entrega> Entregas { get; }
+
+    DbSet<Fornecedor> Fornecedores { get; }
+
+    DbSet<ItemEstoque> ItensEstoque { get; }
+
+    DbSet<LoteEstoque> LotesEstoque { get; }
+
+    DbSet<MovimentacaoEstoque> MovimentacoesEstoque { get; }
+
+    DbSet<EntradaEstoque> EntradasEstoque { get; }
+
+    DbSet<AjusteEstoque> AjustesEstoque { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
