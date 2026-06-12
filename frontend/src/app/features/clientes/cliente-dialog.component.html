@@ -143,6 +143,81 @@
           </mat-form-field>
         </div>
       </mat-tab>
+
+      <!-- Pets -->
+      <mat-tab label="Pets">
+        <div class="aba pets-aba">
+          <div class="pets-topo">
+            <span class="pets-nota">Pets de exemplo (mock) · não são salvos nesta etapa.</span>
+            <button mat-stroked-button type="button" (click)="adicionarPet()">
+              <mat-icon>add</mat-icon> Adicionar pet
+            </button>
+          </div>
+
+          @if (pets().length === 0) {
+            <p class="vazio">Nenhum pet cadastrado.</p>
+          }
+
+          @for (p of pets(); track p.id) {
+            <div class="pet-card" [class.inativo]="!p.ativo">
+              <div class="pet-head">
+                <div class="pet-id">
+                  <mat-icon>pets</mat-icon>
+                  <div>
+                    <div class="pet-nome">
+                      {{ p.nome }}
+                      <span class="chip" [class.chip-inativo]="!p.ativo">{{ p.ativo ? 'Ativo' : 'Inativo' }}</span>
+                    </div>
+                    <div class="pet-sub">{{ p.raca || 'Sem raça' }} · {{ labelSexo(p.sexo) }}</div>
+                  </div>
+                </div>
+                <div class="pet-acoes">
+                  <button mat-icon-button type="button" (click)="editarPet(p)" matTooltip="Editar">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" (click)="alternarPet(p, $event)"
+                          [matTooltip]="p.ativo ? 'Inativar' : 'Reativar'">
+                    <mat-icon>{{ p.ativo ? 'block' : 'check_circle' }}</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div class="pet-dados">
+                <div class="dado"><span class="rotulo">Peso</span><span class="valor">{{ p.pesoKg }} kg</span></div>
+                <div class="dado">
+                  <span class="rotulo">Idade</span>
+                  <span class="valor">{{ p.idadeAprox || (p.dataNascimento ? (p.dataNascimento | date: 'dd/MM/yyyy') : '—') }}</span>
+                </div>
+                <div class="dado">
+                  <span class="rotulo">Sugestão (Tabela de Consumo)</span>
+                  <span class="valor">{{ sugestaoGramasDia(p.pesoKg) !== null ? (sugestaoGramasDia(p.pesoKg) + ' g/dia') : '—' }}</span>
+                </div>
+                <div class="dado">
+                  <span class="rotulo">Ajuste manual</span>
+                  <span class="valor destaque">{{ p.gramasDiaAjustadas !== null ? (p.gramasDiaAjustadas + ' g/dia') : 'usar sugestão' }}</span>
+                </div>
+              </div>
+
+              @if (p.observacoesAlimentares) {
+                <div class="pet-obs"><mat-icon>restaurant</mat-icon> {{ p.observacoesAlimentares }}</div>
+              }
+
+              <!-- Prévia do Plano Alimentar (placeholder) -->
+              <div class="plano-preview">
+                <div class="plano-tit"><mat-icon>event_repeat</mat-icon> Plano Alimentar <span class="badge">em breve</span></div>
+                <div class="plano-grid">
+                  <div><span class="rotulo">Frequência</span><span class="valor">—</span></div>
+                  <div><span class="rotulo">1ª entrega</span><span class="valor">—</span></div>
+                  <div><span class="rotulo">Tipo</span><span class="valor">—</span></div>
+                  <div><span class="rotulo">Receitas</span><span class="valor">—</span></div>
+                  <div><span class="rotulo">Total / ciclo</span><span class="valor">—</span></div>
+                </div>
+                <div class="plano-nota">Será configurado na próxima etapa (Plano Alimentar).</div>
+              </div>
+            </div>
+          }
+        </div>
+      </mat-tab>
     </mat-tab-group>
   </form>
 </mat-dialog-content>

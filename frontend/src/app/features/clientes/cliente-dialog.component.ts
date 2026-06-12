@@ -1,11 +1,16 @@
-import { Component, Inject, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, Inject, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
+import { labelSexo, MOCK_PETS, Pet, sugestaoGramasDia } from './pets/pet.model';
+import { PetDialogComponent } from './pets/pet-dialog.component';
 import {
   Cliente,
   FormaPagamento,
@@ -27,12 +32,15 @@ export interface ClienteDialogData {
   selector: 'app-cliente-dialog',
   standalone: true,
   imports: [
+    DatePipe,
     ReactiveFormsModule,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
     MatTabsModule,
   ],
   templateUrl: './cliente-dialog.component.html',
@@ -40,6 +48,12 @@ export interface ClienteDialogData {
 })
 export class ClienteDialogComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly petDialog = inject(MatDialog);
+
+  // Pets (mock nesta fase — não persistidos)
+  readonly pets = signal<Pet[]>(MOCK_PETS.map((p) => ({ ...p })));
+  readonly labelSexo = labelSexo;
+  readonly sugestaoGramasDia = sugestaoGramasDia;
 
   readonly tipos = TIPOS_CLIENTE;
   readonly formas = FORMAS_PAGAMENTO;
@@ -134,5 +148,42 @@ export class ClienteDialogComponent {
 
   cancelar(): void {
     this.ref.close();
+  }
+
+  // ===== Pets (mock) =====
+  adicionarPet(): void {
+    this.abrirPet(null);
+  }
+
+  editarPet(p: Pet): void {
+    this.abrirPet(p);
+  }
+
+  alternarPet(p: Pet, ev: Event): void {
+    ev.stopPropagation();
+    this.pets.update((lista) => lista.map((x) => (x.id === p.id ? { ...x, ativo: !x.ativo } : x)));
+  }
+
+  private abrirPet(p: Pet | null): void {
+    const ref = this.petDialog.open(PetDialogComponent, {
+      data: { pet: p },
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: false,
+    });
+    ref.afterClosed().subscribe((res: Pet | undefined) => {
+      if (!res) {
+        return;
+      }
+      this.pets.update((lista) => {
+        const idx = lista.findIndex((x) => x.id === res.id);
+        if (idx >= 0) {
+          const copia = [...lista];
+          copia[idx] = res;
+          return copia;
+        }
+        return [...lista, res];
+      });
+    });
   }
 }
