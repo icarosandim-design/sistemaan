@@ -48,7 +48,7 @@ export class ClientesComponent implements OnInit, AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['nome', 'pets', 'telefone', 'cidade', 'tipo', 'mensalidade', 'financeiro', 'situacao', 'acoes'];
+  readonly displayedColumns = ['nome', 'pets', 'telefone', 'cidade', 'tipo', 'mensalidade', 'situacao', 'acoes'];
   readonly dataSource = new MatTableDataSource<Cliente>([]);
   readonly labelTipo = labelTipo;
   readonly labelStatusFinanceiro = labelStatusFinanceiro;
@@ -158,6 +158,12 @@ export class ClientesComponent implements OnInit, AfterViewInit {
 
   statusFinClasse(c: Cliente): string {
     return c.statusFinanceiro === 'EmDia' ? 'fin-ok' : c.statusFinanceiro === 'Pendente' ? 'fin-pend' : 'fin-inad';
+  }
+
+  localCliente(c: Cliente): string {
+    const cidadeUf = [c.cidade, c.estado].filter(Boolean).join('/');
+    const partes = [c.bairro, cidadeUf].filter(Boolean);
+    return partes.length ? partes.join(' · ') : '—';
   }
 
   private abrir(c: Cliente | null): void {

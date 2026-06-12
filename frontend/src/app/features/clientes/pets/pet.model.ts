@@ -75,10 +75,10 @@ export const MOCK_PETS: Pet[] = [
  */
 export function petsMockDoCliente(clienteId: number): string[] {
   const pools = [
-    ['Thor', 'Luna'],
-    ['Mel'],
-    ['Bidu', 'Nina'],
-    ['Rex'],
+    ['Thor', 'Luna', 'Mel'],
+    ['Bidu'],
+    ['Nina', 'Rex'],
+    ['Amora'],
     [],
   ];
   return pools[clienteId % pools.length];

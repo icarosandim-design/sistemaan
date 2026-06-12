@@ -80,35 +80,6 @@ th.mat-mdc-header-cell {
   white-space: nowrap;
 }
 
-/* Coluna de pets (mock) */
-.pets-cel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.pet-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 0.12rem 0.5rem 0.12rem 0.35rem;
-  border-radius: 999px;
-  background: rgba(168, 177, 126, 0.2);
-  color: var(--an-primaria);
-
-  .mat-icon {
-    font-size: 0.95rem;
-    width: 0.95rem;
-    height: 0.95rem;
-  }
-}
-
-.vazio-cel {
-  color: var(--an-texto-secundario);
-}
-
 .t-acoes {
   text-align: right !important;
   width: 104px;
