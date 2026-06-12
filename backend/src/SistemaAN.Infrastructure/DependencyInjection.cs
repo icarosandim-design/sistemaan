@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -46,6 +47,10 @@ public static class DependencyInjection
                 .UseNpgsql(connectionString, npgsql =>
                     npgsql.MigrationsHistoryTable("__ef_migrations_history"))
                 .UseSnakeCaseNamingConvention()
+                // Migrations e snapshot são mantidos à mão neste projeto (sem dotnet ef no fluxo).
+                // O schema vem da migration; a checagem de drift model×snapshot do EF 9 não deve
+                // abortar o startup por diferenças cosméticas do snapshot.
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
         });
 

@@ -65,6 +65,8 @@ public sealed class ItemEstoqueConfiguration : IEntityTypeConfiguration<ItemEsto
         builder.HasIndex(i => new { i.ReceitaId, i.TamanhoPacoteId }).IsUnique().HasDatabaseName("ix_itens_estoque_receita_tamanho");
         builder.HasIndex(i => i.Nome).HasDatabaseName("ix_itens_estoque_nome");
         builder.HasIndex(i => i.Tipo).HasDatabaseName("ix_itens_estoque_tipo");
+        builder.HasIndex(i => i.FornecedorPrincipalId).HasDatabaseName("ix_itens_estoque_fornecedor_principal_id");
+        builder.HasIndex(i => i.TamanhoPacoteId).HasDatabaseName("ix_itens_estoque_tamanho_pacote_id");
 
         builder
             .HasOne<Ingrediente>()
@@ -117,6 +119,7 @@ public sealed class LoteEstoqueConfiguration : IEntityTypeConfiguration<LoteEsto
 
         builder.HasIndex(l => l.ItemEstoqueId).HasDatabaseName("ix_lotes_estoque_item");
         builder.HasIndex(l => l.Validade).HasDatabaseName("ix_lotes_estoque_validade");
+        builder.HasIndex(l => l.FornecedorId).HasDatabaseName("ix_lotes_estoque_fornecedor_id");
 
         builder
             .HasOne(l => l.Item)
@@ -163,6 +166,9 @@ public sealed class MovimentacaoEstoqueConfiguration : IEntityTypeConfiguration<
         builder.HasIndex(m => m.ItemEstoqueId).HasDatabaseName("ix_mov_estoque_item");
         builder.HasIndex(m => m.DataHora).HasDatabaseName("ix_mov_estoque_data");
         builder.HasIndex(m => m.Tipo).HasDatabaseName("ix_mov_estoque_tipo");
+        builder.HasIndex(m => m.LoteEstoqueId).HasDatabaseName("ix_mov_estoque_lote_estoque_id");
+        builder.HasIndex(m => m.EntradaEstoqueId).HasDatabaseName("ix_mov_estoque_entrada_estoque_id");
+        builder.HasIndex(m => m.AjusteEstoqueId).HasDatabaseName("ix_mov_estoque_ajuste_estoque_id");
 
         builder
             .HasOne(m => m.Item)
@@ -217,6 +223,8 @@ public sealed class EntradaEstoqueConfiguration : IEntityTypeConfiguration<Entra
         builder.Property(e => e.Observacoes).HasMaxLength(1000);
 
         builder.HasIndex(e => e.ItemEstoqueId).HasDatabaseName("ix_entradas_estoque_item");
+        builder.HasIndex(e => e.LoteEstoqueId).HasDatabaseName("ix_entradas_estoque_lote_estoque_id");
+        builder.HasIndex(e => e.FornecedorId).HasDatabaseName("ix_entradas_estoque_fornecedor_id");
 
         builder
             .HasOne(e => e.Item)
@@ -259,6 +267,7 @@ public sealed class AjusteEstoqueConfiguration : IEntityTypeConfiguration<Ajuste
         builder.Property(a => a.Observacao).HasMaxLength(1000);
 
         builder.HasIndex(a => a.ItemEstoqueId).HasDatabaseName("ix_ajustes_estoque_item");
+        builder.HasIndex(a => a.LoteEstoqueId).HasDatabaseName("ix_ajustes_estoque_lote_estoque_id");
 
         builder
             .HasOne(a => a.Item)
