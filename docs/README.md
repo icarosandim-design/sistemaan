@@ -34,6 +34,7 @@
 15. [Módulo Receitas da Casa](15-modulo-receitas-casa.md)
 16. [Módulo Frequências de Entrega](16-modulo-frequencias-entrega.md)
 17. [Módulo Clientes](17-modulo-clientes.md)
+18. [Módulo Plano Alimentar](18-modulo-plano-alimentar.md)
 
 ## Objetivo central do sistema
 

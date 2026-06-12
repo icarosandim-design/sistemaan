@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Application.Planos;
 using SistemaAN.Domain.Pacotes;
 
 namespace SistemaAN.Application.Pacotes;
@@ -53,6 +54,15 @@ public sealed class TamanhoPacoteService : ITamanhoPacoteService
     {
         var tamanho = await _db.TamanhosPacote.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
             ?? throw new NotFoundException("Tamanho de pacote", id);
+
+        if (!ativo && await PlanoUso.TamanhoPacoteEmPlanoAtivoAsync(_db, id, cancellationToken))
+        {
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["ativo"] = ["Não é possível inativar: o tamanho está em um plano alimentar vigente."],
+            });
+        }
+
         tamanho.DefinirAtivo(ativo);
         await _db.SaveChangesAsync(cancellationToken);
     }

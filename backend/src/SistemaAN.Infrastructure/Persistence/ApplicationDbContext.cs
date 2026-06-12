@@ -8,6 +8,7 @@ using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Pacotes;
 using SistemaAN.Domain.Pets;
+using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Infrastructure.Persistence;
@@ -46,6 +47,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Pet> Pets => Set<Pet>();
 
     public DbSet<TamanhoPacote> TamanhosPacote => Set<TamanhoPacote>();
+
+    public DbSet<PlanoAlimentar> PlanosAlimentares => Set<PlanoAlimentar>();
+
+    public DbSet<PlanoItemReceita> PlanoItensReceita => Set<PlanoItemReceita>();
+
+    public DbSet<PlanoItemPacote> PlanoItemPacotes => Set<PlanoItemPacote>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

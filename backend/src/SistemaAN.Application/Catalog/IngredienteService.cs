@@ -60,6 +60,16 @@ public sealed class IngredienteService : IIngredienteService
 
         var (tipo, categoria) = await ValidarAsync(request, cancellationToken);
 
+        // Bloqueia inativar um ingrediente usado por receita em plano vigente.
+        if (ing.Ativo && !request.Ativo
+            && await Planos.PlanoUso.IngredienteEmPlanoAtivoAsync(_db, id, cancellationToken))
+        {
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["ativo"] = ["Não é possível inativar: o ingrediente está em uma receita de um plano alimentar vigente."],
+            });
+        }
+
         ing.Atualizar(request.Nome, request.CategoriaId, tipo, request.Coeficiente, request.CustoKg, request.Ativo);
         await _db.SaveChangesAsync(cancellationToken);
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Application.Planos;
 using SistemaAN.Domain.Entregas;
 
 namespace SistemaAN.Application.Entregas;
@@ -54,6 +55,15 @@ public sealed class FrequenciaEntregaService : IFrequenciaEntregaService
     {
         var f = await _db.FrequenciasEntrega.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
             ?? throw new NotFoundException("Frequência de entrega", id);
+
+        if (!ativo && await PlanoUso.FrequenciaEmPlanoAtivoAsync(_db, id, cancellationToken))
+        {
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["ativo"] = ["Não é possível inativar: a frequência está em um plano alimentar vigente."],
+            });
+        }
+
         f.DefinirAtivo(ativo);
         await _db.SaveChangesAsync(cancellationToken);
     }

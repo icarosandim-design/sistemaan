@@ -41,6 +41,10 @@ public class Receita : AuditableEntity
     public static Receita CriarCasa(string codigo, string nome, string? observacoes)
         => new(codigo.Trim(), nome.Trim(), TipoReceita.Casa, null, observacoes?.Trim() ?? string.Empty);
 
+    /// <summary>Receita exclusiva de um pet (criada dentro do Plano Alimentar).</summary>
+    public static Receita CriarPersonalizada(long petId, string codigo, string nome, string? observacoes)
+        => new(codigo.Trim(), nome.Trim(), TipoReceita.Personalizada, petId, observacoes?.Trim() ?? string.Empty);
+
     public void Atualizar(string codigo, string nome, string? observacoes, bool ativo)
     {
         Codigo = codigo.Trim();
