@@ -116,14 +116,10 @@ export class EntregasComponent implements OnInit {
     });
   }
 
-  // ⚠️ TEMPORÁRIO: força a exibição do mock (6/9/12 entregas) para validar o
-  // layout mesmo com entregas reais já cadastradas.
-  // Para voltar ao comportamento normal, defina FORCAR_MOCK = false (aí usa real
-  // quando houver >= MIN_REAIS entregas, e mock apenas como fallback).
-  private static readonly FORCAR_MOCK = true;
-
+  // Usa dados reais quando existirem; o mock só entra como fallback de validação
+  // visual quando ainda não há entregas reais suficientes.
   private aplicarDados(reais: EntregaResumo[]): void {
-    if (!EntregasComponent.FORCAR_MOCK && reais.length >= EntregasComponent.MIN_REAIS) {
+    if (reais.length >= EntregasComponent.MIN_REAIS) {
       this.usandoMock.set(false);
       this.todas.set(reais);
     } else {
