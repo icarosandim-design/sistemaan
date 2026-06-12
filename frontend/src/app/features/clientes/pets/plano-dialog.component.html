@@ -3,8 +3,12 @@
 <mat-dialog-content>
   <p class="aviso">
     <mat-icon>info</mat-icon>
-    Tela de validação (mock) · dados de exemplo · nada é salvo nesta etapa.
+    Tela de validação (mock) · plano não é salvo · os tamanhos de pacote vêm do cadastro real.
   </p>
+
+  @if (carregandoTamanhos) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
 
   <!-- ===== Configuração ===== -->
   <section class="bloco">
@@ -109,20 +113,22 @@
           <!-- Pacotes desta receita (sugeridos, editáveis) -->
           <div class="pacotes">
             <span class="pac-tit"><mat-icon>inventory_2</mat-icon> Pacotes</span>
-            <mat-form-field appearance="outline" class="f-pac">
-              <mat-label>250g</mat-label>
-              <input matInput type="number" min="0" [(ngModel)]="item.pacotes250" [ngModelOptions]="{ standalone: true }" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="f-pac">
-              <mat-label>500g</mat-label>
-              <input matInput type="number" min="0" [(ngModel)]="item.pacotes500" [ngModelOptions]="{ standalone: true }" />
-            </mat-form-field>
-            <div class="pac-resumo">
-              <span>Enviado: <strong>{{ fmtPeso(enviadoItemCasa(item)) }}</strong></span>
-              <span [class]="enviadoItemCasa(item) - gramasPorReceita >= 0 ? 'pos' : 'neg'">
-                {{ enviadoItemCasa(item) - gramasPorReceita >= 0 ? '+' : '' }}{{ fmtPeso(enviadoItemCasa(item) - gramasPorReceita) }}
-              </span>
-            </div>
+            @if (semTamanhos) {
+              <span class="pac-aviso">Cadastre um tamanho de pacote ativo em Cadastros › Tamanhos de Pacote.</span>
+            } @else {
+              @for (t of tamanhos; track t.id) {
+                <mat-form-field appearance="outline" class="f-pac">
+                  <mat-label>{{ fmtPeso(t.pesoGramas) }}</mat-label>
+                  <input matInput type="number" min="0" [(ngModel)]="item.pacotes[t.id]" [ngModelOptions]="{ standalone: true }" />
+                </mat-form-field>
+              }
+              <div class="pac-resumo">
+                <span>Enviado: <strong>{{ fmtPeso(enviadoItemCasa(item)) }}</strong></span>
+                <span [class]="enviadoItemCasa(item) - gramasPorReceita >= 0 ? 'pos' : 'neg'">
+                  {{ enviadoItemCasa(item) - gramasPorReceita >= 0 ? '+' : '' }}{{ fmtPeso(enviadoItemCasa(item) - gramasPorReceita) }}
+                </span>
+              </div>
+            }
           </div>
         </div>
       }
@@ -148,7 +154,10 @@
           </strong>
         </div>
       </div>
-      <p class="nota">A sugestão de pacotes prioriza praticidade (menos pacotes, preferindo 500g) — ajuste manualmente se quiser.</p>
+      <p class="nota">
+        A sugestão usa os tamanhos de pacote ativos do cadastro e prioriza praticidade
+        (menos pacotes, menor sobra, nunca menos que o necessário) — ajuste manualmente se quiser.
+      </p>
     </section>
   }
 
@@ -236,15 +245,17 @@
             </div>
             <div class="pr-pacotes">
               <span class="pac-tit"><mat-icon>inventory_2</mat-icon> Pacotes</span>
-              <mat-form-field appearance="outline" class="f-pac">
-                <mat-label>250g</mat-label>
-                <input matInput type="number" min="0" [(ngModel)]="r.pacotes250" [ngModelOptions]="{ standalone: true }" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="f-pac">
-                <mat-label>500g</mat-label>
-                <input matInput type="number" min="0" [(ngModel)]="r.pacotes500" [ngModelOptions]="{ standalone: true }" />
-              </mat-form-field>
-              <span class="pac-env">Enviado: <strong>{{ fmtPeso(gramasPacotes(r.pacotes250, r.pacotes500)) }}</strong></span>
+              @if (semTamanhos) {
+                <span class="pac-aviso">Cadastre um tamanho de pacote ativo.</span>
+              } @else {
+                @for (t of tamanhos; track t.id) {
+                  <mat-form-field appearance="outline" class="f-pac">
+                    <mat-label>{{ fmtPeso(t.pesoGramas) }}</mat-label>
+                    <input matInput type="number" min="0" [(ngModel)]="r.pacotes[t.id]" [ngModelOptions]="{ standalone: true }" />
+                  </mat-form-field>
+                }
+                <span class="pac-env">Enviado: <strong>{{ fmtPeso(enviadoPers(r)) }}</strong></span>
+              }
             </div>
           </div>
         </div>

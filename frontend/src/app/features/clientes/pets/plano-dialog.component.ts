@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { TamanhoPacote } from '../../tamanhos-pacote/tamanhos-pacote.model';
+import { TamanhosPacoteService } from '../../tamanhos-pacote/tamanhos-pacote.service';
 import { Pet } from './pet.model';
 import {
   custoIngrediente,
@@ -42,19 +45,25 @@ export interface PlanoDialogData {
     MatIconModule,
     MatButtonToggleModule,
     MatTooltipModule,
+    MatProgressBarModule,
   ],
   templateUrl: './plano-dialog.component.html',
   styleUrl: './plano-dialog.component.scss',
 })
 export class PlanoDialogComponent {
+  private readonly tamanhosService = inject(TamanhosPacoteService);
+
   readonly frequencias = MOCK_FREQUENCIAS;
   readonly receitasCasa = MOCK_RECEITAS_CASA;
   readonly ingredientes = MOCK_INGREDIENTES;
   readonly fmtMoeda = fmtMoeda;
   readonly fmtPeso = fmtPeso;
-  readonly gramasPacotes = gramasPacotes;
 
   readonly pet: Pet;
+
+  // Tamanhos de pacote ATIVOS, vindos do cadastro real.
+  tamanhos: TamanhoPacote[] = [];
+  carregandoTamanhos = true;
 
   // ----- Estado do plano (mock, não persistido) -----
   frequenciaId: number | null = 2; // quinzenal por padrão
@@ -71,7 +80,23 @@ export class PlanoDialogComponent {
   ) {
     this.pet = data.pet;
     this.gramasDiaAjustadas = data.pet.gramasDiaAjustadas ?? data.pet.gramasDiaSugeridas ?? null;
-    this.adicionarReceitaCasa();
+    this.itensCasa.push({ receitaId: null, pacotes: {} });
+
+    this.tamanhosService.listar().subscribe({
+      next: (lista) => {
+        this.tamanhos = lista.filter((t) => t.ativo).sort((a, b) => a.pesoGramas - b.pesoGramas);
+        this.carregandoTamanhos = false;
+        this.recomputeCasa();
+        this.receitasPers.forEach((r) => this.aoMudarReceitaPers(r));
+      },
+      error: () => {
+        this.carregandoTamanhos = false;
+      },
+    });
+  }
+
+  get semTamanhos(): boolean {
+    return !this.carregandoTamanhos && this.tamanhos.length === 0;
   }
 
   // ===== Ciclo =====
@@ -92,13 +117,12 @@ export class PlanoDialogComponent {
   }
 
   // ===== Receita da Casa =====
-  /** Recalcula a divisão/pacotes quando muda frequência, consumo ou nº de receitas. */
   onConfigChange(): void {
     this.recomputeCasa();
   }
 
   adicionarReceitaCasa(): void {
-    this.itensCasa.push({ receitaId: null, pacotes250: 0, pacotes500: 0 });
+    this.itensCasa.push({ receitaId: null, pacotes: {} });
     this.recomputeCasa();
   }
 
@@ -116,14 +140,12 @@ export class PlanoDialogComponent {
   recomputeCasa(): void {
     const share = this.gramasPorReceita;
     for (const item of this.itensCasa) {
-      const s = sugerirPacotes(share);
-      item.pacotes250 = s.p250;
-      item.pacotes500 = s.p500;
+      item.pacotes = sugerirPacotes(share, this.tamanhos);
     }
   }
 
   enviadoItemCasa(item: ItemCasa): number {
-    return gramasPacotes(item.pacotes250, item.pacotes500);
+    return gramasPacotes(item.pacotes, this.tamanhos);
   }
 
   get totalEnviadoCasa(): number {
@@ -144,14 +166,15 @@ export class PlanoDialogComponent {
   // ===== Receita Personalizada =====
   adicionarReceitaPers(): void {
     const n = String(this.receitasPers.length + 1).padStart(3, '0');
-    this.receitasPers.push({
+    const r: ReceitaPersonalizada = {
       uid: this.uidSeq++,
       codigo: `VET-${n} ${this.pet.nome}`,
       observacoesPreparo: '',
       itens: [{ ingredienteId: null, gramasCozidas: 0 }],
-      pacotes250: 0,
-      pacotes500: 0,
-    });
+      pacotes: {},
+    };
+    this.receitasPers.push(r);
+    this.aoMudarReceitaPers(r);
   }
 
   removerReceitaPers(uid: number): void {
@@ -190,9 +213,11 @@ export class PlanoDialogComponent {
 
   /** Reaplica a sugestão de pacotes quando os ingredientes mudam. */
   aoMudarReceitaPers(r: ReceitaPersonalizada): void {
-    const s = sugerirPacotes(this.totalGramasPers(r));
-    r.pacotes250 = s.p250;
-    r.pacotes500 = s.p500;
+    r.pacotes = sugerirPacotes(this.totalGramasPers(r), this.tamanhos);
+  }
+
+  enviadoPers(r: ReceitaPersonalizada): number {
+    return gramasPacotes(r.pacotes, this.tamanhos);
   }
 
   fechar(): void {

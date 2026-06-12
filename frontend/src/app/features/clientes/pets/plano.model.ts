@@ -1,8 +1,10 @@
 // ============================================================================
 // Plano Alimentar do Pet — MOCK (somente frontend, sem backend/persistência).
-// Frequências, Receitas da Casa e Ingredientes aqui são dados de exemplo que,
-// futuramente, virão dos módulos reais já existentes.
+// Os TAMANHOS DE PACOTE vêm do cadastro real (API). Frequências, Receitas da
+// Casa e Ingredientes ainda são dados de exemplo (virão dos módulos reais).
 // ============================================================================
+
+import { TamanhoPacote } from '../../tamanhos-pacote/tamanhos-pacote.model';
 
 export type TipoAlimentacao = 'Casa' | 'Personalizada';
 export type TipoConversao = 'perda' | 'ganho' | 'sem_conversao';
@@ -28,12 +30,14 @@ export interface IngredienteMock {
   custoKg: number; // custo por kg cru
 }
 
+/** Quantidades de pacotes por tamanho: { tamanhoId: quantidade }. */
+export type Pacotes = Record<number, number>;
+
 /** Distribuição de uma Receita da Casa dentro do ciclo. A gramagem por receita
  * é calculada (divisão igual do total); o operador ajusta os pacotes. */
 export interface ItemCasa {
   receitaId: number | null;
-  pacotes250: number;
-  pacotes500: number;
+  pacotes: Pacotes;
 }
 
 /** Ingrediente (cozido) de uma Receita Personalizada. */
@@ -48,12 +52,11 @@ export interface ReceitaPersonalizada {
   codigo: string;
   observacoesPreparo: string;
   itens: ItemPersonalizado[];
-  pacotes250: number;
-  pacotes500: number;
+  pacotes: Pacotes;
 }
 
 // ---------------------------------------------------------------------------
-// Dados mockados
+// Dados mockados (frequências / receitas da casa / ingredientes)
 // ---------------------------------------------------------------------------
 
 export const MOCK_FREQUENCIAS: FrequenciaMock[] = [
@@ -93,28 +96,82 @@ export function fmtPeso(gramas: number): string {
   return `${gramas.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} g`;
 }
 
-/**
- * Sugestão de pacotes (250g/500g) para cobrir um alvo em gramas.
- * Prioriza praticidade: usa o mínimo de pacotes e prefere 500g.
- * (Sugestão, não obrigação — o operador pode ajustar depois.)
- */
-export function sugerirPacotes(alvo: number): { p250: number; p500: number } {
-  if (alvo <= 0) {
-    return { p250: 0, p500: 0 };
-  }
-  let p500 = Math.floor(alvo / 500);
-  const resto = alvo - p500 * 500;
-  let p250 = 0;
-  if (resto > 250) {
-    p500 += 1; // 1 pacote de 500 é mais prático que 2 de 250
-  } else if (resto > 0) {
-    p250 = 1;
-  }
-  return { p250, p500 };
+/** Soma de gramas dos pacotes informados, usando os pesos do cadastro. */
+export function gramasPacotes(pacotes: Pacotes, tamanhos: TamanhoPacote[]): number {
+  return tamanhos.reduce((s, t) => s + (pacotes[t.id] || 0) * t.pesoGramas, 0);
 }
 
-export function gramasPacotes(p250: number, p500: number): number {
-  return (p250 || 0) * 250 + (p500 || 0) * 500;
+/**
+ * Sugestão de pacotes para cobrir um alvo (gramas), usando os TAMANHOS ATIVOS
+ * cadastrados. Prioriza: (1) menor número de pacotes; (2) menor sobra.
+ * Nunca entrega menos que o alvo. Retorna { tamanhoId: quantidade }.
+ * É sugestão — o operador pode ajustar manualmente depois.
+ */
+export function sugerirPacotes(alvo: number, tamanhos: TamanhoPacote[]): Pacotes {
+  const result: Pacotes = {};
+  for (const t of tamanhos) {
+    result[t.id] = 0;
+  }
+
+  const validos = tamanhos.filter((t) => t.pesoGramas > 0);
+  if (alvo <= 0 || validos.length === 0) {
+    return result;
+  }
+
+  const maxPeso = Math.max(...validos.map((t) => t.pesoGramas));
+  const limite = alvo + maxPeso;
+
+  // Proteção contra alvos muito grandes: cai num greedy (maior pacote primeiro).
+  if (limite > 200000) {
+    let restante = alvo;
+    for (const t of [...validos].sort((a, b) => b.pesoGramas - a.pesoGramas)) {
+      const q = Math.floor(restante / t.pesoGramas);
+      result[t.id] = q;
+      restante -= q * t.pesoGramas;
+    }
+    if (restante > 0) {
+      const menor = [...validos].sort((a, b) => a.pesoGramas - b.pesoGramas)[0];
+      result[menor.id] += 1;
+    }
+    return result;
+  }
+
+  // "Troco mínimo" que cobre o alvo: menos pacotes e, em empate, menor sobra.
+  const INF = Number.POSITIVE_INFINITY;
+  const minCount = new Array<number>(limite + 1).fill(INF);
+  const escolha = new Array<number>(limite + 1).fill(-1); // id do último pacote usado
+  minCount[0] = 0;
+  for (let a = 1; a <= limite; a++) {
+    for (const t of validos) {
+      const anterior = a - t.pesoGramas;
+      if (anterior >= 0 && minCount[anterior] + 1 < minCount[a]) {
+        minCount[a] = minCount[anterior] + 1;
+        escolha[a] = t.id;
+      }
+    }
+  }
+
+  // Entre os totais >= alvo, pega o de menor nº de pacotes (e, dentro disso, menor total).
+  let melhorA = -1;
+  let melhorCount = INF;
+  for (let a = alvo; a <= limite; a++) {
+    if (minCount[a] < melhorCount) {
+      melhorCount = minCount[a];
+      melhorA = a;
+    }
+  }
+  if (melhorA < 0) {
+    return result;
+  }
+
+  const pesoPorId = new Map(validos.map((t) => [t.id, t.pesoGramas]));
+  let a = melhorA;
+  while (a > 0 && escolha[a] >= 0) {
+    const id = escolha[a];
+    result[id] = (result[id] || 0) + 1;
+    a -= pesoPorId.get(id) ?? a;
+  }
+  return result;
 }
 
 /** Custo (R$) de X gramas cozidas de um ingrediente (custo/kg cru ÷ rendimento). */
