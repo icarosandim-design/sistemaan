@@ -1,0 +1,259 @@
+<h2 mat-dialog-title>Plano Alimentar — {{ pet.nome }}</h2>
+
+<mat-dialog-content>
+  <p class="aviso">
+    <mat-icon>info</mat-icon>
+    Tela de validação (mock) · dados de exemplo · nada é salvo nesta etapa.
+  </p>
+
+  <!-- ===== Configuração ===== -->
+  <section class="bloco">
+    <h3 class="titulo">Configuração do plano</h3>
+    <div class="linha">
+      <mat-form-field appearance="outline">
+        <mat-label>Frequência de entrega</mat-label>
+        <mat-select [(ngModel)]="frequenciaId" [ngModelOptions]="{ standalone: true }">
+          @for (f of frequencias; track f.id) {
+            <mat-option [value]="f.id">{{ f.nome }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Primeira data de entrega</mat-label>
+        <input matInput type="date" [(ngModel)]="primeiraEntrega" [ngModelOptions]="{ standalone: true }" />
+      </mat-form-field>
+    </div>
+
+    <div class="linha">
+      <mat-form-field appearance="outline">
+        <mat-label>Gramas/dia sugeridas</mat-label>
+        <input matInput [value]="gramasDiaSugeridas !== null ? gramasDiaSugeridas : '—'" readonly />
+        <span matTextSuffix>g/dia</span>
+        <mat-hint>Tabela de Consumo</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Gramas/dia ajustadas</mat-label>
+        <input matInput type="number" step="10" [(ngModel)]="gramasDiaAjustadas" [ngModelOptions]="{ standalone: true }" />
+        <span matTextSuffix>g/dia</span>
+      </mat-form-field>
+    </div>
+
+    <div class="tipo-linha">
+      <span class="tipo-rotulo">Tipo de alimentação</span>
+      <mat-button-toggle-group [(ngModel)]="tipo" [ngModelOptions]="{ standalone: true }" hideSingleSelectionIndicator>
+        <mat-button-toggle value="Casa"><mat-icon>restaurant</mat-icon> Receita da Casa</mat-button-toggle>
+        <mat-button-toggle value="Personalizada"><mat-icon>edit_note</mat-icon> Receita Personalizada</mat-button-toggle>
+      </mat-button-toggle-group>
+      <span class="tipo-nota">Um plano usa apenas um tipo — não mistura Casa e Personalizada.</span>
+    </div>
+  </section>
+
+  <!-- ===== Resumo do ciclo ===== -->
+  <section class="ciclo">
+    <div class="ciclo-item">
+      <span class="rotulo">Consumo diário</span>
+      <span class="valor">{{ fmtPeso(gramasDia) }}/dia</span>
+    </div>
+    <mat-icon class="op">close</mat-icon>
+    <div class="ciclo-item">
+      <span class="rotulo">Dias do ciclo</span>
+      <span class="valor">{{ diasCiclo || '—' }}</span>
+    </div>
+    <mat-icon class="op">drag_handle</mat-icon>
+    <div class="ciclo-item total">
+      <span class="rotulo">Total necessário no ciclo</span>
+      <span class="valor">{{ fmtPeso(totalCiclo) }}</span>
+    </div>
+  </section>
+
+  <!-- ===== Tipo: Receita da Casa ===== -->
+  @if (tipo === 'Casa') {
+    <section class="bloco">
+      <div class="bloco-topo">
+        <h3 class="titulo">Receitas da Casa no ciclo</h3>
+        <button mat-stroked-button type="button" (click)="adicionarReceitaCasa()">
+          <mat-icon>add</mat-icon> Adicionar receita
+        </button>
+      </div>
+
+      @for (item of itensCasa; track $index) {
+        <div class="casa-card">
+          <div class="casa-linha">
+            <mat-form-field appearance="outline" class="f-receita">
+              <mat-label>Receita da Casa</mat-label>
+              <mat-select [(ngModel)]="item.receitaId" [ngModelOptions]="{ standalone: true }">
+                @for (r of receitasCasa; track r.id) {
+                  <mat-option [value]="r.id">{{ r.codigo }} · {{ r.nome }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="f-gramas">
+              <mat-label>Gramas no ciclo</mat-label>
+              <input matInput type="number" step="50" [(ngModel)]="item.gramasCiclo"
+                     [ngModelOptions]="{ standalone: true }" (ngModelChange)="aoMudarGramasCasa(item)" />
+              <span matTextSuffix>g</span>
+            </mat-form-field>
+
+            <button mat-icon-button type="button" class="rm" (click)="removerReceitaCasa($index)" matTooltip="Remover">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+          <!-- Sugestão de pacotes desta receita -->
+          <div class="pacotes">
+            <span class="pac-tit"><mat-icon>inventory_2</mat-icon> Pacotes sugeridos</span>
+            <mat-form-field appearance="outline" class="f-pac">
+              <mat-label>250g</mat-label>
+              <input matInput type="number" min="0" [(ngModel)]="item.pacotes250" [ngModelOptions]="{ standalone: true }" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="f-pac">
+              <mat-label>500g</mat-label>
+              <input matInput type="number" min="0" [(ngModel)]="item.pacotes500" [ngModelOptions]="{ standalone: true }" />
+            </mat-form-field>
+            <div class="pac-resumo">
+              <span>Enviado: <strong>{{ fmtPeso(gramasPacotes(item.pacotes250, item.pacotes500)) }}</strong></span>
+              <span [class]="gramasPacotes(item.pacotes250, item.pacotes500) - item.gramasCiclo >= 0 ? 'pos' : 'neg'">
+                {{ gramasPacotes(item.pacotes250, item.pacotes500) - item.gramasCiclo >= 0 ? '+' : '' }}{{ fmtPeso(gramasPacotes(item.pacotes250, item.pacotes500) - item.gramasCiclo) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Status da distribuição -->
+      <div class="status" [class]="statusCasa">
+        <div class="st-item"><span>Total necessário</span><strong>{{ fmtPeso(totalCiclo) }}</strong></div>
+        <div class="st-item"><span>Distribuído</span><strong>{{ fmtPeso(distribuidoCasa) }}</strong></div>
+        <div class="st-item">
+          <span>
+            @switch (statusCasa) {
+              @case ('valido') { Situação }
+              @case ('faltando') { Faltam }
+              @case ('excedido') { Excedeu }
+              @default { Situação }
+            }
+          </span>
+          <strong>
+            @switch (statusCasa) {
+              @case ('valido') { Plano válido ✓ }
+              @case ('faltando') { {{ fmtPeso(-diferencaCasa) }} }
+              @case ('excedido') { {{ fmtPeso(diferencaCasa) }} }
+              @default { defina o ciclo }
+            }
+          </strong>
+        </div>
+      </div>
+      <p class="nota">A sugestão de pacotes prioriza praticidade (menos pacotes, preferindo 500g) — ajuste manualmente se quiser.</p>
+    </section>
+  }
+
+  <!-- ===== Tipo: Receita Personalizada ===== -->
+  @if (tipo === 'Personalizada') {
+    <section class="bloco">
+      <div class="bloco-topo">
+        <h3 class="titulo">Receitas Personalizadas do pet</h3>
+        <button mat-stroked-button type="button" (click)="adicionarReceitaPers()">
+          <mat-icon>add</mat-icon> Nova receita
+        </button>
+      </div>
+      <p class="nota">Cada receita personalizada pertence só a este pet (não é reutilizada por outros).</p>
+
+      @if (receitasPers.length === 0) {
+        <p class="vazio">Nenhuma receita personalizada. Clique em “Nova receita”.</p>
+      }
+
+      @for (r of receitasPers; track r.uid) {
+        <div class="pers-card">
+          <div class="pers-head">
+            <mat-form-field appearance="outline" class="f-codigo">
+              <mat-label>Nome / código da receita</mat-label>
+              <input matInput [(ngModel)]="r.codigo" [ngModelOptions]="{ standalone: true }" />
+            </mat-form-field>
+            <button mat-icon-button type="button" class="rm" (click)="removerReceitaPers(r.uid)" matTooltip="Remover receita">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+          <div class="ing-tabela">
+            <div class="ing-cab">
+              <span class="c-ing">Ingrediente</span>
+              <span class="c-cat">Categoria</span>
+              <span class="c-g">Gramas cozidas</span>
+              <span class="c-custo">Custo</span>
+              <span class="c-rm"></span>
+            </div>
+            @for (it of r.itens; track $index) {
+              <div class="ing-linha">
+                <mat-form-field appearance="outline" class="c-ing">
+                  <mat-label>Ingrediente</mat-label>
+                  <mat-select [(ngModel)]="it.ingredienteId" [ngModelOptions]="{ standalone: true }"
+                              (ngModelChange)="aoMudarReceitaPers(r)">
+                    @for (ing of ingredientes; track ing.id) {
+                      <mat-option [value]="ing.id">{{ ing.nome }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <span class="c-cat">{{ ingrediente(it.ingredienteId)?.categoria || '—' }}</span>
+                <mat-form-field appearance="outline" class="c-g">
+                  <mat-label>g cozidas</mat-label>
+                  <input matInput type="number" step="50" [(ngModel)]="it.gramasCozidas"
+                         [ngModelOptions]="{ standalone: true }" (ngModelChange)="aoMudarReceitaPers(r)" />
+                </mat-form-field>
+                <span class="c-custo">{{ fmtMoeda(custoItemPers(it)) }}</span>
+                <button mat-icon-button type="button" class="c-rm rm" (click)="removerItemPers(r, $index)" matTooltip="Remover">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            }
+            <button mat-button type="button" class="add-ing" (click)="adicionarItemPers(r)">
+              <mat-icon>add</mat-icon> Adicionar ingrediente
+            </button>
+          </div>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Observações de preparo</mat-label>
+            <textarea matInput rows="2" [(ngModel)]="r.observacoesPreparo" [ngModelOptions]="{ standalone: true }"></textarea>
+          </mat-form-field>
+
+          <!-- Totais + custo gerencial + pacotes -->
+          <div class="pers-rodape">
+            <div class="pr-dado">
+              <span class="rotulo">Total no ciclo</span>
+              <span class="valor">{{ fmtPeso(totalGramasPers(r)) }}</span>
+            </div>
+            <div class="pr-dado discreto">
+              <span class="rotulo">Custo estimado</span>
+              <span class="valor">{{ fmtMoeda(custoReceitaPers(r)) }}</span>
+            </div>
+            <div class="pr-dado discreto">
+              <span class="rotulo">Custo/kg cozido</span>
+              <span class="valor">{{ fmtMoeda(custoPorKgPers(r)) }}</span>
+            </div>
+            <div class="pr-pacotes">
+              <span class="pac-tit"><mat-icon>inventory_2</mat-icon> Pacotes</span>
+              <mat-form-field appearance="outline" class="f-pac">
+                <mat-label>250g</mat-label>
+                <input matInput type="number" min="0" [(ngModel)]="r.pacotes250" [ngModelOptions]="{ standalone: true }" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="f-pac">
+                <mat-label>500g</mat-label>
+                <input matInput type="number" min="0" [(ngModel)]="r.pacotes500" [ngModelOptions]="{ standalone: true }" />
+              </mat-form-field>
+              <span class="pac-env">Enviado: <strong>{{ fmtPeso(gramasPacotes(r.pacotes250, r.pacotes500)) }}</strong></span>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="fechar()">Fechar</button>
+  <button mat-flat-button class="btn-cta" disabled matTooltip="Disponível quando o backend do Plano for criado">
+    Salvar plano (em breve)
+  </button>
+</mat-dialog-actions>

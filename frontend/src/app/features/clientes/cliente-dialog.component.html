@@ -209,9 +209,11 @@
                 <div class="pet-obs"><mat-icon>restaurant</mat-icon> {{ p.observacoesAlimentares }}</div>
               }
 
-              <!-- Prévia do Plano Alimentar (placeholder) -->
+              <!-- Plano Alimentar (mock) -->
               <div class="plano-preview">
-                <div class="plano-tit"><mat-icon>event_repeat</mat-icon> Plano Alimentar <span class="badge">em breve</span></div>
+                <div class="plano-tit">
+                  <mat-icon>event_repeat</mat-icon> Plano Alimentar <span class="badge">mock</span>
+                </div>
                 <div class="plano-grid">
                   <div><span class="rotulo">Frequência</span><span class="valor">—</span></div>
                   <div><span class="rotulo">1ª entrega</span><span class="valor">—</span></div>
@@ -219,7 +221,9 @@
                   <div><span class="rotulo">Receitas</span><span class="valor">—</span></div>
                   <div><span class="rotulo">Total / ciclo</span><span class="valor">—</span></div>
                 </div>
-                <div class="plano-nota">Será configurado na próxima etapa (Plano Alimentar).</div>
+                <button mat-stroked-button type="button" class="plano-btn" (click)="abrirPlano(p, $event)">
+                  <mat-icon>tune</mat-icon> Configurar plano alimentar
+                </button>
               </div>
             </div>
           }

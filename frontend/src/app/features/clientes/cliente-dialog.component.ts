@@ -14,6 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { labelSexo, Pet, SalvarPetRequest } from './pets/pet.model';
 import { PetDialogComponent } from './pets/pet-dialog.component';
+import { PlanoDialogComponent } from './pets/plano-dialog.component';
 import { PetService } from './pets/pet.service';
 import {
   Cliente,
@@ -180,6 +181,16 @@ export class ClienteDialogComponent {
 
   adicionarPet(): void {
     this.abrirPet(null);
+  }
+
+  abrirPlano(p: Pet, ev: Event): void {
+    ev.stopPropagation();
+    this.petDialog.open(PlanoDialogComponent, {
+      data: { pet: p },
+      width: '920px',
+      maxWidth: '96vw',
+      autoFocus: false,
+    });
   }
 
   editarPet(p: Pet): void {
