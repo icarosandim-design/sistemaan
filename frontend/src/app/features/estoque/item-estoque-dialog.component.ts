@@ -107,6 +107,32 @@ export class ItemEstoqueDialogComponent implements OnInit {
       this.service.listarIngredientes().subscribe((xs) => this.ingredientes.set(xs));
       this.service.listarReceitasCasa().subscribe((xs) => this.receitas.set(xs));
       this.service.listarTamanhos().subscribe((xs) => this.tamanhos.set(xs));
+
+      // Nome do insumo é pré-preenchido a partir do ingrediente (editável).
+      this.form.controls.ingredienteId.valueChanges.subscribe((id) => {
+        if (this.tipo === 'Insumo' && id != null) {
+          const ing = this.ingredientes().find((x) => x.id === id);
+          if (ing) {
+            this.form.controls.nome.setValue(ing.nome);
+          }
+        }
+      });
+
+      // Nome do produto acabado é derivado de receita + tamanho.
+      const derivarProdutoAcabado = () => {
+        if (this.tipo !== 'ProdutoAcabadoCasa') {
+          return;
+        }
+        const r = this.receitas().find((x) => x.id === this.form.controls.receitaId.value);
+        const t = this.tamanhos().find((x) => x.id === this.form.controls.tamanhoPacoteId.value);
+        this.form.controls.nome.setValue([r?.nome, t?.nome].filter(Boolean).join(' · '));
+      };
+      this.form.controls.receitaId.valueChanges.subscribe(derivarProdutoAcabado);
+      this.form.controls.tamanhoPacoteId.valueChanges.subscribe(derivarProdutoAcabado);
+      this.form.controls.tipo.valueChanges.subscribe(() => {
+        this.form.controls.nome.setValue('');
+        derivarProdutoAcabado();
+      });
     }
 
     this.aplicarValidadores(this.tipo);

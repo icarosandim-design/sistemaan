@@ -11,7 +11,13 @@
 
     <mat-form-field appearance="outline" class="full">
       <mat-label>Nome do item</mat-label>
-      <input matInput formControlName="nome" placeholder="Ex.: Frango peito cru / Embalagem 500g" />
+      <input matInput formControlName="nome" [readonly]="tipo === 'ProdutoAcabadoCasa'"
+             placeholder="Ex.: Frango peito cru / Embalagem 500g" />
+      @if (tipo === 'ProdutoAcabadoCasa') {
+        <mat-hint>Gerado a partir da receita + tamanho selecionados abaixo.</mat-hint>
+      } @else if (form.controls.ingredienteId.value) {
+        <mat-hint>Pré-preenchido do ingrediente — ajuste se necessário.</mat-hint>
+      }
       @if (form.controls.nome.hasError('required')) { <mat-error>Informe o nome.</mat-error> }
     </mat-form-field>
 
