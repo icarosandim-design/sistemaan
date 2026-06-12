@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,13 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  classeStatus,
-  EntregaResumo,
-  fmtPeso,
-  labelStatus,
-  STATUS_ENTREGA,
-} from './entregas.model';
+import { classeStatus, EntregaResumo, labelStatus, STATUS_ENTREGA } from './entregas.model';
 import { EntregasService } from './entregas.service';
 import { EntregaDetalheDialogComponent } from './entrega-detalhe-dialog.component';
 
@@ -35,7 +28,6 @@ interface DiaCalendario {
   standalone: true,
   imports: [
     FormsModule,
-    DatePipe,
     MatTableModule,
     MatFormFieldModule,
     MatInputModule,
@@ -56,8 +48,7 @@ export class EntregasComponent implements OnInit {
   readonly statusOpcoes = STATUS_ENTREGA;
   readonly labelStatus = labelStatus;
   readonly classeStatus = classeStatus;
-  readonly fmtPeso = fmtPeso;
-  readonly displayedColumns = ['data', 'cliente', 'pets', 'local', 'telefone', 'tipo', 'total', 'status'];
+  readonly displayedColumns = ['cliente', 'pets', 'bairro', 'cidade', 'status', 'acoes'];
   readonly diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   readonly todas = signal<EntregaResumo[]>([]);
@@ -65,27 +56,29 @@ export class EntregasComponent implements OnInit {
   readonly gerando = signal(false);
 
   mesRef = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  diaSelecionado = '';
 
-  // Filtros
-  filtroData = '';
+  // Filtros compactos (data é controlada pelo calendário)
   filtroStatus = '';
-  filtroBairro = '';
-  filtroCidade = '';
   filtroCliente = '';
   filtroPet = '';
-  filtroTipo = '';
+  filtroBairro = '';
+  filtroCidade = '';
   atalho = '';
 
   ngOnInit(): void {
-    this.carregar();
+    this.carregar(true);
   }
 
-  carregar(): void {
+  carregar(inicial = false): void {
     this.carregando.set(true);
     this.service.listar().subscribe({
       next: (lista) => {
         this.todas.set(lista);
         this.carregando.set(false);
+        if (inicial || !this.diaSelecionado) {
+          this.selecionarDiaInicial();
+        }
       },
       error: () => {
         this.carregando.set(false);
@@ -109,21 +102,44 @@ export class EntregasComponent implements OnInit {
     });
   }
 
-  // ===== Filtros =====
-  get lista(): EntregaResumo[] {
-    const txt = (s: string) => s.trim().toLowerCase();
-    let r = this.todas();
-    if (this.filtroData) {
-      r = r.filter((e) => e.dataPrevista === this.filtroData);
+  private static iso(d: Date): string {
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+
+  private selecionarDiaInicial(): void {
+    const hoje = EntregasComponent.iso(new Date());
+    const datas = [...new Set(this.todas().map((e) => e.dataPrevista))].sort();
+    let alvo = '';
+    if (datas.includes(hoje)) {
+      alvo = hoje;
+    } else {
+      alvo = datas.find((d) => d >= hoje) ?? datas[datas.length - 1] ?? '';
     }
+    this.diaSelecionado = alvo;
+    if (alvo) {
+      const [y, m] = alvo.split('-').map(Number);
+      this.mesRef = new Date(y, m - 1, 1);
+    }
+  }
+
+  // ===== Lista do dia =====
+  get tituloLista(): string {
+    if (!this.diaSelecionado) {
+      return 'Selecione um dia no calendário';
+    }
+    const [y, m, d] = this.diaSelecionado.split('-').map(Number);
+    return `Entregas de ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+  }
+
+  get lista(): EntregaResumo[] {
+    if (!this.diaSelecionado) {
+      return [];
+    }
+    const txt = (s: string) => s.trim().toLowerCase();
+    let r = this.todas().filter((e) => e.dataPrevista === this.diaSelecionado);
     if (this.filtroStatus) {
       r = r.filter((e) => e.status === this.filtroStatus);
-    }
-    if (this.filtroBairro) {
-      r = r.filter((e) => (e.bairro ?? '').toLowerCase().includes(txt(this.filtroBairro)));
-    }
-    if (this.filtroCidade) {
-      r = r.filter((e) => (e.cidade ?? '').toLowerCase().includes(txt(this.filtroCidade)));
     }
     if (this.filtroCliente) {
       r = r.filter((e) => e.clienteNome.toLowerCase().includes(txt(this.filtroCliente)));
@@ -131,8 +147,11 @@ export class EntregasComponent implements OnInit {
     if (this.filtroPet) {
       r = r.filter((e) => e.pets.some((p) => p.toLowerCase().includes(txt(this.filtroPet))));
     }
-    if (this.filtroTipo) {
-      r = r.filter((e) => e.tipos.toLowerCase().includes(txt(this.filtroTipo)));
+    if (this.filtroBairro) {
+      r = r.filter((e) => (e.bairro ?? '').toLowerCase().includes(txt(this.filtroBairro)));
+    }
+    if (this.filtroCidade) {
+      r = r.filter((e) => (e.cidade ?? '').toLowerCase().includes(txt(this.filtroCidade)));
     }
     if (this.atalho === 'naoConfirmadas') {
       r = r.filter((e) => e.status === 'Programada');
@@ -145,18 +164,15 @@ export class EntregasComponent implements OnInit {
   }
 
   get temFiltro(): boolean {
-    return !!(this.filtroData || this.filtroStatus || this.filtroBairro || this.filtroCidade
-      || this.filtroCliente || this.filtroPet || this.filtroTipo || this.atalho);
+    return !!(this.filtroStatus || this.filtroCliente || this.filtroPet || this.filtroBairro || this.filtroCidade || this.atalho);
   }
 
   limparFiltros(): void {
-    this.filtroData = '';
     this.filtroStatus = '';
-    this.filtroBairro = '';
-    this.filtroCidade = '';
     this.filtroCliente = '';
     this.filtroPet = '';
-    this.filtroTipo = '';
+    this.filtroBairro = '';
+    this.filtroCidade = '';
     this.atalho = '';
   }
 
@@ -201,15 +217,17 @@ export class EntregasComponent implements OnInit {
 
   selecionarDia(c: DiaCalendario | null): void {
     if (c && c.total > 0) {
-      this.filtroData = this.filtroData === c.dataIso ? '' : c.dataIso;
+      this.diaSelecionado = c.dataIso;
     }
   }
+
+  hojeIso = EntregasComponent.iso(new Date());
 
   // ===== Detalhe =====
   abrir(e: EntregaResumo): void {
     const ref = this.dialog.open(EntregaDetalheDialogComponent, {
       data: { id: e.id },
-      width: '820px',
+      width: '760px',
       maxWidth: '96vw',
       autoFocus: false,
     });

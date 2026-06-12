@@ -3,6 +3,7 @@
 }
 
 @if (detalhe(); as e) {
+  <!-- 1. Cabeçalho -->
   <h2 mat-dialog-title class="titulo">
     {{ e.clienteNome }}
     <span class="chip" [class]="classeStatus(e.status)">{{ labelStatus(e.status) }}</span>
@@ -13,12 +14,9 @@
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     }
 
-    <div class="grade">
+    <div class="cabecalho">
       <div class="campo"><span class="rot">Data prevista</span><span class="val">{{ e.dataPrevista | date: 'dd/MM/yyyy' }}</span></div>
       <div class="campo"><span class="rot">Frequência</span><span class="val">{{ e.frequenciaNome }}</span></div>
-      <div class="campo"><span class="rot">Telefone / WhatsApp</span><span class="val">{{ e.telefone || '—' }}</span></div>
-      <div class="campo"><span class="rot">Bairro / Cidade</span><span class="val">{{ e.bairro || '—' }}{{ e.cidade ? ' · ' + e.cidade : '' }}</span></div>
-      <div class="campo full"><span class="rot">Endereço</span><span class="val">{{ e.rua || '—' }}{{ e.numero ? ', ' + e.numero : '' }}{{ e.complemento ? ' — ' + e.complemento : '' }}{{ e.cep ? ' · ' + e.cep : '' }}</span></div>
     </div>
 
     @if (e.motivoNaoEntrega) {
@@ -31,61 +29,75 @@
       <p class="aviso"><mat-icon>event_repeat</mat-icon> Reagendada: {{ e.motivoReagendamento }}</p>
     }
 
-    <!-- Pets -->
-    <h3 class="secao">Pets da entrega</h3>
-    @for (p of e.pets; track p.id) {
-      <div class="pet">
-        <div class="pet-head">
-          <span class="pet-nome"><mat-icon>pets</mat-icon> {{ p.petNome }}</span>
-          <span class="pet-meta">{{ p.tipoAlimentacao === 'Casa' ? 'Receita da Casa' : 'Personalizada' }} · total {{ fmtPeso(p.quantidadeTotalGramas) }}</span>
-        </div>
-        <ul class="itens">
-          @for (it of p.itens; track it.id) {
-            <li>
-              <strong>{{ it.receitaCodigo }} · {{ it.receitaNome }}</strong>
-              @if (it.tipo === 'Casa') {
-                —
-                @for (pac of it.pacotes; track $index) {
-                  <span class="pac">{{ pac.quantidade }}×{{ fmtPeso(pac.pesoGramas) }}</span>
-                }
-              } @else {
-                — {{ fmtPeso(it.tamanhoPacoteGramas || 0) }} × {{ it.quantidadePacotes }} pacote(s)
-                @if (it.ingredientes.length) {
-                  <div class="ings">
-                    @for (g of it.ingredientes; track g.ingredienteId) {
-                      <span class="ing">{{ g.nome }} {{ fmtPeso(g.gramasCozidas) }}</span>
-                    }
-                  </div>
-                }
-              }
-            </li>
-          }
-        </ul>
+    <!-- 2. Contato e endereço -->
+    <div class="bloco">
+      <h3 class="secao"><mat-icon>place</mat-icon> Contato e endereço</h3>
+      <div class="grade">
+        <div class="campo"><span class="rot">Telefone / WhatsApp</span><span class="val">{{ e.telefone || '—' }}</span></div>
+        <div class="campo"><span class="rot">Bairro / Cidade</span><span class="val">{{ e.bairro || '—' }}{{ e.cidade ? ' · ' + e.cidade : '' }}</span></div>
+        <div class="campo full"><span class="rot">Endereço</span><span class="val">{{ e.rua || '—' }}{{ e.numero ? ', ' + e.numero : '' }}{{ e.complemento ? ' — ' + e.complemento : '' }}{{ e.cep ? ' · ' + e.cep : '' }}</span></div>
+        @if (e.observacoesEntregador) {
+          <div class="campo full"><span class="rot">Observações para entrega</span><span class="val">{{ e.observacoesEntregador }}</span></div>
+        }
       </div>
-    }
+    </div>
+
+    <!-- 3. Pets -->
+    <div class="bloco">
+      <h3 class="secao"><mat-icon>pets</mat-icon> Pets da entrega</h3>
+      @for (p of e.pets; track p.id) {
+        <div class="pet">
+          <div class="pet-head">
+            <span class="pet-nome">{{ p.petNome }}</span>
+            <span class="pet-tag">{{ p.tipoAlimentacao === 'Casa' ? 'Receita da Casa' : 'Personalizada' }}</span>
+          </div>
+          <ul class="itens">
+            @for (it of p.itens; track it.id) {
+              <li>
+                @if (it.tipo === 'Casa') {
+                  <strong>{{ it.receitaNome }}:</strong>
+                  @for (pac of it.pacotes; track $index) {
+                    {{ pac.quantidade }} {{ pac.quantidade === 1 ? 'pacote' : 'pacotes' }} de {{ fmtPeso(pac.pesoGramas) }}{{ !$last ? ' · ' : '' }}
+                  }
+                } @else {
+                  <strong>{{ it.receitaCodigo }}:</strong>
+                  {{ it.quantidadePacotes }} {{ it.quantidadePacotes === 1 ? 'pacote' : 'pacotes' }} de {{ fmtPeso(it.tamanhoPacoteGramas || 0) }}
+                }
+              </li>
+            }
+          </ul>
+          <div class="pet-total">Total: <strong>{{ fmtPeso(p.quantidadeTotalGramas) }}</strong></div>
+        </div>
+      }
+    </div>
 
     @if (e.observacoesInternas) {
-      <div class="campo full"><span class="rot">Observações internas</span><span class="val">{{ e.observacoesInternas }}</span></div>
-    }
-    @if (e.observacoesEntregador) {
-      <div class="campo full"><span class="rot">Observações para o entregador</span><span class="val">{{ e.observacoesEntregador }}</span></div>
+      <div class="campo full obs-int"><span class="rot">Observações internas</span><span class="val">{{ e.observacoesInternas }}</span></div>
     }
 
-    <!-- Histórico -->
-    <h3 class="secao">Histórico</h3>
-    <ul class="historico">
-      @for (h of e.historico; track $index) {
-        <li>
-          <span class="hquando">{{ h.quando | date: 'dd/MM/yyyy HH:mm' }}</span>
-          <span class="hevento">{{ h.evento }}</span>
-          <span class="husuario">{{ h.usuario }}</span>
-        </li>
-      } @empty {
-        <li class="vazio">Sem registros.</li>
+    <!-- 4. Histórico (recolhível) -->
+    <div class="bloco">
+      <button type="button" class="hist-toggle" (click)="alternarHistorico()">
+        <mat-icon>{{ mostrarHistorico() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        Histórico ({{ e.historico.length }})
+      </button>
+      @if (mostrarHistorico()) {
+        <ul class="historico">
+          @for (h of e.historico; track $index) {
+            <li>
+              <span class="hquando">{{ h.quando | date: 'dd/MM/yyyy HH:mm' }}</span>
+              <span class="hevento">{{ h.evento }}</span>
+              <span class="husuario">{{ h.usuario }}</span>
+            </li>
+          } @empty {
+            <li class="vazio">Sem registros.</li>
+          }
+        </ul>
       }
-    </ul>
+    </div>
   </mat-dialog-content>
 
+  <!-- 5. Ações -->
   <mat-dialog-actions class="acoes">
     <div class="acoes-esq">
       @if (podeFluxo) {

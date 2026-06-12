@@ -48,7 +48,12 @@ export class EntregaDetalheDialogComponent {
   readonly detalhe = signal<EntregaDetalhe | null>(null);
   readonly carregando = signal(true);
   readonly salvando = signal(false);
+  readonly mostrarHistorico = signal(false);
   private alterado = false;
+
+  alternarHistorico(): void {
+    this.mostrarHistorico.update((v) => !v);
+  }
 
   constructor(
     private readonly ref: MatDialogRef<EntregaDetalheDialogComponent, boolean>,
