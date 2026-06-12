@@ -143,7 +143,81 @@ public sealed record RegistrarEntradaRequest(
     DateOnly? Validade,
     string? LoteCodigo,
     string? LocalArmazenamento,
+    string? Observacoes,
+    decimal? Frete = null,
+    bool FreteCompoeCusto = true);
+
+// ===================== Movimentações (livro-razão geral) =====================
+public sealed record MovimentacaoGeralDto(
+    long Id,
+    DateTimeOffset DataHora,
+    long ItemEstoqueId,
+    string ItemNome,
+    string Categoria,
+    string Tipo,
+    string Sentido,
+    decimal Quantidade,
+    string Unidade,
+    string? LoteCodigo,
+    decimal CustoUnitario,
+    decimal ValorTotal,
+    decimal SaldoAnteriorItem,
+    decimal SaldoPosteriorItem,
+    string Usuario,
+    string? Motivo,
+    string? Observacao,
+    string? FornecedorNome,
+    string Origem);
+
+public sealed record MovimentacaoPaginaDto(int Total, IReadOnlyList<MovimentacaoGeralDto> Itens);
+
+public sealed record FiltroMovimentacoesRequest(
+    DateOnly? DataInicio = null,
+    DateOnly? DataFim = null,
+    long? ItemEstoqueId = null,
+    string? Categoria = null,
+    string? Tipo = null,
+    long? FornecedorId = null,
+    long? LoteEstoqueId = null,
+    string? Usuario = null,
+    string? Motivo = null,
+    string? Origem = null,
+    int Pagina = 1,
+    int TamanhoPagina = 50);
+
+// ===================== Compras / Entradas =====================
+public sealed record EntradaCompraDto(
+    long Id,
+    DateOnly DataCompra,
+    DateOnly DataEntrada,
+    long? FornecedorId,
+    string? FornecedorNome,
+    long ItemEstoqueId,
+    string ItemNome,
+    string Categoria,
+    decimal Quantidade,
+    string Unidade,
+    decimal ValorUnitarioOriginal,
+    decimal Frete,
+    bool FreteCompoeCusto,
+    decimal CustoUnitarioEfetivo,
+    decimal ValorTotal,
+    string LoteCodigo,
+    DateOnly? Validade,
+    string Usuario,
     string? Observacoes);
+
+public sealed record FiltroEntradasRequest(
+    DateOnly? DataInicio = null,
+    DateOnly? DataFim = null,
+    long? FornecedorId = null,
+    long? ItemEstoqueId = null,
+    string? Categoria = null,
+    long? LoteEstoqueId = null,
+    string? Usuario = null,
+    decimal? ValorMin = null,
+    decimal? ValorMax = null,
+    bool? ComFrete = null);
 
 public sealed record RegistrarSaidaRequest(
     long ItemEstoqueId,

@@ -11,4 +11,8 @@ public interface IEstoqueMovimentacaoService
     Task<IReadOnlyList<LoteEstoqueDto>> ListarLotesAsync(long itemEstoqueId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<MovimentacaoEstoqueDto>> ListarMovimentacoesAsync(long itemEstoqueId, CancellationToken cancellationToken = default);
+
+    Task<MovimentacaoPaginaDto> ListarMovimentacoesGeralAsync(FiltroMovimentacoesRequest filtro, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<EntradaCompraDto>> ListarEntradasAsync(FiltroEntradasRequest filtro, CancellationToken cancellationToken = default);
 }

@@ -19,6 +19,8 @@ public class EntradaEstoque : AuditableEntity
         decimal quantidade,
         UnidadeMedida unidadeMedida,
         decimal valorUnitario,
+        decimal frete,
+        bool freteCompoeCusto,
         decimal valorTotal,
         DateOnly dataCompra,
         DateOnly dataEntrada,
@@ -34,6 +36,8 @@ public class EntradaEstoque : AuditableEntity
         Quantidade = quantidade;
         UnidadeMedida = unidadeMedida;
         ValorUnitario = valorUnitario;
+        Frete = frete;
+        FreteCompoeCusto = freteCompoeCusto;
         ValorTotal = valorTotal;
         DataCompra = dataCompra;
         DataEntrada = dataEntrada;
@@ -58,8 +62,16 @@ public class EntradaEstoque : AuditableEntity
 
     public UnidadeMedida UnidadeMedida { get; private set; }
 
+    /// <summary>Valor unitário original do produto (sem frete).</summary>
     public decimal ValorUnitario { get; private set; }
 
+    /// <summary>Valor do frete da compra.</summary>
+    public decimal Frete { get; private set; }
+
+    /// <summary>Se o frete compõe o custo do estoque (rateado no custo unitário).</summary>
+    public bool FreteCompoeCusto { get; private set; }
+
+    /// <summary>Total real pago = (valor unitário × quantidade) + frete.</summary>
     public decimal ValorTotal { get; private set; }
 
     public DateOnly DataCompra { get; private set; }
@@ -83,6 +95,8 @@ public class EntradaEstoque : AuditableEntity
         decimal quantidade,
         UnidadeMedida unidadeMedida,
         decimal valorUnitario,
+        decimal frete,
+        bool freteCompoeCusto,
         decimal valorTotal,
         DateOnly dataCompra,
         DateOnly dataEntrada,
@@ -91,6 +105,6 @@ public class EntradaEstoque : AuditableEntity
         string? localArmazenamento,
         string usuario,
         string? observacoes)
-        => new(item, lote, fornecedorId, quantidade, unidadeMedida, valorUnitario, valorTotal,
+        => new(item, lote, fornecedorId, quantidade, unidadeMedida, valorUnitario, frete, freteCompoeCusto, valorTotal,
             dataCompra, dataEntrada, validade, loteCodigo.Trim(), localArmazenamento, usuario, observacoes);
 }

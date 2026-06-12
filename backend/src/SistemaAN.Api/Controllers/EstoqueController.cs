@@ -30,6 +30,44 @@ public sealed class EstoqueController : ControllerBase
     public async Task<ActionResult<ItemEstoqueDto>> RegistrarAjuste(RegistrarAjusteRequest request, CancellationToken ct)
         => Ok(await _service.RegistrarAjusteAsync(request, Usuario, ct));
 
+    /// <summary>Livro-razão geral do estoque (consulta paginada e filtrada).</summary>
+    [HttpGet("movimentacoes")]
+    public async Task<ActionResult<MovimentacaoPaginaDto>> Movimentacoes(
+        [FromQuery] DateOnly? dataInicio,
+        [FromQuery] DateOnly? dataFim,
+        [FromQuery] long? itemEstoqueId,
+        [FromQuery] string? categoria,
+        [FromQuery] string? tipo,
+        [FromQuery] long? fornecedorId,
+        [FromQuery] long? loteEstoqueId,
+        [FromQuery] string? usuario,
+        [FromQuery] string? motivo,
+        [FromQuery] string? origem,
+        [FromQuery] int pagina,
+        [FromQuery] int tamanhoPagina,
+        CancellationToken ct)
+        => Ok(await _service.ListarMovimentacoesGeralAsync(
+            new FiltroMovimentacoesRequest(dataInicio, dataFim, itemEstoqueId, categoria, tipo, fornecedorId,
+                loteEstoqueId, usuario, motivo, origem, pagina <= 0 ? 1 : pagina, tamanhoPagina <= 0 ? 50 : tamanhoPagina), ct));
+
+    /// <summary>Histórico de compras/entradas de estoque (consulta filtrada).</summary>
+    [HttpGet("entradas")]
+    public async Task<ActionResult<IReadOnlyList<EntradaCompraDto>>> Entradas(
+        [FromQuery] DateOnly? dataInicio,
+        [FromQuery] DateOnly? dataFim,
+        [FromQuery] long? fornecedorId,
+        [FromQuery] long? itemEstoqueId,
+        [FromQuery] string? categoria,
+        [FromQuery] long? loteEstoqueId,
+        [FromQuery] string? usuario,
+        [FromQuery] decimal? valorMin,
+        [FromQuery] decimal? valorMax,
+        [FromQuery] bool? comFrete,
+        CancellationToken ct)
+        => Ok(await _service.ListarEntradasAsync(
+            new FiltroEntradasRequest(dataInicio, dataFim, fornecedorId, itemEstoqueId, categoria, loteEstoqueId,
+                usuario, valorMin, valorMax, comFrete), ct));
+
     /// <summary>Lista os lotes de um item de estoque.</summary>
     [HttpGet("itens/{id:long}/lotes")]
     public async Task<ActionResult<IReadOnlyList<LoteEstoqueDto>>> Lotes(long id, CancellationToken ct)

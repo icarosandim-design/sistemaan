@@ -37,19 +37,22 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             erros["quantidade"] = ["A quantidade de entrada deve ser maior que zero."];
         }
 
-        decimal custoUnitario = 0m;
+        // Valor unitário ORIGINAL do produto (sem frete).
+        decimal valorUnitarioOriginal = 0m;
         if (request.ValorUnitario is decimal vu && vu > 0m)
         {
-            custoUnitario = vu;
+            valorUnitarioOriginal = vu;
         }
         else if (request.ValorTotal is decimal vt && vt > 0m && request.Quantidade > 0m)
         {
-            custoUnitario = vt / request.Quantidade;
+            valorUnitarioOriginal = vt / request.Quantidade;
         }
         else
         {
             erros["valor"] = ["Informe o valor unitário ou o valor total da compra."];
         }
+
+        var frete = request.Frete is decimal f && f > 0m ? f : 0m;
 
         if (request.FornecedorId is long fornId && !await _db.Fornecedores.AnyAsync(x => x.Id == fornId, cancellationToken))
         {
@@ -61,7 +64,12 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             throw new ValidationException(erros);
         }
 
-        var valorTotal = request.ValorTotal ?? Math.Round(request.Quantidade * custoUnitario, 2, MidpointRounding.AwayFromZero);
+        // Frete compõe o custo por padrão (custo real/landed).
+        var valorProdutos = valorUnitarioOriginal * request.Quantidade;
+        var custoUnitarioEfetivo = request.FreteCompoeCusto && request.Quantidade > 0m
+            ? Math.Round((valorProdutos + frete) / request.Quantidade, 4, MidpointRounding.AwayFromZero)
+            : valorUnitarioOriginal;
+        var valorTotal = Math.Round(valorProdutos + frete, 2, MidpointRounding.AwayFromZero);
         var loteCodigo = string.IsNullOrWhiteSpace(request.LoteCodigo)
             ? $"L{DateTimeOffset.UtcNow:yyyyMMddHHmmss}"
             : request.LoteCodigo.Trim();
@@ -69,15 +77,15 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
 
         var saldoAnterior = item.QuantidadeAtual;
         var lote = LoteEstoque.Criar(item, loteCodigo, request.DataEntrada, request.Validade,
-            request.Quantidade, custoUnitario, request.FornecedorId, OrigemLote.Compra, null);
-        item.RegistrarEntrada(request.Quantidade, custoUnitario);
+            request.Quantidade, custoUnitarioEfetivo, request.FornecedorId, OrigemLote.Compra, null);
+        item.RegistrarEntrada(request.Quantidade, custoUnitarioEfetivo);
 
         var entrada = EntradaEstoque.Criar(item, lote, request.FornecedorId, request.Quantidade, item.UnidadeMedida,
-            custoUnitario, valorTotal, request.DataCompra, request.DataEntrada, request.Validade, loteCodigo,
-            request.LocalArmazenamento, usuario, request.Observacoes);
+            valorUnitarioOriginal, frete, request.FreteCompoeCusto, valorTotal, request.DataCompra, request.DataEntrada,
+            request.Validade, loteCodigo, request.LocalArmazenamento, usuario, request.Observacoes);
 
         var mov = MovimentacaoEstoque.CriarEntrada(item, lote, TipoMovimentacao.EntradaCompra, request.Quantidade,
-            saldoAnterior, item.QuantidadeAtual, custoUnitario, usuario, agora, request.Observacoes);
+            saldoAnterior, item.QuantidadeAtual, custoUnitarioEfetivo, usuario, agora, request.Observacoes);
         mov.Vincular(entrada);
 
         _db.LotesEstoque.Add(lote);
@@ -288,5 +296,218 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             m.Tipo.ToString(), m.Sentido.ToString(), m.Quantidade, m.SaldoAnteriorItem, m.SaldoPosteriorItem,
             m.CustoUnitario, m.ValorTotal, m.Usuario, m.DataHora,
             m.MotivoCodigo?.ToString(), m.Motivo, m.Observacao)).ToList();
+    }
+
+    public async Task<MovimentacaoPaginaDto> ListarMovimentacoesGeralAsync(FiltroMovimentacoesRequest filtro, CancellationToken cancellationToken = default)
+    {
+        var q = from m in _db.MovimentacoesEstoque
+                join i in _db.ItensEstoque on m.ItemEstoqueId equals i.Id
+                join lo in _db.LotesEstoque on m.LoteEstoqueId equals lo.Id into loj
+                from lo in loj.DefaultIfEmpty()
+                select new { m, i, lo };
+
+        if (filtro.DataInicio is DateOnly di)
+        {
+            var inicio = new DateTimeOffset(di.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+            q = q.Where(x => x.m.DataHora >= inicio);
+        }
+        if (filtro.DataFim is DateOnly df)
+        {
+            var fim = new DateTimeOffset(df.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+            q = q.Where(x => x.m.DataHora < fim);
+        }
+        if (filtro.ItemEstoqueId is long iid)
+        {
+            q = q.Where(x => x.m.ItemEstoqueId == iid);
+        }
+        if (!string.IsNullOrWhiteSpace(filtro.Categoria) && Enum.TryParse<CategoriaEstoque>(filtro.Categoria, out var cat))
+        {
+            q = q.Where(x => x.i.Categoria == cat);
+        }
+        if (!string.IsNullOrWhiteSpace(filtro.Tipo) && Enum.TryParse<TipoMovimentacao>(filtro.Tipo, out var tp))
+        {
+            q = q.Where(x => x.m.Tipo == tp);
+        }
+        if (filtro.LoteEstoqueId is long lid)
+        {
+            q = q.Where(x => x.m.LoteEstoqueId == lid);
+        }
+        if (filtro.FornecedorId is long fid)
+        {
+            q = q.Where(x => x.lo != null && x.lo.FornecedorId == fid);
+        }
+        if (!string.IsNullOrWhiteSpace(filtro.Usuario))
+        {
+            var u = filtro.Usuario.Trim();
+            q = q.Where(x => x.m.Usuario.Contains(u));
+        }
+        if (!string.IsNullOrWhiteSpace(filtro.Motivo))
+        {
+            var mo = filtro.Motivo.Trim();
+            q = q.Where(x => x.m.Motivo != null && x.m.Motivo.Contains(mo));
+        }
+        if (!string.IsNullOrWhiteSpace(filtro.Origem))
+        {
+            q = filtro.Origem switch
+            {
+                "Compra" => q.Where(x => x.m.EntradaEstoqueId != null),
+                "Ajuste" => q.Where(x => x.m.AjusteEstoqueId != null),
+                "Producao" => q.Where(x => x.m.OrdemProducaoId != null),
+                "Entrega" => q.Where(x => x.m.EntregaId != null),
+                _ => q,
+            };
+        }
+
+        var total = await q.CountAsync(cancellationToken);
+        var pagina = filtro.Pagina < 1 ? 1 : filtro.Pagina;
+        var tam = filtro.TamanhoPagina < 1 ? 50 : Math.Min(filtro.TamanhoPagina, 200);
+
+        var rows = await q
+            .OrderByDescending(x => x.m.DataHora).ThenByDescending(x => x.m.Id)
+            .Skip((pagina - 1) * tam).Take(tam)
+            .Select(x => new
+            {
+                x.m.Id,
+                x.m.DataHora,
+                x.m.ItemEstoqueId,
+                ItemNome = x.i.Nome,
+                x.i.Categoria,
+                Unidade = x.i.UnidadeMedida,
+                x.m.Tipo,
+                x.m.Sentido,
+                x.m.Quantidade,
+                LoteCodigo = x.lo != null ? x.lo.Codigo : null,
+                FornecedorId = x.lo != null ? x.lo.FornecedorId : null,
+                x.m.CustoUnitario,
+                x.m.ValorTotal,
+                x.m.SaldoAnteriorItem,
+                x.m.SaldoPosteriorItem,
+                x.m.Usuario,
+                x.m.Motivo,
+                x.m.Observacao,
+                x.m.EntradaEstoqueId,
+                x.m.AjusteEstoqueId,
+                x.m.OrdemProducaoId,
+                x.m.EntregaId,
+            })
+            .ToListAsync(cancellationToken);
+
+        var fornIds = rows.Where(r => r.FornecedorId != null).Select(r => r.FornecedorId!.Value).Distinct().ToList();
+        var fornNomes = await _db.Fornecedores.Where(f => fornIds.Contains(f.Id)).ToDictionaryAsync(f => f.Id, f => f.Nome, cancellationToken);
+
+        var itens = rows.Select(r => new MovimentacaoGeralDto(
+            r.Id, r.DataHora, r.ItemEstoqueId, r.ItemNome, r.Categoria.ToString(), r.Tipo.ToString(), r.Sentido.ToString(),
+            r.Quantidade, r.Unidade.ToString(), r.LoteCodigo, r.CustoUnitario, r.ValorTotal, r.SaldoAnteriorItem, r.SaldoPosteriorItem,
+            r.Usuario, r.Motivo, r.Observacao,
+            r.FornecedorId != null && fornNomes.TryGetValue(r.FornecedorId.Value, out var fn) ? fn : null,
+            OrigemMovimentacao(r.EntradaEstoqueId, r.AjusteEstoqueId, r.OrdemProducaoId, r.EntregaId, r.Tipo))).ToList();
+
+        return new MovimentacaoPaginaDto(total, itens);
+    }
+
+    public async Task<IReadOnlyList<EntradaCompraDto>> ListarEntradasAsync(FiltroEntradasRequest filtro, CancellationToken cancellationToken = default)
+    {
+        var q = from e in _db.EntradasEstoque
+                join i in _db.ItensEstoque on e.ItemEstoqueId equals i.Id
+                join lo in _db.LotesEstoque on e.LoteEstoqueId equals lo.Id
+                select new { e, i, lo };
+
+        if (filtro.DataInicio is DateOnly di)
+        {
+            q = q.Where(x => x.e.DataCompra >= di);
+        }
+        if (filtro.DataFim is DateOnly df)
+        {
+            q = q.Where(x => x.e.DataCompra <= df);
+        }
+        if (filtro.FornecedorId is long fid)
+        {
+            q = q.Where(x => x.e.FornecedorId == fid);
+        }
+        if (filtro.ItemEstoqueId is long iid)
+        {
+            q = q.Where(x => x.e.ItemEstoqueId == iid);
+        }
+        if (!string.IsNullOrWhiteSpace(filtro.Categoria) && Enum.TryParse<CategoriaEstoque>(filtro.Categoria, out var cat))
+        {
+            q = q.Where(x => x.i.Categoria == cat);
+        }
+        if (filtro.LoteEstoqueId is long lid)
+        {
+            q = q.Where(x => x.e.LoteEstoqueId == lid);
+        }
+        if (!string.IsNullOrWhiteSpace(filtro.Usuario))
+        {
+            var u = filtro.Usuario.Trim();
+            q = q.Where(x => x.e.Usuario.Contains(u));
+        }
+        if (filtro.ValorMin is decimal vmin)
+        {
+            q = q.Where(x => x.e.ValorTotal >= vmin);
+        }
+        if (filtro.ValorMax is decimal vmax)
+        {
+            q = q.Where(x => x.e.ValorTotal <= vmax);
+        }
+        if (filtro.ComFrete is bool cf)
+        {
+            q = cf ? q.Where(x => x.e.Frete > 0m) : q.Where(x => x.e.Frete == 0m);
+        }
+
+        var rows = await q
+            .OrderByDescending(x => x.e.DataCompra).ThenByDescending(x => x.e.Id)
+            .Select(x => new
+            {
+                x.e.Id,
+                x.e.DataCompra,
+                x.e.DataEntrada,
+                x.e.FornecedorId,
+                x.e.ItemEstoqueId,
+                ItemNome = x.i.Nome,
+                x.i.Categoria,
+                x.e.Quantidade,
+                Unidade = x.e.UnidadeMedida,
+                x.e.ValorUnitario,
+                x.e.Frete,
+                x.e.FreteCompoeCusto,
+                CustoEfetivo = x.lo.CustoUnitario,
+                x.e.ValorTotal,
+                LoteCodigo = x.lo.Codigo,
+                x.lo.Validade,
+                x.e.Usuario,
+                x.e.Observacoes,
+            })
+            .ToListAsync(cancellationToken);
+
+        var fornIds = rows.Where(r => r.FornecedorId != null).Select(r => r.FornecedorId!.Value).Distinct().ToList();
+        var fornNomes = await _db.Fornecedores.Where(f => fornIds.Contains(f.Id)).ToDictionaryAsync(f => f.Id, f => f.Nome, cancellationToken);
+
+        return rows.Select(r => new EntradaCompraDto(
+            r.Id, r.DataCompra, r.DataEntrada, r.FornecedorId,
+            r.FornecedorId != null && fornNomes.TryGetValue(r.FornecedorId.Value, out var fn) ? fn : null,
+            r.ItemEstoqueId, r.ItemNome, r.Categoria.ToString(), r.Quantidade, r.Unidade.ToString(),
+            r.ValorUnitario, r.Frete, r.FreteCompoeCusto, r.CustoEfetivo, r.ValorTotal, r.LoteCodigo, r.Validade,
+            r.Usuario, r.Observacoes)).ToList();
+    }
+
+    private static string OrigemMovimentacao(long? entrada, long? ajuste, long? producao, long? entrega, TipoMovimentacao tipo)
+    {
+        if (entrada != null)
+        {
+            return "Compra";
+        }
+        if (ajuste != null)
+        {
+            return "Ajuste";
+        }
+        if (producao != null)
+        {
+            return "Produção";
+        }
+        if (entrega != null)
+        {
+            return "Entrega";
+        }
+        return tipo.ToString();
     }
 }

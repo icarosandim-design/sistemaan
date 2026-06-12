@@ -213,6 +213,8 @@ public sealed class EntradaEstoqueConfiguration : IEntityTypeConfiguration<Entra
         builder.Property(e => e.Quantidade).HasPrecision(18, 3).IsRequired();
         builder.Property(e => e.UnidadeMedida).HasConversion<string>().HasMaxLength(15).IsRequired();
         builder.Property(e => e.ValorUnitario).HasPrecision(18, 4).IsRequired();
+        builder.Property(e => e.Frete).HasPrecision(18, 2).IsRequired();
+        builder.Property(e => e.FreteCompoeCusto).IsRequired();
         builder.Property(e => e.ValorTotal).HasPrecision(18, 2).IsRequired();
         builder.Property(e => e.DataCompra).IsRequired();
         builder.Property(e => e.DataEntrada).IsRequired();

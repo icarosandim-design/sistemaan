@@ -22,6 +22,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIngredienteService, IngredienteService>();
+        services.AddScoped<ICategoriaIngredienteService, CategoriaIngredienteService>();
         services.AddScoped<IFaixaConsumoService, FaixaConsumoService>();
         services.AddScoped<IReceitaCasaService, ReceitaCasaService>();
         services.AddScoped<IFrequenciaEntregaService, FrequenciaEntregaService>();

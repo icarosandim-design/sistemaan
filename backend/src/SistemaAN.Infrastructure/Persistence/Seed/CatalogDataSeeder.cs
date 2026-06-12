@@ -30,7 +30,7 @@ public sealed class CatalogDataSeeder
 
         var novas = CategoriasIniciais
             .Where(nome => !existentes.Contains(nome))
-            .Select(CategoriaIngrediente.Criar)
+            .Select(nome => CategoriaIngrediente.Criar(nome))
             .ToList();
 
         if (novas.Count > 0)
