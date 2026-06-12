@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Interfaces;
 using SistemaAN.Domain.Catalog;
+using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
@@ -37,6 +38,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<ItemReceita> ItensReceita => Set<ItemReceita>();
 
     public DbSet<FrequenciaEntrega> FrequenciasEntrega => Set<FrequenciaEntrega>();
+
+    public DbSet<Cliente> Clientes => Set<Cliente>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

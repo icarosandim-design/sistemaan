@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SistemaAN.Application.Catalog;
+using SistemaAN.Application.Clientes;
 using SistemaAN.Application.Consumo;
 using SistemaAN.Application.Entregas;
 using SistemaAN.Application.Identity;
@@ -20,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IFaixaConsumoService, FaixaConsumoService>();
         services.AddScoped<IReceitaCasaService, ReceitaCasaService>();
         services.AddScoped<IFrequenciaEntregaService, FrequenciaEntregaService>();
+        services.AddScoped<IClienteService, ClienteService>();
         return services;
     }
 }

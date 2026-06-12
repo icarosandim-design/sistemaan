@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Domain.Catalog;
+using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Identity;
@@ -29,6 +30,8 @@ public interface IApplicationDbContext
     DbSet<ItemReceita> ItensReceita { get; }
 
     DbSet<FrequenciaEntrega> FrequenciasEntrega { get; }
+
+    DbSet<Cliente> Clientes { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,0 +1,118 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar cliente' : 'Novo cliente' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-tab-group animationDuration="0ms">
+      <!-- Dados cadastrais -->
+      <mat-tab label="Dados">
+        <div class="aba">
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Nome</mat-label>
+            <input matInput formControlName="nome" />
+            @if (form.controls.nome.hasError('required')) {
+              <mat-error>Informe o nome.</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="linha">
+            <mat-form-field appearance="outline">
+              <mat-label>Telefone / WhatsApp</mat-label>
+              <input matInput formControlName="telefone" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>E-mail</mat-label>
+              <input matInput type="email" formControlName="email" />
+              @if (form.controls.email.hasError('email')) {
+                <mat-error>E-mail inválido.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Endereço</mat-label>
+            <input matInput formControlName="endereco" />
+          </mat-form-field>
+
+          <div class="linha">
+            <mat-form-field appearance="outline">
+              <mat-label>Bairro</mat-label>
+              <input matInput formControlName="bairro" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Cidade</mat-label>
+              <input matInput formControlName="cidade" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Observações</mat-label>
+            <textarea matInput rows="2" formControlName="observacoes"></textarea>
+          </mat-form-field>
+
+          <mat-slide-toggle formControlName="ativo" color="primary">Ativo</mat-slide-toggle>
+        </div>
+      </mat-tab>
+
+      <!-- Financeiro -->
+      <mat-tab label="Financeiro">
+        <div class="aba">
+          <div class="linha">
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de cliente</mat-label>
+              <mat-select formControlName="tipoCliente">
+                @for (t of tipos; track t.valor) {
+                  <mat-option [value]="t.valor">{{ t.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Forma de pagamento</mat-label>
+              <mat-select formControlName="formaPagamento">
+                <mat-option [value]="null">—</mat-option>
+                @for (f of formas; track f.valor) {
+                  <mat-option [value]="f.valor">{{ f.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="linha">
+            <mat-form-field appearance="outline">
+              <mat-label>Dia de cobrança</mat-label>
+              <input matInput type="number" min="1" max="31" formControlName="diaCobranca" />
+              @if (form.controls.diaCobranca.hasError('min') || form.controls.diaCobranca.hasError('max')) {
+                <mat-error>Entre 1 e 31.</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Valor recorrente mensal</mat-label>
+              <span matTextPrefix>R$&nbsp;</span>
+              <input matInput type="number" step="0.01" formControlName="valorRecorrenteMensal" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Status financeiro</mat-label>
+            <mat-select formControlName="statusFinanceiro">
+              @for (s of statusFin; track s.valor) {
+                <mat-option [value]="s.valor">{{ s.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Observações financeiras</mat-label>
+            <textarea matInput rows="2" formControlName="observacoesFinanceiras"></textarea>
+          </mat-form-field>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" (click)="salvar()">
+    {{ edicao ? 'Salvar' : 'Cadastrar' }}
+  </button>
+</mat-dialog-actions>
