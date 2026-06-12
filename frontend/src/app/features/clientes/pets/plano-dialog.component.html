@@ -29,21 +29,23 @@
       </mat-form-field>
     </div>
 
-    <div class="linha">
-      <mat-form-field appearance="outline">
-        <mat-label>Gramas/dia sugeridas</mat-label>
-        <input matInput [value]="gramasDiaSugeridas !== null ? gramasDiaSugeridas : '—'" readonly />
-        <span matTextSuffix>g/dia</span>
-        <mat-hint>Tabela de Consumo</mat-hint>
-      </mat-form-field>
+    @if (tipo === 'Casa') {
+      <div class="linha">
+        <mat-form-field appearance="outline">
+          <mat-label>Gramas/dia sugeridas</mat-label>
+          <input matInput [value]="gramasDiaSugeridas !== null ? gramasDiaSugeridas : '—'" readonly />
+          <span matTextSuffix>g/dia</span>
+          <mat-hint>Tabela de Consumo</mat-hint>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Gramas/dia ajustadas</mat-label>
-        <input matInput type="number" step="10" [(ngModel)]="gramasDiaAjustadas"
-               [ngModelOptions]="{ standalone: true }" (ngModelChange)="onConfigChange()" />
-        <span matTextSuffix>g/dia</span>
-      </mat-form-field>
-    </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Gramas/dia ajustadas</mat-label>
+          <input matInput type="number" step="10" [(ngModel)]="gramasDiaAjustadas"
+                 [ngModelOptions]="{ standalone: true }" (ngModelChange)="onConfigChange()" />
+          <span matTextSuffix>g/dia</span>
+        </mat-form-field>
+      </div>
+    }
 
     <div class="tipo-linha">
       <span class="tipo-rotulo">Tipo de alimentação</span>
@@ -55,23 +57,25 @@
     </div>
   </section>
 
-  <!-- ===== Resumo do ciclo ===== -->
-  <section class="ciclo">
-    <div class="ciclo-item">
-      <span class="rotulo">Consumo diário</span>
-      <span class="valor">{{ fmtPeso(gramasDia) }}/dia</span>
-    </div>
-    <mat-icon class="op">close</mat-icon>
-    <div class="ciclo-item">
-      <span class="rotulo">Dias do ciclo</span>
-      <span class="valor">{{ diasCiclo || '—' }}</span>
-    </div>
-    <mat-icon class="op">drag_handle</mat-icon>
-    <div class="ciclo-item total">
-      <span class="rotulo">Total necessário no ciclo</span>
-      <span class="valor">{{ fmtPeso(totalCiclo) }}</span>
-    </div>
-  </section>
+  <!-- ===== Resumo do ciclo (só Receita da Casa) ===== -->
+  @if (tipo === 'Casa') {
+    <section class="ciclo">
+      <div class="ciclo-item">
+        <span class="rotulo">Consumo diário</span>
+        <span class="valor">{{ fmtPeso(gramasDia) }}/dia</span>
+      </div>
+      <mat-icon class="op">close</mat-icon>
+      <div class="ciclo-item">
+        <span class="rotulo">Dias do ciclo</span>
+        <span class="valor">{{ diasCiclo || '—' }}</span>
+      </div>
+      <mat-icon class="op">drag_handle</mat-icon>
+      <div class="ciclo-item total">
+        <span class="rotulo">Total necessário no ciclo</span>
+        <span class="valor">{{ fmtPeso(totalCiclo) }}</span>
+      </div>
+    </section>
+  }
 
   <!-- ===== Tipo: Receita da Casa ===== -->
   @if (tipo === 'Casa') {
@@ -261,28 +265,15 @@
       }
 
       @if (receitasPers.length > 0) {
-        <div class="status" [class]="statusPers">
-          <div class="st-item"><span>Total necessário</span><strong>{{ fmtPeso(totalCiclo) }}</strong></div>
-          <div class="st-item"><span>Total informado (pacotes)</span><strong>{{ fmtPeso(totalInformadoPers) }}</strong></div>
-          <div class="st-item">
-            <span>
-              @switch (statusPers) {
-                @case ('faltando') { Faltam }
-                @default { Situação }
-              }
-            </span>
-            <strong>
-              @switch (statusPers) {
-                @case ('atendido') { Atendido ✓ (+{{ fmtPeso(diferencaPers) }}) }
-                @case ('faltando') { {{ fmtPeso(-diferencaPers) }} }
-                @default { defina o ciclo }
-              }
-            </strong>
-          </div>
+        <div class="status atendido">
+          <div class="st-item"><span>Receitas</span><strong>{{ receitasPers.length }}</strong></div>
+          <div class="st-item"><span>Total de pacotes no ciclo</span><strong>{{ totalPacotesPers }}</strong></div>
+          <div class="st-item"><span>Total no ciclo</span><strong>{{ fmtPeso(totalInformadoPers) }}</strong></div>
         </div>
         <p class="nota">
-          A quantidade de pacotes por receita é livre (distribua como quiser). Cada pacote = a receita
-          inteira; o planejamento de produção somará os ingredientes por pacote × quantidade.
+          Na receita personalizada o consumo da Tabela de Consumo não se aplica — a quantidade de
+          pacotes por receita é livre (distribua como quiser). Cada pacote = a receita inteira; o
+          planejamento de produção somará os ingredientes por pacote × quantidade.
         </p>
       }
     </section>

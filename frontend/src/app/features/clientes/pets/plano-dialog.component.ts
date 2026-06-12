@@ -223,15 +223,8 @@ export class PlanoDialogComponent {
     return this.receitasPers.reduce((s, r) => s + this.totalCicloPers(r), 0);
   }
 
-  get diferencaPers(): number {
-    return this.totalInformadoPers - this.totalCiclo;
-  }
-
-  get statusPers(): 'vazio' | 'faltando' | 'atendido' {
-    if (this.totalCiclo <= 0 || this.receitasPers.length === 0) {
-      return 'vazio';
-    }
-    return this.totalInformadoPers < this.totalCiclo ? 'faltando' : 'atendido';
+  get totalPacotesPers(): number {
+    return this.receitasPers.reduce((s, r) => s + (r.quantidadePacotes || 0), 0);
   }
 
   fechar(): void {
