@@ -17,6 +17,8 @@ export interface Cliente {
   bairro?: string | null;
   cidade?: string | null;
   estado?: string | null;
+  frequenciaEntregaId?: number | null;
+  primeiraEntrega?: string | null;
   ativo: boolean;
   motivoCancelamento?: string | null;
   dataCancelamento?: string | null;
@@ -43,6 +45,8 @@ export interface SalvarClienteRequest {
   bairro?: string | null;
   cidade?: string | null;
   estado?: string | null;
+  frequenciaEntregaId?: number | null;
+  primeiraEntrega?: string | null;
   tipoCliente: TipoCliente;
   formaPagamento?: FormaPagamento | null;
   diaCobranca?: number | null;

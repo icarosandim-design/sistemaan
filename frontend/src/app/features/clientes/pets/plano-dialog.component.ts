@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, Inject, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -42,12 +43,15 @@ import {
 
 export interface PlanoDialogData {
   pet: Pet;
+  frequenciaEntregaId: number | null;
+  primeiraEntrega: string | null;
 }
 
 @Component({
   selector: 'app-plano-dialog',
   standalone: true,
   imports: [
+    DatePipe,
     FormsModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -84,9 +88,11 @@ export class PlanoDialogComponent {
   carregando = true;
   salvando = false;
 
-  // Estado do plano.
-  frequenciaId: number | null = null;
-  primeiraEntrega: string | null = null;
+  // Entrega vem do CLIENTE (compartilhada por todos os pets).
+  readonly frequenciaEntregaId: number | null;
+  readonly primeiraEntrega: string | null;
+
+  // Estado do plano (só comida).
   gramasDiaAjustadas: number | null = null;
   tipo: TipoAlimentacao = 'Casa';
   itensCasa: ItemCasa[] = [];
@@ -98,6 +104,8 @@ export class PlanoDialogComponent {
     @Inject(MAT_DIALOG_DATA) data: PlanoDialogData,
   ) {
     this.pet = data.pet;
+    this.frequenciaEntregaId = data.frequenciaEntregaId;
+    this.primeiraEntrega = data.primeiraEntrega;
     this.gramasDiaAjustadas = data.pet.gramasDiaAjustadas ?? data.pet.gramasDiaSugeridas ?? null;
 
     forkJoin({
@@ -115,8 +123,6 @@ export class PlanoDialogComponent {
         this.tamanhos = tam.filter((t) => t.ativo).sort((a, b) => a.pesoGramas - b.pesoGramas);
 
         if (plano) {
-          this.frequenciaId = plano.frequenciaEntregaId;
-          this.primeiraEntrega = plano.primeiraEntrega;
           this.gramasDiaAjustadas = plano.gramasDiaAjustadas ?? this.gramasDiaAjustadas;
           this.tipo = plano.tipo;
 
@@ -142,7 +148,6 @@ export class PlanoDialogComponent {
             });
           }
         } else {
-          this.frequenciaId = this.frequencias[0]?.id ?? null;
           this.adicionarReceitaCasa();
         }
 
@@ -169,7 +174,15 @@ export class PlanoDialogComponent {
   }
 
   get diasCiclo(): number {
-    return this.frequencias.find((f) => f.id === this.frequenciaId)?.diasCiclo ?? 0;
+    return this.frequencias.find((f) => f.id === this.frequenciaEntregaId)?.diasCiclo ?? 0;
+  }
+
+  get nomeFrequencia(): string {
+    return this.frequencias.find((f) => f.id === this.frequenciaEntregaId)?.nome ?? '—';
+  }
+
+  get semEntrega(): boolean {
+    return !this.carregando && (this.frequenciaEntregaId == null || this.diasCiclo <= 0);
   }
 
   get totalCiclo(): number {
@@ -285,16 +298,11 @@ export class PlanoDialogComponent {
 
   // ===== Salvar =====
   salvar(): void {
-    if (!this.frequenciaId) {
-      this.erro('Selecione a frequência de entrega.');
-      return;
-    }
-    if (!this.primeiraEntrega) {
-      this.erro('Informe a primeira data de entrega.');
-      return;
-    }
-
     if (this.tipo === 'Casa') {
+      if (this.semEntrega) {
+        this.erro('Defina a frequência de entrega no cadastro do cliente antes de montar a Receita da Casa.');
+        return;
+      }
       this.salvarCasa();
     } else {
       this.salvarPersonalizada();
@@ -376,8 +384,6 @@ export class PlanoDialogComponent {
 
   private basePlano(): Omit<SalvarPlanoRequest, 'tipo' | 'itens'> {
     return {
-      frequenciaEntregaId: this.frequenciaId!,
-      primeiraEntrega: this.primeiraEntrega!,
       gramasDiaSugeridas: this.gramasDiaSugeridas,
       gramasDiaAjustadas: this.gramasDiaAjustadas,
     };

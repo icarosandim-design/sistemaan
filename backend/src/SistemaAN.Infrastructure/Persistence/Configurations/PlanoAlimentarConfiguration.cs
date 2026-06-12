@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 
@@ -19,8 +18,6 @@ public sealed class PlanoAlimentarConfiguration : IEntityTypeConfiguration<Plano
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.PetId).IsRequired();
-        builder.Property(p => p.FrequenciaEntregaId).IsRequired();
-        builder.Property(p => p.PrimeiraEntrega).IsRequired();
         builder.Property(p => p.GramasDiaSugeridas);
         builder.Property(p => p.GramasDiaAjustadas);
         builder.Property(p => p.Tipo).HasConversion<string>().HasMaxLength(15).IsRequired();
@@ -28,7 +25,6 @@ public sealed class PlanoAlimentarConfiguration : IEntityTypeConfiguration<Plano
 
         // 1 plano vigente por pet.
         builder.HasIndex(p => p.PetId).IsUnique().HasDatabaseName("ix_planos_alimentares_pet");
-        builder.HasIndex(p => p.FrequenciaEntregaId).HasDatabaseName("ix_planos_alimentares_frequencia");
 
         builder
             .HasOne<Pet>()
@@ -36,13 +32,6 @@ public sealed class PlanoAlimentarConfiguration : IEntityTypeConfiguration<Plano
             .HasForeignKey(p => p.PetId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("fk_planos_alimentares_pet");
-
-        builder
-            .HasOne<FrequenciaEntrega>()
-            .WithMany()
-            .HasForeignKey(p => p.FrequenciaEntregaId)
-            .OnDelete(DeleteBehavior.Restrict)
-            .HasConstraintName("fk_planos_alimentares_frequencia");
 
         builder
             .HasMany(p => p.Itens)

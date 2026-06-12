@@ -12,10 +12,15 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
+import { FrequenciaEntrega } from '../frequencias/frequencias.model';
+import { FrequenciasService } from '../frequencias/frequencias.service';
 import { labelSexo, Pet, SalvarPetRequest } from './pets/pet.model';
 import { PetDialogComponent } from './pets/pet-dialog.component';
 import { PlanoDialogComponent } from './pets/plano-dialog.component';
 import { PetService } from './pets/pet.service';
+import { PlanoService } from './pets/plano.service';
+import { fmtPeso, PlanoAlimentar } from './pets/plano.model';
 import {
   Cliente,
   FormaPagamento,
@@ -56,13 +61,19 @@ export class ClienteDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly petDialog = inject(MatDialog);
   private readonly petService = inject(PetService);
+  private readonly planoService = inject(PlanoService);
+  private readonly frequenciasService = inject(FrequenciasService);
   private readonly snack = inject(MatSnackBar);
 
   // Pets (persistidos via API — apenas para clientes já salvos)
   readonly pets = signal<Pet[]>([]);
+  readonly planos = signal<Record<number, PlanoAlimentar>>({});
   readonly carregandoPets = signal(false);
   readonly clienteId: number | null;
   readonly labelSexo = labelSexo;
+  readonly fmtPeso = fmtPeso;
+
+  readonly frequencias = signal<FrequenciaEntrega[]>([]);
 
   readonly tipos = TIPOS_CLIENTE;
   readonly formas = FORMAS_PAGAMENTO;
@@ -84,6 +95,8 @@ export class ClienteDialogComponent {
     bairro: [''],
     cidade: [''],
     estado: ['' as string | null],
+    frequenciaEntregaId: [null as number | null],
+    primeiraEntrega: ['' as string | null],
     observacoes: [''],
     tipoCliente: ['Assinante' as TipoCliente],
     formaPagamento: ['Pix' as FormaPagamento | null],
@@ -99,6 +112,12 @@ export class ClienteDialogComponent {
   ) {
     this.edicao = !!data.cliente;
     this.clienteId = data.cliente?.id ?? null;
+
+    this.frequenciasService.listar().subscribe({
+      next: (fs) => this.frequencias.set(fs.filter((f) => f.ativo)),
+      error: () => undefined,
+    });
+
     if (data.cliente) {
       const c = data.cliente;
       this.carregarPets();
@@ -115,6 +134,8 @@ export class ClienteDialogComponent {
         bairro: c.bairro ?? '',
         cidade: c.cidade ?? '',
         estado: c.estado ?? null,
+        frequenciaEntregaId: c.frequenciaEntregaId ?? null,
+        primeiraEntrega: c.primeiraEntrega ?? null,
         observacoes: c.observacoes ?? '',
         tipoCliente: c.tipoCliente,
         formaPagamento: c.formaPagamento ?? null,
@@ -147,6 +168,8 @@ export class ClienteDialogComponent {
       bairro: txt(v.bairro),
       cidade: txt(v.cidade),
       estado: v.estado || null,
+      frequenciaEntregaId: v.frequenciaEntregaId ?? null,
+      primeiraEntrega: v.primeiraEntrega || null,
       tipoCliente: v.tipoCliente,
       formaPagamento: v.formaPagamento || null,
       diaCobranca: v.diaCobranca ?? null,
@@ -171,6 +194,7 @@ export class ClienteDialogComponent {
       next: (lista) => {
         this.pets.set(lista);
         this.carregandoPets.set(false);
+        this.carregarPlanos(lista);
       },
       error: () => {
         this.carregandoPets.set(false);
@@ -179,17 +203,70 @@ export class ClienteDialogComponent {
     });
   }
 
+  private carregarPlanos(lista: Pet[]): void {
+    if (lista.length === 0) {
+      this.planos.set({});
+      return;
+    }
+    forkJoin(lista.map((p) => this.planoService.obterPorPet(p.id))).subscribe({
+      next: (resultados) => {
+        const mapa: Record<number, PlanoAlimentar> = {};
+        resultados.forEach((plano, i) => {
+          if (plano) {
+            mapa[lista[i].id] = plano;
+          }
+        });
+        this.planos.set(mapa);
+      },
+      error: () => undefined,
+    });
+  }
+
+  // ===== Resumo do Plano no card do pet =====
+  planoDoPet(petId: number): PlanoAlimentar | undefined {
+    return this.planos()[petId];
+  }
+
+  private get diasCicloCliente(): number {
+    const id = this.form.controls.frequenciaEntregaId.value;
+    return this.frequencias().find((f) => f.id === id)?.diasCiclo ?? 0;
+  }
+
+  nomeFrequenciaCliente(): string {
+    const id = this.form.controls.frequenciaEntregaId.value;
+    return this.frequencias().find((f) => f.id === id)?.nome ?? '—';
+  }
+
+  totalCicloPet(p: Pet): string {
+    const plano = this.planoDoPet(p.id);
+    const dias = this.diasCicloCliente;
+    if (!plano || dias <= 0) {
+      return '—';
+    }
+    const gramasDia = plano.gramasDiaAjustadas ?? plano.gramasDiaSugeridas ?? p.gramasDiaAjustadas ?? p.gramasDiaSugeridas ?? 0;
+    return gramasDia > 0 ? this.fmtPeso(gramasDia * dias) : '—';
+  }
+
   adicionarPet(): void {
     this.abrirPet(null);
   }
 
   abrirPlano(p: Pet, ev: Event): void {
     ev.stopPropagation();
-    this.petDialog.open(PlanoDialogComponent, {
-      data: { pet: p },
+    const ref = this.petDialog.open(PlanoDialogComponent, {
+      data: {
+        pet: p,
+        frequenciaEntregaId: this.form.controls.frequenciaEntregaId.value,
+        primeiraEntrega: this.form.controls.primeiraEntrega.value,
+      },
       width: '920px',
       maxWidth: '96vw',
       autoFocus: false,
+    });
+    ref.afterClosed().subscribe((salvou) => {
+      if (salvou) {
+        this.carregarPlanos(this.pets());
+      }
     });
   }
 

@@ -4,9 +4,9 @@ using SistemaAN.Domain.Receitas;
 namespace SistemaAN.Domain.Planos;
 
 /// <summary>
-/// Plano Alimentar vigente de um pet (1:1). Define frequência, primeira entrega,
-/// gramas/dia e o tipo de alimentação (Casa ou Personalizada — nunca os dois).
-/// Totais/custos são derivados; não são persistidos.
+/// Plano Alimentar vigente de um pet (1:1). Define o que o pet come (tipo,
+/// receitas, gramas/dia, pacotes). A entrega (data + frequência) pertence ao
+/// Cliente (compartilhada por todos os pets). Totais/custos são derivados.
 /// </summary>
 public class PlanoAlimentar : AuditableEntity
 {
@@ -22,8 +22,6 @@ public class PlanoAlimentar : AuditableEntity
     }
 
     public long PetId { get; private set; }
-    public long FrequenciaEntregaId { get; private set; }
-    public DateOnly PrimeiraEntrega { get; private set; }
     public int? GramasDiaSugeridas { get; private set; }
     public int? GramasDiaAjustadas { get; private set; }
     public TipoReceita Tipo { get; private set; }
@@ -45,8 +43,6 @@ public class PlanoAlimentar : AuditableEntity
 
     private void Aplicar(DadosPlano d)
     {
-        FrequenciaEntregaId = d.FrequenciaEntregaId;
-        PrimeiraEntrega = d.PrimeiraEntrega;
         GramasDiaSugeridas = d.GramasDiaSugeridas;
         GramasDiaAjustadas = d.GramasDiaAjustadas;
         Tipo = d.Tipo;
@@ -54,8 +50,6 @@ public class PlanoAlimentar : AuditableEntity
 }
 
 public sealed record DadosPlano(
-    long FrequenciaEntregaId,
-    DateOnly PrimeiraEntrega,
     int? GramasDiaSugeridas,
     int? GramasDiaAjustadas,
     TipoReceita Tipo);

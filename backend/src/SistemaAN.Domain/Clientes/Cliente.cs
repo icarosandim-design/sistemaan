@@ -31,6 +31,10 @@ public class Cliente : AuditableEntity
     public string? MotivoCancelamento { get; private set; }
     public DateTimeOffset? DataCancelamento { get; private set; }
 
+    // ----- Entrega (compartilhada por todos os pets do cliente) -----
+    public long? FrequenciaEntregaId { get; private set; }
+    public DateOnly? PrimeiraEntrega { get; private set; }
+
     // ----- Financeiro básico -----
     public TipoCliente TipoCliente { get; private set; }
     public FormaPagamento? FormaPagamento { get; private set; }
@@ -78,6 +82,8 @@ public class Cliente : AuditableEntity
         Bairro = d.Bairro?.Trim();
         Cidade = d.Cidade?.Trim();
         Estado = d.Estado?.Trim();
+        FrequenciaEntregaId = d.FrequenciaEntregaId;
+        PrimeiraEntrega = d.PrimeiraEntrega;
         TipoCliente = d.TipoCliente;
         FormaPagamento = d.FormaPagamento;
         DiaCobranca = d.DiaCobranca;
@@ -111,6 +117,8 @@ public sealed record DadosCliente(
     string? Bairro,
     string? Cidade,
     string? Estado,
+    long? FrequenciaEntregaId,
+    DateOnly? PrimeiraEntrega,
     TipoCliente TipoCliente,
     FormaPagamento? FormaPagamento,
     int? DiaCobranca,

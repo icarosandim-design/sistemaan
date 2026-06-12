@@ -27,7 +27,7 @@ public static class PlanoUso
     }
 
     public static Task<bool> FrequenciaEmPlanoAtivoAsync(IApplicationDbContext db, long frequenciaId, CancellationToken ct)
-        => db.PlanosAlimentares.AnyAsync(p => p.Ativo && p.FrequenciaEntregaId == frequenciaId, ct);
+        => db.Clientes.AnyAsync(c => c.Ativo && c.FrequenciaEntregaId == frequenciaId, ct);
 
     public static Task<bool> IngredienteEmPlanoAtivoAsync(IApplicationDbContext db, long ingredienteId, CancellationToken ct)
     {

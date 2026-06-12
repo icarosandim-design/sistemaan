@@ -31,7 +31,7 @@ public sealed class PlanoAlimentarService : IPlanoAlimentarService
         }
 
         var (tipo, itens) = await ValidarAsync(petId, request, cancellationToken);
-        var dados = new DadosPlano(request.FrequenciaEntregaId, request.PrimeiraEntrega, request.GramasDiaSugeridas, request.GramasDiaAjustadas, tipo);
+        var dados = new DadosPlano(request.GramasDiaSugeridas, request.GramasDiaAjustadas, tipo);
 
         var plano = await CarregarAsync(petId, cancellationToken);
         if (plano is null)
@@ -75,13 +75,6 @@ public sealed class PlanoAlimentarService : IPlanoAlimentarService
         if (!Enum.TryParse<TipoReceita>(request.Tipo, true, out var tipo))
         {
             throw new ValidationException(new Dictionary<string, string[]> { ["tipo"] = ["Tipo de alimentação inválido."] });
-        }
-
-        // Frequência ativa.
-        var frequenciaOk = await _db.FrequenciasEntrega.AnyAsync(f => f.Id == request.FrequenciaEntregaId && f.Ativo, cancellationToken);
-        if (!frequenciaOk)
-        {
-            erros["frequenciaEntregaId"] = ["Selecione uma frequência de entrega ativa."];
         }
 
         if (request.Itens is null || request.Itens.Count == 0)
@@ -177,8 +170,6 @@ public sealed class PlanoAlimentarService : IPlanoAlimentarService
     private static PlanoAlimentarDto Map(PlanoAlimentar p) => new(
         p.Id,
         p.PetId,
-        p.FrequenciaEntregaId,
-        p.PrimeiraEntrega,
         p.GramasDiaSugeridas,
         p.GramasDiaAjustadas,
         p.Tipo.ToString(),

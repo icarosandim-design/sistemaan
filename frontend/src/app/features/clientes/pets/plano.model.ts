@@ -28,8 +28,6 @@ export interface PlanoItemApi {
 export interface PlanoAlimentar {
   id: number;
   petId: number;
-  frequenciaEntregaId: number;
-  primeiraEntrega: string; // aaaa-mm-dd
   gramasDiaSugeridas: number | null;
   gramasDiaAjustadas: number | null;
   tipo: TipoAlimentacao;
@@ -45,8 +43,6 @@ export interface SalvarPlanoItemRequest {
 }
 
 export interface SalvarPlanoRequest {
-  frequenciaEntregaId: number;
-  primeiraEntrega: string;
   gramasDiaSugeridas?: number | null;
   gramasDiaAjustadas?: number | null;
   tipo: TipoAlimentacao;

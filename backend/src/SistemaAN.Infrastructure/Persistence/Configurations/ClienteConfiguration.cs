@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SistemaAN.Domain.Clientes;
+using SistemaAN.Domain.Entregas;
 
 namespace SistemaAN.Infrastructure.Persistence.Configurations;
 
@@ -33,6 +34,17 @@ public sealed class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
 
         builder.Property(c => c.Ativo).IsRequired();
         builder.Property(c => c.MotivoCancelamento).HasMaxLength(500);
+
+        // Entrega (compartilhada pelos pets do cliente).
+        builder.Property(c => c.FrequenciaEntregaId);
+        builder.Property(c => c.PrimeiraEntrega);
+        builder.HasIndex(c => c.FrequenciaEntregaId).HasDatabaseName("ix_clientes_frequencia");
+        builder
+            .HasOne<FrequenciaEntrega>()
+            .WithMany()
+            .HasForeignKey(c => c.FrequenciaEntregaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_clientes_frequencia");
 
         builder.Property(c => c.TipoCliente).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(c => c.FormaPagamento).HasConversion<string>().HasMaxLength(20);

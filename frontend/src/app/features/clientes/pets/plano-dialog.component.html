@@ -13,21 +13,25 @@
   <!-- ===== Configuração ===== -->
   <section class="bloco">
     <h3 class="titulo">Configuração do plano</h3>
-    <div class="linha">
-      <mat-form-field appearance="outline">
-        <mat-label>Frequência de entrega</mat-label>
-        <mat-select [(ngModel)]="frequenciaId" [ngModelOptions]="{ standalone: true }" (ngModelChange)="onConfigChange()">
-          @for (f of frequencias; track f.id) {
-            <mat-option [value]="f.id">{{ f.nome }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Primeira data de entrega</mat-label>
-        <input matInput type="date" [(ngModel)]="primeiraEntrega" [ngModelOptions]="{ standalone: true }" />
-      </mat-form-field>
+    <!-- Entrega vem do cadastro do cliente (compartilhada por todos os pets) -->
+    <div class="entrega-cliente">
+      <div class="ec-item">
+        <span class="rotulo">Frequência (do cliente)</span>
+        <span class="valor">{{ nomeFrequencia }}</span>
+      </div>
+      <div class="ec-item">
+        <span class="rotulo">1ª entrega (do cliente)</span>
+        <span class="valor">{{ primeiraEntrega ? (primeiraEntrega | date: 'dd/MM/yyyy') : '—' }}</span>
+      </div>
     </div>
+    @if (semEntrega) {
+      <p class="ec-aviso">
+        <mat-icon>warning</mat-icon>
+        Defina a frequência e a data de entrega no <strong>cadastro do cliente</strong>
+        (aba Dados → Entrega). A Receita da Casa precisa do ciclo para calcular os pacotes.
+      </p>
+    }
 
     @if (tipo === 'Casa') {
       <div class="linha">

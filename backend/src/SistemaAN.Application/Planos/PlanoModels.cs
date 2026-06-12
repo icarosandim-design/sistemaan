@@ -12,8 +12,6 @@ public sealed record PlanoItemDto(
 public sealed record PlanoAlimentarDto(
     long Id,
     long PetId,
-    long FrequenciaEntregaId,
-    DateOnly PrimeiraEntrega,
     int? GramasDiaSugeridas,
     int? GramasDiaAjustadas,
     string Tipo,
@@ -29,8 +27,6 @@ public sealed record SalvarPlanoItemRequest(
     IReadOnlyList<SalvarPlanoItemPacoteRequest>? Pacotes);
 
 public sealed record SalvarPlanoRequest(
-    long FrequenciaEntregaId,
-    DateOnly PrimeiraEntrega,
     int? GramasDiaSugeridas,
     int? GramasDiaAjustadas,
     string Tipo,

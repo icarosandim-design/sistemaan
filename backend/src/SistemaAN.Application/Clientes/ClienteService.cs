@@ -141,6 +141,15 @@ public sealed class ClienteService : IClienteService
             }
         }
 
+        if (r.FrequenciaEntregaId is { } freqId)
+        {
+            var freqOk = await _db.FrequenciasEntrega.AnyAsync(f => f.Id == freqId && f.Ativo, cancellationToken);
+            if (!freqOk)
+            {
+                erros["frequenciaEntregaId"] = ["Selecione uma frequência de entrega ativa."];
+            }
+        }
+
         if (erros.Count > 0)
         {
             throw new ValidationException(erros);
@@ -160,12 +169,14 @@ public sealed class ClienteService : IClienteService
         return new DadosCliente(
             r.Nome, cpf, r.Telefone, r.Email, r.OrigemVenda, r.Observacoes,
             r.Rua, r.Numero, r.Complemento, r.Cep, r.Bairro, r.Cidade, r.Estado,
+            r.FrequenciaEntregaId, r.PrimeiraEntrega,
             tipo, forma, r.DiaCobranca, r.ValorRecorrenteMensal, status, r.ObservacoesFinanceiras);
     }
 
     private static ClienteDto Map(Cliente c, IReadOnlyList<string> pets) => new(
         c.Id, c.Nome, c.Cpf, c.Telefone, c.Email, c.OrigemVenda, c.Observacoes,
         c.Rua, c.Numero, c.Complemento, c.Cep, c.Bairro, c.Cidade, c.Estado,
+        c.FrequenciaEntregaId, c.PrimeiraEntrega,
         c.Ativo, c.MotivoCancelamento, c.DataCancelamento,
         c.TipoCliente.ToString(),
         c.FormaPagamento?.ToString(),

@@ -84,6 +84,24 @@
             </mat-form-field>
           </div>
 
+          <h3 class="secao">Entrega</h3>
+          <p class="secao-nota">A entrega vale para todos os pets do cliente (mesma data e frequência).</p>
+          <div class="linha">
+            <mat-form-field appearance="outline">
+              <mat-label>Frequência de entrega</mat-label>
+              <mat-select formControlName="frequenciaEntregaId">
+                <mat-option [value]="null">—</mat-option>
+                @for (f of frequencias(); track f.id) {
+                  <mat-option [value]="f.id">{{ f.nome }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Primeira data de entrega</mat-label>
+              <input matInput type="date" formControlName="primeiraEntrega" />
+            </mat-form-field>
+          </div>
+
           <mat-form-field appearance="outline" class="full">
             <mat-label>Observações</mat-label>
             <textarea matInput rows="2" formControlName="observacoes"></textarea>
@@ -209,20 +227,26 @@
                 <div class="pet-obs"><mat-icon>restaurant</mat-icon> {{ p.observacoesAlimentares }}</div>
               }
 
-              <!-- Plano Alimentar (mock) -->
+              <!-- Plano Alimentar -->
               <div class="plano-preview">
                 <div class="plano-tit">
-                  <mat-icon>event_repeat</mat-icon> Plano Alimentar <span class="badge">mock</span>
+                  <mat-icon>event_repeat</mat-icon> Plano Alimentar
+                  @if (!planoDoPet(p.id)) {
+                    <span class="badge">sem plano</span>
+                  }
                 </div>
                 <div class="plano-grid">
-                  <div><span class="rotulo">Frequência</span><span class="valor">—</span></div>
-                  <div><span class="rotulo">1ª entrega</span><span class="valor">—</span></div>
-                  <div><span class="rotulo">Tipo</span><span class="valor">—</span></div>
-                  <div><span class="rotulo">Receitas</span><span class="valor">—</span></div>
-                  <div><span class="rotulo">Total / ciclo</span><span class="valor">—</span></div>
+                  <div><span class="rotulo">Frequência</span><span class="valor">{{ nomeFrequenciaCliente() }}</span></div>
+                  <div>
+                    <span class="rotulo">1ª entrega</span>
+                    <span class="valor">{{ form.controls.primeiraEntrega.value ? (form.controls.primeiraEntrega.value | date: 'dd/MM/yyyy') : '—' }}</span>
+                  </div>
+                  <div><span class="rotulo">Tipo</span><span class="valor">{{ planoDoPet(p.id)?.tipo || '—' }}</span></div>
+                  <div><span class="rotulo">Receitas</span><span class="valor">{{ planoDoPet(p.id) ? planoDoPet(p.id)!.itens.length : '—' }}</span></div>
+                  <div><span class="rotulo">Total / ciclo</span><span class="valor">{{ totalCicloPet(p) }}</span></div>
                 </div>
                 <button mat-stroked-button type="button" class="plano-btn" (click)="abrirPlano(p, $event)">
-                  <mat-icon>tune</mat-icon> Configurar plano alimentar
+                  <mat-icon>tune</mat-icon> {{ planoDoPet(p.id) ? 'Editar plano alimentar' : 'Configurar plano alimentar' }}
                 </button>
               </div>
             </div>
