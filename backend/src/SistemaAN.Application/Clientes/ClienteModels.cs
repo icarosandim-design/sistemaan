@@ -23,7 +23,8 @@ public sealed record ClienteDto(
     int? DiaCobranca,
     decimal ValorRecorrenteMensal,
     string StatusFinanceiro,
-    string? ObservacoesFinanceiras);
+    string? ObservacoesFinanceiras,
+    IReadOnlyList<string> Pets);
 
 public sealed record SalvarClienteRequest(
     string Nome,

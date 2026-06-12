@@ -49,7 +49,7 @@
       <mat-icon>monitor_weight</mat-icon>
       <span>
         Sugestão da Tabela de Consumo:
-        <strong>{{ sugestao !== null ? (sugestao + ' g/dia') : 'sem faixa para este peso' }}</strong>
+        <strong>{{ sugestao() !== null ? (sugestao() + ' g/dia') : 'sem faixa para este peso' }}</strong>
       </span>
     </div>
 

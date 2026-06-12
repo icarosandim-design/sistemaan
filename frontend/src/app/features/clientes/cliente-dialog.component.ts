@@ -9,8 +9,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
-import { labelSexo, MOCK_PETS, Pet, sugestaoGramasDia } from './pets/pet.model';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
+import { labelSexo, Pet, SalvarPetRequest } from './pets/pet.model';
 import { PetDialogComponent } from './pets/pet-dialog.component';
+import { PetService } from './pets/pet.service';
 import {
   Cliente,
   FormaPagamento,
@@ -42,6 +46,7 @@ export interface ClienteDialogData {
     MatIconModule,
     MatTooltipModule,
     MatTabsModule,
+    MatProgressBarModule,
   ],
   templateUrl: './cliente-dialog.component.html',
   styleUrl: './cliente-dialog.component.scss',
@@ -49,11 +54,14 @@ export interface ClienteDialogData {
 export class ClienteDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly petDialog = inject(MatDialog);
+  private readonly petService = inject(PetService);
+  private readonly snack = inject(MatSnackBar);
 
-  // Pets (mock nesta fase — não persistidos)
-  readonly pets = signal<Pet[]>(MOCK_PETS.map((p) => ({ ...p })));
+  // Pets (persistidos via API — apenas para clientes já salvos)
+  readonly pets = signal<Pet[]>([]);
+  readonly carregandoPets = signal(false);
+  readonly clienteId: number | null;
   readonly labelSexo = labelSexo;
-  readonly sugestaoGramasDia = sugestaoGramasDia;
 
   readonly tipos = TIPOS_CLIENTE;
   readonly formas = FORMAS_PAGAMENTO;
@@ -89,8 +97,10 @@ export class ClienteDialogComponent {
     @Inject(MAT_DIALOG_DATA) readonly data: ClienteDialogData,
   ) {
     this.edicao = !!data.cliente;
+    this.clienteId = data.cliente?.id ?? null;
     if (data.cliente) {
       const c = data.cliente;
+      this.carregarPets();
       this.form.patchValue({
         nome: c.nome,
         cpf: c.cpf ?? '',
@@ -150,7 +160,24 @@ export class ClienteDialogComponent {
     this.ref.close();
   }
 
-  // ===== Pets (mock) =====
+  // ===== Pets (API) =====
+  private carregarPets(): void {
+    if (this.clienteId === null) {
+      return;
+    }
+    this.carregandoPets.set(true);
+    this.petService.listarPorCliente(this.clienteId).subscribe({
+      next: (lista) => {
+        this.pets.set(lista);
+        this.carregandoPets.set(false);
+      },
+      error: () => {
+        this.carregandoPets.set(false);
+        this.erro('Falha ao carregar os pets.');
+      },
+    });
+  }
+
   adicionarPet(): void {
     this.abrirPet(null);
   }
@@ -161,29 +188,54 @@ export class ClienteDialogComponent {
 
   alternarPet(p: Pet, ev: Event): void {
     ev.stopPropagation();
-    this.pets.update((lista) => lista.map((x) => (x.id === p.id ? { ...x, ativo: !x.ativo } : x)));
+    const acao = p.ativo ? this.petService.inativar(p.id) : this.petService.reativar(p.id);
+    acao.subscribe({
+      next: () => {
+        this.snack.open(p.ativo ? 'Pet inativado.' : 'Pet reativado.', 'OK', { duration: 2000 });
+        this.carregarPets();
+      },
+      error: () => this.erro('Não foi possível alterar a situação do pet.'),
+    });
   }
 
   private abrirPet(p: Pet | null): void {
+    if (this.clienteId === null) {
+      return;
+    }
+    const clienteId = this.clienteId;
     const ref = this.petDialog.open(PetDialogComponent, {
       data: { pet: p },
       width: '560px',
       maxWidth: '95vw',
       autoFocus: false,
     });
-    ref.afterClosed().subscribe((res: Pet | undefined) => {
-      if (!res) {
+    ref.afterClosed().subscribe((req: SalvarPetRequest | undefined) => {
+      if (!req) {
         return;
       }
-      this.pets.update((lista) => {
-        const idx = lista.findIndex((x) => x.id === res.id);
-        if (idx >= 0) {
-          const copia = [...lista];
-          copia[idx] = res;
-          return copia;
-        }
-        return [...lista, res];
+      const obs = p ? this.petService.atualizar(p.id, req) : this.petService.criar(clienteId, req);
+      obs.subscribe({
+        next: () => {
+          this.snack.open(p ? 'Pet atualizado.' : 'Pet cadastrado.', 'OK', { duration: 2000 });
+          this.carregarPets();
+        },
+        error: (e: HttpErrorResponse) => this.erro(this.mensagemErro(e)),
       });
     });
+  }
+
+  private mensagemErro(e: HttpErrorResponse): string {
+    const errors = e.error?.errors as Record<string, string[]> | undefined;
+    if (errors) {
+      const primeira = Object.values(errors)[0]?.[0];
+      if (primeira) {
+        return primeira;
+      }
+    }
+    return e.error?.detail ?? 'Não foi possível concluir a operação.';
+  }
+
+  private erro(msg: string): void {
+    this.snack.open(msg, 'Fechar', { duration: 4000 });
   }
 }

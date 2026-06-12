@@ -1,4 +1,5 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,7 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Pet, Sexo, SEXOS, sugestaoGramasDia } from './pet.model';
+import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { Pet, SalvarPetRequest, Sexo, SEXOS } from './pet.model';
+import { PetService } from './pet.service';
 
 export interface PetDialogData {
   pet: Pet | null;
@@ -29,9 +32,11 @@ export interface PetDialogData {
 })
 export class PetDialogComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly petService = inject(PetService);
 
   readonly sexos = SEXOS;
   readonly edicao: boolean;
+  readonly sugestao = signal<number | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     nome: ['', [Validators.required]],
@@ -46,7 +51,7 @@ export class PetDialogComponent {
   });
 
   constructor(
-    private readonly ref: MatDialogRef<PetDialogComponent, Pet>,
+    private readonly ref: MatDialogRef<PetDialogComponent, SalvarPetRequest>,
     @Inject(MAT_DIALOG_DATA) readonly data: PetDialogData,
   ) {
     this.edicao = !!data.pet;
@@ -54,20 +59,30 @@ export class PetDialogComponent {
       const p = data.pet;
       this.form.patchValue({
         nome: p.nome,
-        raca: p.raca,
+        raca: p.raca ?? '',
         pesoKg: p.pesoKg,
         dataNascimento: p.dataNascimento ?? null,
         idadeAprox: p.idadeAprox ?? '',
         sexo: p.sexo,
-        observacoesGerais: p.observacoesGerais,
-        observacoesAlimentares: p.observacoesAlimentares,
+        observacoesGerais: p.observacoesGerais ?? '',
+        observacoesAlimentares: p.observacoesAlimentares ?? '',
         gramasDiaAjustadas: p.gramasDiaAjustadas,
       });
+      this.sugestao.set(p.gramasDiaSugeridas);
     }
-  }
 
-  get sugestao(): number | null {
-    return sugestaoGramasDia(Number(this.form.getRawValue().pesoKg) || 0);
+    // Sugestão ao vivo a partir da Tabela de Consumo (backend).
+    this.form.controls.pesoKg.valueChanges
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        switchMap((peso) => {
+          const v = Number(peso) || 0;
+          return v > 0 ? this.petService.sugestaoPorPeso(v).pipe(catchError(() => of(null))) : of(null);
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((g) => this.sugestao.set(g));
   }
 
   salvar(): void {
@@ -76,20 +91,19 @@ export class PetDialogComponent {
       return;
     }
     const v = this.form.getRawValue();
-    const pet: Pet = {
-      id: this.data.pet?.id ?? Date.now(),
+    const txt = (s: string) => (s.trim() ? s.trim() : null);
+    const req: SalvarPetRequest = {
       nome: v.nome.trim(),
-      raca: v.raca.trim(),
+      raca: txt(v.raca),
       pesoKg: Number(v.pesoKg),
       dataNascimento: v.dataNascimento || null,
-      idadeAprox: v.idadeAprox.trim() || null,
+      idadeAprox: txt(v.idadeAprox),
       sexo: v.sexo,
-      ativo: this.data.pet?.ativo ?? true,
-      observacoesGerais: v.observacoesGerais.trim(),
-      observacoesAlimentares: v.observacoesAlimentares.trim(),
+      observacoesGerais: txt(v.observacoesGerais),
+      observacoesAlimentares: txt(v.observacoesAlimentares),
       gramasDiaAjustadas: v.gramasDiaAjustadas ?? null,
     };
-    this.ref.close(pet);
+    this.ref.close(req);
   }
 
   cancelar(): void {

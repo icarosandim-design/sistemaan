@@ -147,14 +147,21 @@
       <!-- Pets -->
       <mat-tab label="Pets">
         <div class="aba pets-aba">
+          @if (!edicao) {
+            <p class="vazio">Salve o cliente primeiro para cadastrar os pets dele.</p>
+          } @else {
           <div class="pets-topo">
-            <span class="pets-nota">Pets de exemplo (mock) · não são salvos nesta etapa.</span>
+            <span class="pets-nota">Pets do cliente.</span>
             <button mat-stroked-button type="button" (click)="adicionarPet()">
               <mat-icon>add</mat-icon> Adicionar pet
             </button>
           </div>
 
-          @if (pets().length === 0) {
+          @if (carregandoPets()) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          }
+
+          @if (!carregandoPets() && pets().length === 0) {
             <p class="vazio">Nenhum pet cadastrado.</p>
           }
 
@@ -190,7 +197,7 @@
                 </div>
                 <div class="dado">
                   <span class="rotulo">Sugestão (Tabela de Consumo)</span>
-                  <span class="valor">{{ sugestaoGramasDia(p.pesoKg) !== null ? (sugestaoGramasDia(p.pesoKg) + ' g/dia') : '—' }}</span>
+                  <span class="valor">{{ p.gramasDiaSugeridas !== null ? (p.gramasDiaSugeridas + ' g/dia') : '—' }}</span>
                 </div>
                 <div class="dado">
                   <span class="rotulo">Ajuste manual</span>
@@ -215,6 +222,7 @@
                 <div class="plano-nota">Será configurado na próxima etapa (Plano Alimentar).</div>
               </div>
             </div>
+          }
           }
         </div>
       </mat-tab>

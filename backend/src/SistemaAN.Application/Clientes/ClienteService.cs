@@ -12,13 +12,36 @@ public sealed class ClienteService : IClienteService
     public ClienteService(IApplicationDbContext db) => _db = db;
 
     public async Task<IReadOnlyList<ClienteDto>> ListarAsync(CancellationToken cancellationToken = default)
-        => await _db.Clientes.OrderBy(c => c.Nome).Select(c => Map(c)).ToListAsync(cancellationToken);
+    {
+        var clientes = await _db.Clientes.OrderBy(c => c.Nome).ToListAsync(cancellationToken);
+
+        var petsPorCliente = await _db.Pets
+            .Where(p => p.Ativo)
+            .OrderBy(p => p.Nome)
+            .Select(p => new { p.ClienteId, p.Nome })
+            .ToListAsync(cancellationToken);
+
+        var mapaPets = petsPorCliente
+            .GroupBy(p => p.ClienteId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(p => p.Nome).ToList());
+
+        return clientes
+            .Select(c => Map(c, mapaPets.TryGetValue(c.Id, out var nomes) ? nomes : []))
+            .ToList();
+    }
 
     public async Task<ClienteDto> ObterAsync(long id, CancellationToken cancellationToken = default)
     {
         var c = await _db.Clientes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
             ?? throw new NotFoundException("Cliente", id);
-        return Map(c);
+
+        var nomes = await _db.Pets
+            .Where(p => p.ClienteId == id && p.Ativo)
+            .OrderBy(p => p.Nome)
+            .Select(p => p.Nome)
+            .ToListAsync(cancellationToken);
+
+        return Map(c, nomes);
     }
 
     public async Task<ClienteDto> CriarAsync(SalvarClienteRequest request, CancellationToken cancellationToken = default)
@@ -27,7 +50,7 @@ public sealed class ClienteService : IClienteService
         var cliente = Cliente.Criar(dados);
         _db.Clientes.Add(cliente);
         await _db.SaveChangesAsync(cancellationToken);
-        return Map(cliente);
+        return Map(cliente, []);
     }
 
     public async Task<ClienteDto> AtualizarAsync(long id, SalvarClienteRequest request, CancellationToken cancellationToken = default)
@@ -38,7 +61,14 @@ public sealed class ClienteService : IClienteService
         var dados = await ValidarAsync(request, id, cancellationToken);
         cliente.Atualizar(dados);
         await _db.SaveChangesAsync(cancellationToken);
-        return Map(cliente);
+
+        var nomes = await _db.Pets
+            .Where(p => p.ClienteId == id && p.Ativo)
+            .OrderBy(p => p.Nome)
+            .Select(p => p.Nome)
+            .ToListAsync(cancellationToken);
+
+        return Map(cliente, nomes);
     }
 
     public async Task CancelarAsync(long id, string motivo, CancellationToken cancellationToken = default)
@@ -133,7 +163,7 @@ public sealed class ClienteService : IClienteService
             tipo, forma, r.DiaCobranca, r.ValorRecorrenteMensal, status, r.ObservacoesFinanceiras);
     }
 
-    private static ClienteDto Map(Cliente c) => new(
+    private static ClienteDto Map(Cliente c, IReadOnlyList<string> pets) => new(
         c.Id, c.Nome, c.Cpf, c.Telefone, c.Email, c.OrigemVenda, c.Observacoes,
         c.Rua, c.Numero, c.Complemento, c.Cep, c.Bairro, c.Cidade, c.Estado,
         c.Ativo, c.MotivoCancelamento, c.DataCancelamento,
@@ -142,5 +172,6 @@ public sealed class ClienteService : IClienteService
         c.DiaCobranca,
         c.ValorRecorrenteMensal,
         c.StatusFinanceiro.ToString(),
-        c.ObservacoesFinanceiras);
+        c.ObservacoesFinanceiras,
+        pets);
 }

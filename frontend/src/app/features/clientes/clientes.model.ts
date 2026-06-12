@@ -26,6 +26,7 @@ export interface Cliente {
   valorRecorrenteMensal: number;
   statusFinanceiro: StatusFinanceiro;
   observacoesFinanceiras?: string | null;
+  pets?: string[];
 }
 
 export interface SalvarClienteRequest {

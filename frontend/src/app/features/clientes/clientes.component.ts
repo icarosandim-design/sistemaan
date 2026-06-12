@@ -20,7 +20,6 @@ import {
   labelTipo,
   SalvarClienteRequest,
 } from './clientes.model';
-import { petsMockDoCliente } from './pets/pet.model';
 import { ClientesService } from './clientes.service';
 import { ClienteDialogComponent } from './cliente-dialog.component';
 import { CancelarDialogComponent } from './cancelar-dialog.component';
@@ -54,7 +53,6 @@ export class ClientesComponent implements OnInit, AfterViewInit {
   readonly labelStatusFinanceiro = labelStatusFinanceiro;
   readonly fmtCpf = fmtCpf;
   readonly fmtMoeda = fmtMoeda;
-  readonly petsDoCliente = petsMockDoCliente;
 
   carregando = false;
   filtroTexto = '';
