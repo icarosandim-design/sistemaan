@@ -54,6 +54,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<PlanoItemPacote> PlanoItemPacotes => Set<PlanoItemPacote>();
 
+    public DbSet<Entrega> Entregas => Set<Entrega>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("public");

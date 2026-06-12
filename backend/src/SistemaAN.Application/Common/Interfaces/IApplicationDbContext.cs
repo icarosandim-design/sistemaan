@@ -46,5 +46,7 @@ public interface IApplicationDbContext
 
     DbSet<PlanoItemPacote> PlanoItemPacotes { get; }
 
+    DbSet<Entrega> Entregas { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

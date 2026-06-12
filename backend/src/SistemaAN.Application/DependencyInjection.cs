@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<ITamanhoPacoteService, TamanhoPacoteService>();
         services.AddScoped<IReceitaPersonalizadaService, ReceitaPersonalizadaService>();
         services.AddScoped<IPlanoAlimentarService, PlanoAlimentarService>();
+        services.AddScoped<IEntregaService, EntregaService>();
         return services;
     }
 }
