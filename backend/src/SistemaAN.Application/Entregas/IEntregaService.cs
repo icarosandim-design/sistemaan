@@ -20,4 +20,15 @@ public interface IEntregaService
 
     /// <summary>Regerar entregas futuras ainda não operacionais (Programada) do cliente.</summary>
     Task<GerarEntregasResultado> RegerarFuturasDoClienteAsync(long clienteId, string usuario, CancellationToken cancellationToken = default);
+
+    /// <summary>Regerar futuras do cliente dono do pet (atalho usado em hooks).</summary>
+    Task<GerarEntregasResultado> RegerarFuturasDoPetAsync(long petId, string usuario, CancellationToken cancellationToken = default);
+
+    /// <summary>Regerar futuras dos clientes cujo plano ativo usa a receita informada.</summary>
+    Task<GerarEntregasResultado> RegerarPorReceitaAsync(long receitaId, string usuario, CancellationToken cancellationToken = default);
+
+    /// <summary>"Esta e próximas": ajusta a agenda do cliente e regera as futuras elegíveis.</summary>
+    Task<GerarEntregasResultado> AlterarAgendaFuturaAsync(
+        long entregaId, DateOnly novaData, long? frequenciaEntregaId, string motivo, string usuario,
+        CancellationToken cancellationToken = default);
 }

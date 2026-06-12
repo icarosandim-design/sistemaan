@@ -52,6 +52,13 @@ public class Cliente : AuditableEntity
 
     public void Atualizar(DadosCliente dados) => Aplicar(dados);
 
+    /// <summary>Ajusta a agenda de entrega (usado na alteração da agenda futura).</summary>
+    public void DefinirEntrega(long? frequenciaEntregaId, DateOnly? primeiraEntrega)
+    {
+        FrequenciaEntregaId = frequenciaEntregaId;
+        PrimeiraEntrega = primeiraEntrega;
+    }
+
     /// <summary>Cancela a assinatura/cliente, registrando o motivo e a data.</summary>
     public void Cancelar(string motivo, DateTimeOffset quando)
     {

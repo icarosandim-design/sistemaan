@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Application.Entregas;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Pets;
 
@@ -9,8 +10,25 @@ namespace SistemaAN.Application.Pets;
 public sealed class PetService : IPetService
 {
     private readonly IApplicationDbContext _db;
+    private readonly IEntregaService _entregas;
 
-    public PetService(IApplicationDbContext db) => _db = db;
+    public PetService(IApplicationDbContext db, IEntregaService entregas)
+    {
+        _db = db;
+        _entregas = entregas;
+    }
+
+    private async Task RegerarEntregasAsync(long clienteId, CancellationToken ct)
+    {
+        try
+        {
+            await _entregas.RegerarFuturasDoClienteAsync(clienteId, "sistema", ct);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
 
     public async Task<IReadOnlyList<PetDto>> ListarPorClienteAsync(long clienteId, CancellationToken cancellationToken = default)
     {
@@ -50,6 +68,7 @@ public sealed class PetService : IPetService
         var pet = Pet.Criar(clienteId, dados);
         _db.Pets.Add(pet);
         await _db.SaveChangesAsync(cancellationToken);
+        await RegerarEntregasAsync(clienteId, cancellationToken);
 
         var faixas = await FaixasAtivasAsync(cancellationToken);
         return Map(pet, Sugerir(faixas, pet.PesoKg));
@@ -63,6 +82,7 @@ public sealed class PetService : IPetService
         var dados = Validar(request);
         pet.Atualizar(dados);
         await _db.SaveChangesAsync(cancellationToken);
+        await RegerarEntregasAsync(pet.ClienteId, cancellationToken);
 
         var faixas = await FaixasAtivasAsync(cancellationToken);
         return Map(pet, Sugerir(faixas, pet.PesoKg));
@@ -74,6 +94,7 @@ public sealed class PetService : IPetService
             ?? throw new NotFoundException("Pet", id);
         pet.Inativar();
         await _db.SaveChangesAsync(cancellationToken);
+        await RegerarEntregasAsync(pet.ClienteId, cancellationToken);
     }
 
     public async Task ReativarAsync(long id, CancellationToken cancellationToken = default)
@@ -82,6 +103,7 @@ public sealed class PetService : IPetService
             ?? throw new NotFoundException("Pet", id);
         pet.Reativar();
         await _db.SaveChangesAsync(cancellationToken);
+        await RegerarEntregasAsync(pet.ClienteId, cancellationToken);
     }
 
     private static DadosPet Validar(SalvarPetRequest r)

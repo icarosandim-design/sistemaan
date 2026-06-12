@@ -56,14 +56,17 @@ Entrega 1—N EntregaHistorico
 Agregado interno = Cascade; FKs externas (Cliente/Pet/Receita/Ingrediente) = Restrict.
 
 ## 4. Geração de entregas
-- **Híbrida**: botão manual "Gerar entregas (próximos 90 dias)"; gancho p/ job depois.
+- **Automática** (sem botão): disparada ao salvar/alterar dados relevantes
+  (cliente, pet, plano, receita personalizada, receita da casa). Best-effort.
+- Horizonte padrão: **45 dias** (configurável internamente).
 - Fonte: clientes **ativos** com `FrequenciaEntregaId` + `PrimeiraEntrega` e ≥1 pet ativo
   com **plano ativo**.
-- Datas ancoradas em `PrimeiraEntrega`, passo `DiasCiclo`, dentro de `[hoje, hoje+90]`.
+- Datas ancoradas em `PrimeiraEntrega`, passo `DiasCiclo`, dentro de `[hoje, hoje+45]`.
 - **Idempotente**: não cria se já existe entrega para `(cliente, data)` em status ativo
   (qualquer status exceto Cancelada/Reagendada).
 - Independe da confirmação da entrega anterior.
 - Cada entrega copia o **snapshot** atual (cliente + pets + planos + receitas + ingredientes/pacotes).
+- Endpoint manual `POST /api/entregas/gerar` permanece apenas para manutenção/admin.
 
 ## 5. Status e transições
 `Programada · ConfirmadaCliente · SaiuParaEntrega · Entregue · NaoEntregue · Reagendada · Cancelada`
@@ -123,9 +126,11 @@ agenda futura, cancelamento, não entregue, entrada/saída de rota (futuro).
 - `GET  /api/entregas/{id}` → detalhe completo (pets/itens/pacotes/ingredientes/histórico).
 - `PUT  /api/entregas/{id}/status` → transições simples (confirmar, saiu, entregue).
 - `PUT  /api/entregas/{id}/nao-entregue` (motivo).
-- `PUT  /api/entregas/{id}/reagendar` (novaData, motivo).
+- `PUT  /api/entregas/{id}/reagendar` (novaData, motivo) → **"Somente esta entrega"** (pontual).
+- `PUT  /api/entregas/{id}/alterar-agenda` (novaData, frequenciaEntregaId?, motivo) → **"Esta e próximas"**
+  (ajusta a agenda do cliente e regera as futuras elegíveis).
 - `PUT  /api/entregas/{id}/cancelar` (motivo).
-- `POST /api/clientes/{id}/regerar-entregas` → regera futuras elegíveis.
+- `POST /api/clientes/{id}/regerar-entregas` → regera futuras elegíveis (manutenção).
 
 ## 12. Alimentação futura (Produção/Estoque/Central)
 - **Produção** agrega entregas de um período → soma pacotes/receitas → expande em

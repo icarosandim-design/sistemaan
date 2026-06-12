@@ -79,3 +79,5 @@ public sealed record MudarStatusEntregaRequest(string Status);
 public sealed record MotivoRequest(string Motivo);
 
 public sealed record ReagendarEntregaRequest(DateOnly NovaData, string Motivo);
+
+public sealed record AlterarAgendaRequest(DateOnly NovaData, long? FrequenciaEntregaId, string Motivo);

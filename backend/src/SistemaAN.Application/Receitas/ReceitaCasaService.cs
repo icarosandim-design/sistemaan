@@ -12,8 +12,13 @@ public sealed class ReceitaCasaService : IReceitaCasaService
     private const int BaseGramas = 1000;
 
     private readonly IApplicationDbContext _db;
+    private readonly Entregas.IEntregaService _entregas;
 
-    public ReceitaCasaService(IApplicationDbContext db) => _db = db;
+    public ReceitaCasaService(IApplicationDbContext db, Entregas.IEntregaService entregas)
+    {
+        _db = db;
+        _entregas = entregas;
+    }
 
     public async Task<IReadOnlyList<ReceitaCasaDto>> ListarAsync(CancellationToken cancellationToken = default)
     {
@@ -57,6 +62,14 @@ public sealed class ReceitaCasaService : IReceitaCasaService
         receita.SubstituirItens(request.Itens.Select(i => ItemReceita.Criar(i.IngredienteId, i.Gramas)));
 
         await _db.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _entregas.RegerarPorReceitaAsync(receita.Id, "sistema", cancellationToken);
+        }
+        catch
+        {
+            // geração automática best-effort
+        }
         return await ObterAsync(receita.Id, cancellationToken);
     }
 

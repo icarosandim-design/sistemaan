@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Application.Entregas;
 using SistemaAN.Domain.Clientes;
 
 namespace SistemaAN.Application.Clientes;
@@ -8,8 +9,26 @@ namespace SistemaAN.Application.Clientes;
 public sealed class ClienteService : IClienteService
 {
     private readonly IApplicationDbContext _db;
+    private readonly IEntregaService _entregas;
 
-    public ClienteService(IApplicationDbContext db) => _db = db;
+    public ClienteService(IApplicationDbContext db, IEntregaService entregas)
+    {
+        _db = db;
+        _entregas = entregas;
+    }
+
+    /// <summary>Geração automática (best-effort) das entregas futuras do cliente.</summary>
+    private async Task RegerarEntregasAsync(long clienteId, CancellationToken ct)
+    {
+        try
+        {
+            await _entregas.RegerarFuturasDoClienteAsync(clienteId, "sistema", ct);
+        }
+        catch
+        {
+            // Geração automática é best-effort; o endpoint de geração permanece para manutenção.
+        }
+    }
 
     public async Task<IReadOnlyList<ClienteDto>> ListarAsync(CancellationToken cancellationToken = default)
     {
@@ -50,6 +69,7 @@ public sealed class ClienteService : IClienteService
         var cliente = Cliente.Criar(dados);
         _db.Clientes.Add(cliente);
         await _db.SaveChangesAsync(cancellationToken);
+        await RegerarEntregasAsync(cliente.Id, cancellationToken);
         return Map(cliente, []);
     }
 
@@ -61,6 +81,7 @@ public sealed class ClienteService : IClienteService
         var dados = await ValidarAsync(request, id, cancellationToken);
         cliente.Atualizar(dados);
         await _db.SaveChangesAsync(cancellationToken);
+        await RegerarEntregasAsync(cliente.Id, cancellationToken);
 
         var nomes = await _db.Pets
             .Where(p => p.ClienteId == id && p.Ativo)

@@ -9,8 +9,13 @@ namespace SistemaAN.Application.Planos;
 public sealed class PlanoAlimentarService : IPlanoAlimentarService
 {
     private readonly IApplicationDbContext _db;
+    private readonly Entregas.IEntregaService _entregas;
 
-    public PlanoAlimentarService(IApplicationDbContext db) => _db = db;
+    public PlanoAlimentarService(IApplicationDbContext db, Entregas.IEntregaService entregas)
+    {
+        _db = db;
+        _entregas = entregas;
+    }
 
     public async Task<PlanoAlimentarDto?> ObterPorPetAsync(long petId, CancellationToken cancellationToken = default)
     {
@@ -48,6 +53,15 @@ public sealed class PlanoAlimentarService : IPlanoAlimentarService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await _entregas.RegerarFuturasDoPetAsync(petId, "sistema", cancellationToken);
+        }
+        catch
+        {
+            // geração automática best-effort
+        }
 
         var salvo = await CarregarAsync(petId, cancellationToken);
         return Map(salvo!);

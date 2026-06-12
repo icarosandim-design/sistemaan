@@ -10,8 +10,25 @@ namespace SistemaAN.Application.Receitas;
 public sealed class ReceitaPersonalizadaService : IReceitaPersonalizadaService
 {
     private readonly IApplicationDbContext _db;
+    private readonly Entregas.IEntregaService _entregas;
 
-    public ReceitaPersonalizadaService(IApplicationDbContext db) => _db = db;
+    public ReceitaPersonalizadaService(IApplicationDbContext db, Entregas.IEntregaService entregas)
+    {
+        _db = db;
+        _entregas = entregas;
+    }
+
+    private async Task RegerarEntregasDoPetAsync(long petId, CancellationToken ct)
+    {
+        try
+        {
+            await _entregas.RegerarFuturasDoPetAsync(petId, "sistema", ct);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
 
     public async Task<IReadOnlyList<ReceitaPersonalizadaDto>> ListarPorPetAsync(long petId, CancellationToken cancellationToken = default)
     {
@@ -53,6 +70,7 @@ public sealed class ReceitaPersonalizadaService : IReceitaPersonalizadaService
 
         _db.Receitas.Add(receita);
         await _db.SaveChangesAsync(cancellationToken);
+        await RegerarEntregasDoPetAsync(petId, cancellationToken);
 
         return await ObterAsync(receita.Id, cancellationToken);
     }
@@ -66,6 +84,10 @@ public sealed class ReceitaPersonalizadaService : IReceitaPersonalizadaService
         receita.SubstituirItens(request.Itens.Select(i => ItemReceita.Criar(i.IngredienteId, i.Gramas)));
 
         await _db.SaveChangesAsync(cancellationToken);
+        if (receita.PetId is { } petId)
+        {
+            await RegerarEntregasDoPetAsync(petId, cancellationToken);
+        }
         return await ObterAsync(receita.Id, cancellationToken);
     }
 

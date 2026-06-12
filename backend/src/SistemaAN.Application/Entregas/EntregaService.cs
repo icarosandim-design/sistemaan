@@ -12,7 +12,7 @@ namespace SistemaAN.Application.Entregas;
 
 public sealed class EntregaService : IEntregaService
 {
-    private const int HorizontePadrao = 90;
+    private const int HorizontePadrao = 45;
 
     private readonly IApplicationDbContext _db;
 
@@ -55,6 +55,64 @@ public sealed class EntregaService : IEntregaService
         var (geradas, qtd) = GerarPara([cliente], dados, dedup, HorizontePadrao, usuario);
         await _db.SaveChangesAsync(ct);
         return new GerarEntregasResultado(geradas, qtd);
+    }
+
+    public async Task<GerarEntregasResultado> RegerarFuturasDoPetAsync(long petId, string usuario, CancellationToken ct = default)
+    {
+        var clienteId = await _db.Pets.Where(p => p.Id == petId).Select(p => (long?)p.ClienteId).FirstOrDefaultAsync(ct);
+        return clienteId is null
+            ? new GerarEntregasResultado(0, 0)
+            : await RegerarFuturasDoClienteAsync(clienteId.Value, usuario, ct);
+    }
+
+    public async Task<GerarEntregasResultado> RegerarPorReceitaAsync(long receitaId, string usuario, CancellationToken ct = default)
+    {
+        var planosAtivos = _db.PlanosAlimentares.Where(p => p.Ativo);
+        var petIds = _db.PlanoItensReceita
+            .Where(pi => pi.ReceitaId == receitaId)
+            .Join(planosAtivos, pi => pi.PlanoAlimentarId, p => p.Id, (pi, p) => p.PetId);
+        var clienteIds = await _db.Pets
+            .Where(p => petIds.Contains(p.Id))
+            .Select(p => p.ClienteId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        var total = 0;
+        foreach (var cid in clienteIds)
+        {
+            var r = await RegerarFuturasDoClienteAsync(cid, usuario, ct);
+            total += r.Geradas;
+        }
+        return new GerarEntregasResultado(total, clienteIds.Count);
+    }
+
+    public async Task<GerarEntregasResultado> AlterarAgendaFuturaAsync(
+        long entregaId, DateOnly novaData, long? frequenciaEntregaId, string motivo, string usuario, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(motivo))
+        {
+            throw new ValidationException(Erro("motivo", "Informe o motivo da alteração da agenda."));
+        }
+
+        var entrega = await _db.Entregas.FirstOrDefaultAsync(e => e.Id == entregaId, ct)
+            ?? throw new NotFoundException("Entrega", entregaId);
+        var cliente = await _db.Clientes.FirstOrDefaultAsync(c => c.Id == entrega.ClienteId, ct)
+            ?? throw new NotFoundException("Cliente", entrega.ClienteId);
+
+        var freqId = frequenciaEntregaId ?? cliente.FrequenciaEntregaId;
+        if (freqId is null)
+        {
+            throw new ValidationException(Erro("frequenciaEntregaId", "Defina a frequência de entrega."));
+        }
+        if (!await _db.FrequenciasEntrega.AnyAsync(f => f.Id == freqId && f.Ativo, ct))
+        {
+            throw new ValidationException(Erro("frequenciaEntregaId", "Frequência inválida ou inativa."));
+        }
+
+        // Ajusta o padrão do cliente e regera as futuras elegíveis.
+        cliente.DefinirEntrega(freqId, novaData);
+        await _db.SaveChangesAsync(ct);
+        return await RegerarFuturasDoClienteAsync(cliente.Id, usuario, ct);
     }
 
     private (int geradas, int clientes) GerarPara(

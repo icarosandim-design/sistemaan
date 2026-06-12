@@ -46,10 +46,15 @@ public sealed class EntregasController : ControllerBase
     public async Task<ActionResult<EntregaDto>> NaoEntregue(long id, MotivoRequest request, CancellationToken ct)
         => Ok(await _service.MarcarNaoEntregueAsync(id, request.Motivo, Usuario, ct));
 
-    /// <summary>Reagendamento pontual (motivo obrigatório). Cria nova entrega na nova data.</summary>
+    /// <summary>"Somente esta entrega": reagendamento pontual (motivo obrigatório).</summary>
     [HttpPut("entregas/{id:long}/reagendar")]
     public async Task<ActionResult<EntregaDto>> Reagendar(long id, ReagendarEntregaRequest request, CancellationToken ct)
         => Ok(await _service.ReagendarAsync(id, request.NovaData, request.Motivo, Usuario, ct));
+
+    /// <summary>"Esta e próximas": altera a agenda futura do cliente e regera as elegíveis.</summary>
+    [HttpPut("entregas/{id:long}/alterar-agenda")]
+    public async Task<ActionResult<GerarEntregasResultado>> AlterarAgenda(long id, AlterarAgendaRequest request, CancellationToken ct)
+        => Ok(await _service.AlterarAgendaFuturaAsync(id, request.NovaData, request.FrequenciaEntregaId, request.Motivo, Usuario, ct));
 
     /// <summary>Cancela a entrega (motivo obrigatório).</summary>
     [HttpPut("entregas/{id:long}/cancelar")]
