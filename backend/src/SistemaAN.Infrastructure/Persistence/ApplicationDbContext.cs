@@ -10,6 +10,7 @@ using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Pacotes;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
+using SistemaAN.Domain.Producao;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Infrastructure.Persistence;
@@ -68,6 +69,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<EntradaEstoque> EntradasEstoque => Set<EntradaEstoque>();
 
     public DbSet<AjusteEstoque> AjustesEstoque => Set<AjusteEstoque>();
+
+    public DbSet<OrdemProducao> OrdensProducao => Set<OrdemProducao>();
+
+    public DbSet<FichaProducao> FichasProducao => Set<FichaProducao>();
+
+    public DbSet<ConsumoIngredienteProducao> ConsumosProducao => Set<ConsumoIngredienteProducao>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

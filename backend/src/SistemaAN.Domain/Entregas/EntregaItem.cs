@@ -1,4 +1,5 @@
 using SistemaAN.Domain.Common;
+using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Domain.Entregas;
@@ -22,6 +23,7 @@ public class EntregaItem : Entity
         QuantidadeCicloGramas = quantidadeCicloGramas;
         TamanhoPacoteGramas = tamanhoPacoteGramas;
         QuantidadePacotes = quantidadePacotes;
+        StatusPreparo = StatusPreparoPersonalizada.NaoPronta;
     }
 
     public long EntregaPetId { get; private set; }
@@ -39,8 +41,23 @@ public class EntregaItem : Entity
     /// <summary>Personalizada: nº de pacotes no ciclo.</summary>
     public int? QuantidadePacotes { get; private set; }
 
+    // ----- Prontidão (Personalizada) — preenchida pela Produção -----
+    public StatusPreparoPersonalizada StatusPreparo { get; private set; }
+    public int? PacotesProntos { get; private set; }
+    public DateTimeOffset? PreparadoEm { get; private set; }
+    public string? PreparadoPor { get; private set; }
+
     public IReadOnlyCollection<EntregaItemPacote> Pacotes => _pacotes.AsReadOnly();
     public IReadOnlyCollection<EntregaItemIngrediente> Ingredientes => _ingredientes.AsReadOnly();
+
+    /// <summary>Registra a prontidão desta receita (chamado pela Produção ao concluir/não fazer).</summary>
+    public void DefinirPreparo(StatusPreparoPersonalizada status, int? pacotesProntos, DateTimeOffset? quando, string? usuario)
+    {
+        StatusPreparo = status;
+        PacotesProntos = pacotesProntos;
+        PreparadoEm = quando;
+        PreparadoPor = usuario;
+    }
 
     public static EntregaItem CriarCasa(
         long receitaId, string codigo, string nome, int quantidadeCicloGramas,

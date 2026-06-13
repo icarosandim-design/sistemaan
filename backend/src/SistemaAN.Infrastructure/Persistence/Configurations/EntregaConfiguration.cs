@@ -119,6 +119,10 @@ public sealed class EntregaItemConfiguration : IEntityTypeConfiguration<EntregaI
         builder.Property(i => i.QuantidadeCicloGramas);
         builder.Property(i => i.TamanhoPacoteGramas);
         builder.Property(i => i.QuantidadePacotes);
+        builder.Property(i => i.StatusPreparo).HasConversion<string>().HasMaxLength(25).IsRequired();
+        builder.Property(i => i.PacotesProntos);
+        builder.Property(i => i.PreparadoEm);
+        builder.Property(i => i.PreparadoPor).HasMaxLength(160);
 
         builder.HasIndex(i => i.EntregaPetId).HasDatabaseName("ix_entrega_itens_pet");
         builder.HasIndex(i => i.ReceitaId).HasDatabaseName("ix_entrega_itens_receita");

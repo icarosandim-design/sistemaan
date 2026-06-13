@@ -8,6 +8,7 @@ using SistemaAN.Application.Identity;
 using SistemaAN.Application.Pacotes;
 using SistemaAN.Application.Pets;
 using SistemaAN.Application.Planos;
+using SistemaAN.Application.Producao;
 using SistemaAN.Application.Receitas;
 
 namespace SistemaAN.Application;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IFornecedorService, FornecedorService>();
         services.AddScoped<IItemEstoqueService, ItemEstoqueService>();
         services.AddScoped<IEstoqueMovimentacaoService, EstoqueMovimentacaoService>();
+        services.AddScoped<IProducaoService, ProducaoService>();
         return services;
     }
 }

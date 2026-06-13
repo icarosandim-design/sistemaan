@@ -8,6 +8,7 @@ using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Pacotes;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
+using SistemaAN.Domain.Producao;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Application.Common.Interfaces;
@@ -60,6 +61,12 @@ public interface IApplicationDbContext
     DbSet<EntradaEstoque> EntradasEstoque { get; }
 
     DbSet<AjusteEstoque> AjustesEstoque { get; }
+
+    DbSet<OrdemProducao> OrdensProducao { get; }
+
+    DbSet<FichaProducao> FichasProducao { get; }
+
+    DbSet<ConsumoIngredienteProducao> ConsumosProducao { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
