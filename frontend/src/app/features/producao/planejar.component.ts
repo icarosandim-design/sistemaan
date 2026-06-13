@@ -31,8 +31,35 @@ export class ProducaoPlanejarComponent {
   readonly fmtMoeda = fmtMoeda;
   readonly rotuloProntidao = rotuloProntidao;
 
-  readonly janelas = ['Hoje', 'Amanhã', 'Próximos 3 dias', 'Próximos 7 dias', 'Próxima semana'];
+  readonly janelas = ['Hoje', 'Amanhã', 'Próximos 3 dias', 'Próximos 7 dias', 'Próximos 15 dias', 'Próximos 30 dias', 'Próxima semana'];
   janela = 'Próximos 7 dias';
+  personalizado = false;
+  rangeDe = '';
+  rangeAte = '';
+
+  selecionarJanela(j: string): void {
+    this.janela = j;
+    this.personalizado = false;
+  }
+
+  ativarPersonalizado(): void {
+    this.personalizado = true;
+  }
+
+  get janelaTexto(): string {
+    if (this.personalizado) {
+      if (this.rangeDe && this.rangeAte) {
+        return `${this.brData(this.rangeDe)} até ${this.brData(this.rangeAte)}`;
+      }
+      return 'período personalizado';
+    }
+    return this.janela;
+  }
+
+  private brData(iso: string): string {
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
 
   busca = '';
   apenasNaoProntas = false;

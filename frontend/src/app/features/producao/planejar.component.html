@@ -31,9 +31,15 @@
   <!-- Janela -->
   <div class="janelas">
     @for (j of janelas; track j) {
-      <button class="chip-janela" [class.ativo]="janela === j" (click)="janela = j">{{ j }}</button>
+      <button class="chip-janela" [class.ativo]="!personalizado && janela === j" (click)="selecionarJanela(j)">{{ j }}</button>
     }
-    <span class="janela-info">Mostrando demanda: <strong>{{ janela }}</strong> (mock)</span>
+    <button class="chip-janela" [class.ativo]="personalizado" (click)="ativarPersonalizado()"><mat-icon>date_range</mat-icon> Personalizado</button>
+    @if (personalizado) {
+      <span class="range">
+        <input type="date" [(ngModel)]="rangeDe" /> <span class="ate">até</span> <input type="date" [(ngModel)]="rangeAte" />
+      </span>
+    }
+    <span class="janela-info">Mostrando demanda: <strong>{{ janelaTexto }}</strong> (mock)</span>
   </div>
 
   <!-- Resumo das escolhas -->
