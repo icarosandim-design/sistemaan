@@ -26,11 +26,9 @@
 
 .tabela-ing { display: flex; flex-direction: column; }
 .ing-scroll { max-height: 560px; overflow-y: auto; padding-right: 0.25rem; }
-.thead, .trow { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.4fr; align-items: center; gap: 0.5rem; padding: 0.28rem 0.3rem; }
+.thead, .trow { display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; gap: 0.5rem; padding: 0.28rem 0.3rem; }
 .thead { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--an-texto-secundario); border-bottom: 1px solid var(--an-fundo-secundario); }
 .trow { border-bottom: 1px dashed var(--an-fundo-secundario); font-size: 0.8rem; }
-.trow.falta { background: #fbeceb; }
-.trow.falta .ing { color: #b3261e; font-weight: 700; }
 .grupo-cat {
   font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
   color: var(--an-cta); background: var(--an-fundo); padding: 0.25rem 0.4rem; margin-top: 0.2rem;
