@@ -56,6 +56,7 @@ export interface DemandaCasaMock {
 
 export interface IngredienteConsolidadoMock {
   nome: string;
+  categoria: string;
   cozidoGramas: number;
   cruGramas: number;
   estoqueGramas: number;
@@ -114,12 +115,21 @@ export function seedCasa(): DemandaCasaMock[] {
 export function seedConsolidado(): IngredienteConsolidadoMock[] {
   // inclui ingredientes repetidos entre fichas (já somados) e faltas (Bovina, Abóbora).
   return [
-    { nome: 'Frango', cozidoGramas: 1000, cruGramas: 1800, estoqueGramas: 20000 },
-    { nome: 'Carne bovina', cozidoGramas: 3000, cruGramas: 6000, estoqueGramas: 4000 },
-    { nome: 'Suína', cozidoGramas: 500, cruGramas: 5000, estoqueGramas: 8000 },
-    { nome: 'Arroz integral', cozidoGramas: 600, cruGramas: 1500, estoqueGramas: 5000 },
-    { nome: 'Abóbora', cozidoGramas: 800, cruGramas: 3000, estoqueGramas: 1000 },
-    { nome: 'Cenoura', cozidoGramas: 400, cruGramas: 2000, estoqueGramas: 3000 },
+    { nome: 'Frango', categoria: 'Proteínas', cozidoGramas: 1000, cruGramas: 1800, estoqueGramas: 20000 },
+    { nome: 'Carne bovina', categoria: 'Proteínas', cozidoGramas: 3000, cruGramas: 6000, estoqueGramas: 4000 },
+    { nome: 'Suína', categoria: 'Proteínas', cozidoGramas: 500, cruGramas: 5000, estoqueGramas: 8000 },
+    { nome: 'Fígado bovino', categoria: 'Proteínas', cozidoGramas: 300, cruGramas: 500, estoqueGramas: 2000 },
+    { nome: 'Arroz integral', categoria: 'Carboidratos', cozidoGramas: 600, cruGramas: 1500, estoqueGramas: 5000 },
+    { nome: 'Batata doce', categoria: 'Carboidratos', cozidoGramas: 700, cruGramas: 1260, estoqueGramas: 800 },
+    { nome: 'Abóbora', categoria: 'Legumes', cozidoGramas: 800, cruGramas: 3000, estoqueGramas: 1000 },
+    { nome: 'Cenoura', categoria: 'Legumes', cozidoGramas: 400, cruGramas: 2000, estoqueGramas: 3000 },
+    { nome: 'Brócolis', categoria: 'Legumes', cozidoGramas: 250, cruGramas: 600, estoqueGramas: 1500 },
+    { nome: 'Cúrcuma', categoria: 'Temperos', cozidoGramas: 20, cruGramas: 20, estoqueGramas: 500 },
+    { nome: 'Salsinha', categoria: 'Temperos', cozidoGramas: 30, cruGramas: 40, estoqueGramas: 200 },
+    { nome: 'Óleo de girassol', categoria: 'Óleos', cozidoGramas: 150, cruGramas: 150, estoqueGramas: 4000 },
+    { nome: 'Óleo de peixe', categoria: 'Óleos', cozidoGramas: 80, cruGramas: 80, estoqueGramas: 60 },
+    { nome: 'Ômega 3', categoria: 'Suplementos', cozidoGramas: 40, cruGramas: 40, estoqueGramas: 1000 },
+    { nome: 'Cálcio', categoria: 'Suplementos', cozidoGramas: 25, cruGramas: 25, estoqueGramas: 800 },
   ];
 }
 

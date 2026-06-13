@@ -28,28 +28,33 @@
     <h2 class="bloco-titulo"><mat-icon>inventory_2</mat-icon> Lista consolidada de ingredientes</h2>
     <div class="tabela-ing">
       <div class="thead"><span>Ingrediente</span><span class="t-r">Cozido</span><span class="t-r">Cru estimado</span><span class="t-r">Estoque</span><span>Situação</span></div>
-      @for (i of mock.consolidado(); track i.nome) {
-        <div class="trow" [class.falta]="falta(i) > 0">
-          <span class="ing">{{ i.nome }}</span>
-          <span class="t-r">{{ fmtPeso(i.cozidoGramas) }}</span>
-          <span class="t-r">{{ fmtPeso(i.cruGramas) }}</span>
-          <span class="t-r">{{ fmtPeso(i.estoqueGramas) }}</span>
-          <span>
-            @if (falta(i) > 0) {
-              <span class="sit alerta"><mat-icon>warning</mat-icon> faltam {{ fmtPeso(falta(i)) }}</span>
-            } @else {
-              <span class="sit ok"><mat-icon>check_circle</mat-icon> ok</span>
-            }
-          </span>
-        </div>
-      }
+      <div class="ing-scroll">
+        @for (g of gruposConsolidado; track g.categoria) {
+          <div class="grupo-cat">{{ g.categoria }}</div>
+          @for (i of g.itens; track i.nome) {
+            <div class="trow" [class.falta]="falta(i) > 0">
+              <span class="ing">{{ i.nome }}</span>
+              <span class="t-r">{{ fmtPeso(i.cozidoGramas) }}</span>
+              <span class="t-r">{{ fmtPeso(i.cruGramas) }}</span>
+              <span class="t-r">{{ fmtPeso(i.estoqueGramas) }}</span>
+              <span>
+                @if (falta(i) > 0) {
+                  <span class="sit alerta"><mat-icon>warning</mat-icon> faltam {{ fmtPeso(falta(i)) }}</span>
+                } @else {
+                  <span class="sit ok"><mat-icon>check_circle</mat-icon> ok</span>
+                }
+              </span>
+            </div>
+          }
+        }
+      </div>
     </div>
   </section>
 
   <!-- Fichas técnicas -->
   <section class="bloco">
-    <h2 class="bloco-titulo"><mat-icon>description</mat-icon> Fichas técnicas</h2>
-    <div class="fichas">
+    <h2 class="bloco-titulo"><mat-icon>description</mat-icon> Fichas técnicas <span class="cont-fichas">{{ mock.fichas().length }} fichas</span></h2>
+    <div class="fichas fichas-scroll">
       @for (f of mock.fichas(); track f.id) {
         <article class="ficha" [class.casa]="f.tipo === 'Casa'">
           <div class="ficha-head">

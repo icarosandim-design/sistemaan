@@ -25,6 +25,21 @@ export class ProducaoDiaComponent {
   readonly rotuloProntidao = rotuloProntidao;
   readonly rotuloStatusFicha = rotuloStatusFicha;
 
+  private readonly ordemCategorias = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos', 'Suplementos', 'Outros'];
+
+  /** Consolidado agrupado por categoria, na ordem definida. */
+  get gruposConsolidado(): { categoria: string; itens: IngredienteConsolidadoMock[] }[] {
+    const map = new Map<string, IngredienteConsolidadoMock[]>();
+    for (const i of this.mock.consolidado()) {
+      const lista = map.get(i.categoria) ?? [];
+      lista.push(i);
+      map.set(i.categoria, lista);
+    }
+    const ordenadas = this.ordemCategorias.filter((c) => map.has(c));
+    const extras = [...map.keys()].filter((c) => !this.ordemCategorias.includes(c));
+    return [...ordenadas, ...extras].map((c) => ({ categoria: c, itens: map.get(c)! }));
+  }
+
   falta(i: IngredienteConsolidadoMock): number {
     return this.mock.faltaConsolidado(i);
   }
