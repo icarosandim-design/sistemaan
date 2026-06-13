@@ -36,7 +36,7 @@
             </div>
             <div class="linha2">
               <span>{{ p.cliente }}</span>
-              <span class="entrega"><mat-icon>event</mat-icon> {{ p.dataEntrega }}</span>
+              <span class="entrega"><mat-icon>event</mat-icon> {{ p.dataEntrega }} · {{ dataDe(p.diasParaEntrega) }}</span>
               <span>{{ p.pacotes }} pacotes de {{ fmtPeso(p.pesoPacoteGramas) }}</span>
             </div>
           </div>

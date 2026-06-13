@@ -27,4 +27,11 @@ export class ProducaoPlanejarComponent {
   falta(necessario: number, estoque: number): number {
     return Math.max(0, necessario - estoque);
   }
+
+  /** Data real da entrega (protótipo: hoje + dias). */
+  dataDe(dias: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() + dias);
+    return d.toLocaleDateString('pt-BR');
+  }
 }
