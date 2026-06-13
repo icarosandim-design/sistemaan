@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { fmtPeso } from './producao.mock';
+import { fmtMoeda, fmtPeso } from './producao.mock';
 import { ProducaoMockService } from './producao-mock.service';
 
 function paraBr(iso: string): string {
@@ -22,6 +22,7 @@ function paraBr(iso: string): string {
     <h2 mat-dialog-title>Planejar produção</h2>
     <mat-dialog-content>
       <p class="info">{{ data.qtd }} receita(s) personalizada(s) selecionada(s) entrarão nesta produção.</p>
+      <div class="custo"><mat-icon>payments</mat-icon> Custo estimado desta produção: <strong>~{{ fmtMoeda(data.custo) }}</strong> <span class="obs">(visualização)</span></div>
       <mat-form-field appearance="outline" class="full">
         <mat-label>Dia da produção</mat-label>
         <input matInput type="date" [(ngModel)]="dataIso" />
@@ -34,7 +35,9 @@ function paraBr(iso: string): string {
     </mat-dialog-actions>
   `,
   styles: [`
-    .info { margin: 0 0 0.75rem; font-weight: 600; color: var(--an-texto-titulo); }
+    .info { margin: 0 0 0.5rem; font-weight: 600; color: var(--an-texto-titulo); }
+    .custo { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.75rem; font-size: 0.9rem; color: var(--an-texto-secundario);
+      strong { color: var(--an-primaria); } .obs { font-size: 0.75rem; font-style: italic; } .mat-icon { color: var(--an-cta); font-size: 1.15rem; width: 1.15rem; height: 1.15rem; } }
     .full { width: 100%; }
     .nota { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--an-texto-secundario); }
     .btn-cta { background: var(--an-cta); color: #fff; }
@@ -44,9 +47,10 @@ function paraBr(iso: string): string {
 })
 export class DataProducaoDialogComponent {
   dataIso = '';
+  readonly fmtMoeda = fmtMoeda;
   constructor(
     readonly ref: MatDialogRef<DataProducaoDialogComponent, string>,
-    @Inject(MAT_DIALOG_DATA) readonly data: { qtd: number },
+    @Inject(MAT_DIALOG_DATA) readonly data: { qtd: number; custo: number },
   ) {}
   confirmar(): void {
     if (this.dataIso) {

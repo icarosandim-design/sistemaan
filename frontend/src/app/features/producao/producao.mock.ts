@@ -65,6 +65,10 @@ export interface IngredienteConsolidadoMock {
 }
 
 // ===== Formatação =====
+export function fmtMoeda(valor: number): string {
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 export function fmtPeso(gramas: number): string {
   if (Math.abs(gramas) >= 1000) {
     return `${(gramas / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} kg`;

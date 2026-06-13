@@ -40,7 +40,8 @@
   <div class="resumo-escolhas">
     <span class="re-item"><mat-icon>check_circle</mat-icon> {{ personalizadasSelecionadas }} personalizadas · {{ casaSelecionadas }} da casa</span>
     <span class="re-item">Comida cozida: <strong>{{ fmtPeso(totalCozidoSelecionado) }}</strong></span>
-    <span class="re-item">Cru estimado: <strong>~{{ fmtPeso(totalCruSelecionado) }}</strong> <span class="re-obs">(estimativa)</span></span>
+    <span class="re-item">Cru estimado: <strong>~{{ fmtPeso(totalCruSelecionado) }}</strong></span>
+    <span class="re-item re-custo">Custo estimado: <strong>~{{ fmtMoeda(custoEstimado) }}</strong> <span class="re-obs">(estimativa)</span></span>
   </div>
 
   <!-- Personalizadas -->

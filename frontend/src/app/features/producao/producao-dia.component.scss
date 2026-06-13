@@ -29,7 +29,7 @@
 
 .tabela-ing { display: flex; flex-direction: column; }
 .ing-scroll { max-height: 560px; overflow-y: auto; padding-right: 0.25rem; }
-.thead, .trow { display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; gap: 0.5rem; padding: 0.28rem 0.3rem; }
+.thead, .trow { display: grid; grid-template-columns: 240px 100px 120px; justify-content: start; align-items: center; gap: 0.4rem 1.2rem; padding: 0.28rem 0.3rem; }
 .thead { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--an-texto-secundario); border-bottom: 1px solid var(--an-fundo-secundario); }
 .trow { border-bottom: 1px dashed var(--an-fundo-secundario); font-size: 0.8rem; }
 .grupo-cat {

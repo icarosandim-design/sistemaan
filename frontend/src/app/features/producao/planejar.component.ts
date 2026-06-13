@@ -7,12 +7,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { fmtPeso, rotuloProntidao } from './producao.mock';
+import { fmtMoeda, fmtPeso, rotuloProntidao } from './producao.mock';
 import { ProducaoMockService } from './producao-mock.service';
 import { DataProducaoDialogComponent, EditarProducaoDialogComponent } from './producao-planejar-dialogs.component';
 
 // Fator MOCK para estimar cru a partir do cozido (no backend real virá do coeficiente por ingrediente).
 const FATOR_CRU_MOCK = 1.8;
+// Custo médio MOCK por kg de ingrediente cru (no real virá do custo médio do estoque por ingrediente).
+const CUSTO_KG_CRU_MOCK = 22;
 
 @Component({
   selector: 'app-producao-planejar',
@@ -26,6 +28,7 @@ export class ProducaoPlanejarComponent {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   readonly fmtPeso = fmtPeso;
+  readonly fmtMoeda = fmtMoeda;
   readonly rotuloProntidao = rotuloProntidao;
 
   readonly janelas = ['Hoje', 'Amanhã', 'Próximos 3 dias', 'Próximos 7 dias', 'Próxima semana'];
@@ -66,6 +69,11 @@ export class ProducaoPlanejarComponent {
     return Math.round(this.totalCozidoSelecionado * FATOR_CRU_MOCK);
   }
 
+  /** Custo estimado da produção (mock): cru (kg) × custo médio por kg. */
+  get custoEstimado(): number {
+    return (this.totalCruSelecionado / 1000) * CUSTO_KG_CRU_MOCK;
+  }
+
   private tamanhoGramas(tamanho: string): number {
     const n = parseInt(tamanho, 10);
     return Number.isFinite(n) ? n : 0;
@@ -88,7 +96,7 @@ export class ProducaoPlanejarComponent {
       this.snack.open('Selecione ao menos uma receita personalizada.', 'OK', { duration: 3000 });
       return;
     }
-    const ref = this.dialog.open(DataProducaoDialogComponent, { data: { qtd }, autoFocus: false });
+    const ref = this.dialog.open(DataProducaoDialogComponent, { data: { qtd, custo: this.custoEstimado }, autoFocus: false });
     ref.afterClosed().subscribe((dia: string | undefined) => {
       if (dia) {
         const n = this.mock.planejarSelecionadasPara(dia);

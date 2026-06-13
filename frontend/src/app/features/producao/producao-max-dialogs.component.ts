@@ -34,7 +34,7 @@ const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos
     .max-head { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--an-fundo-secundario); }
     .max-head h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 1.4rem; .mat-icon { color: var(--an-cta); } }
     .max-body { flex: 1; overflow-y: auto; padding: 0.5rem 1.2rem 1.2rem; }
-    .thead, .trow { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; align-items: center; }
+    .thead, .trow { display: grid; grid-template-columns: 360px 140px 160px; justify-content: start; gap: 0.4rem 2rem; align-items: center; }
     .thead { position: sticky; top: 0; background: var(--an-superficie); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--an-texto-secundario); padding: 0.5rem 0.3rem; border-bottom: 2px solid var(--an-fundo-secundario); }
     .trow { font-size: 1.3rem; padding: 0.5rem 0.3rem; border-bottom: 1px dashed var(--an-fundo-secundario); }
     .grupo { font-size: 1rem; font-weight: 800; text-transform: uppercase; color: var(--an-cta); background: var(--an-fundo); padding: 0.4rem 0.4rem; margin-top: 0.5rem; position: sticky; top: 38px; }
