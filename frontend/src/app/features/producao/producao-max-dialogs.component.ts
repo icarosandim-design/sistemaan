@@ -2,7 +2,7 @@ import { Component, Inject, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { fmtPeso, FichaMock, IngredienteConsolidadoMock } from './producao.mock';
+import { fmtPeso, FichaMock, IngredienteConsolidadoMock, porDia } from './producao.mock';
 import { ProducaoMockService } from './producao-mock.service';
 
 export const FULLSCREEN = { width: '100vw', maxWidth: '100vw', height: '100vh', maxHeight: '100vh', panelClass: 'prod-max-dialog', autoFocus: false };
@@ -73,9 +73,20 @@ export class IngredientesMaxComponent {
       @if (f.cliente) { <div class="sub">{{ f.cliente }} · entrega {{ f.dataEntrega }}</div> }
       <div class="bacia">Total da bacia: <strong>{{ fmtPeso(f.totalBaciaGramas) }}</strong> · {{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
       <h3>Ingredientes</h3>
-      <ul class="ing">
-        @for (ing of f.ingredientes; track ing.nome) { <li><span>{{ ing.nome }}</span><strong>{{ fmtPeso(ing.gramas) }}</strong></li> }
-      </ul>
+      @if (f.tipo === 'Personalizada') {
+        <table class="ing-tab">
+          <thead><tr><th>Ingrediente</th><th class="r">Por dia</th><th class="r">Total ({{ f.pacotes }} pacotes)</th></tr></thead>
+          <tbody>
+            @for (ing of f.ingredientes; track ing.nome) {
+              <tr><td>{{ ing.nome }}</td><td class="r">{{ fmtPeso(porDia(ing.gramas, f.pacotes)) }}</td><td class="r"><strong>{{ fmtPeso(ing.gramas) }}</strong></td></tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <ul class="ing">
+          @for (ing of f.ingredientes; track ing.nome) { <li><span>{{ ing.nome }}</span><strong>{{ fmtPeso(ing.gramas) }}</strong></li> }
+        </ul>
+      }
       @if (f.observacoes) { <div class="obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
     </div>
   `,
@@ -91,11 +102,17 @@ export class IngredientesMaxComponent {
     .ing { list-style: none; margin: 0; padding: 0; }
     .ing li { display: flex; justify-content: space-between; font-size: 1.6rem; padding: 0.6rem 0; border-bottom: 1px dashed var(--an-fundo-secundario); }
     .ing strong { color: var(--an-primaria); }
+    .ing-tab { width: 100%; border-collapse: collapse; }
+    .ing-tab th { text-align: left; font-size: 0.9rem; text-transform: uppercase; color: var(--an-texto-secundario); padding: 0.4rem 0.5rem; border-bottom: 2px solid var(--an-fundo-secundario); }
+    .ing-tab td { font-size: 1.4rem; padding: 0.5rem 0.5rem; border-bottom: 1px dashed var(--an-fundo-secundario); }
+    .ing-tab .r { text-align: right; font-variant-numeric: tabular-nums; }
+    .ing-tab strong { color: var(--an-primaria); }
     .obs { display: flex; align-items: center; gap: 0.4rem; margin-top: 1rem; font-size: 1.1rem; color: #8c6b3f; }
   `],
 })
 export class FichaMaxComponent {
   readonly fmtPeso = fmtPeso;
+  readonly porDia = porDia;
   readonly f: FichaMock;
   constructor(readonly ref: MatDialogRef<FichaMaxComponent>, @Inject(MAT_DIALOG_DATA) data: { ficha: FichaMock }) {
     this.f = data.ficha;

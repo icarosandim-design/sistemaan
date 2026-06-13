@@ -76,6 +76,11 @@ export function fmtPeso(gramas: number): string {
   return `${gramas.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} g`;
 }
 
+/** Quantidade de ingrediente por dia (por pacote) = total ÷ nº de pacotes. */
+export function porDia(gramasTotal: number, pacotes: number): number {
+  return pacotes > 0 ? gramasTotal / pacotes : gramasTotal;
+}
+
 export function rotuloProntidao(p: ProntidaoMock | null): string {
   switch (p) {
     case 'Pronta': return 'Pronta';

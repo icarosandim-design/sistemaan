@@ -32,11 +32,20 @@
           <span class="fp-entrega">{{ f.cliente ? (f.cliente + ' · entrega ' + f.dataEntrega) : ('Receita da Casa · ' + f.dataEntrega) }}</span>
         </div>
         <div class="fp-meta">Total da bacia: <strong>{{ fmtPeso(f.totalBaciaGramas) }}</strong> · {{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
-        <table class="fp-ing">
-          <tbody>
-            @for (ing of f.ingredientes; track ing.nome) { <tr><td>{{ ing.nome }}</td><td class="r">{{ fmtPeso(ing.gramas) }}</td></tr> }
-          </tbody>
-        </table>
+        @if (f.tipo === 'Personalizada') {
+          <table class="fp-ing">
+            <thead><tr><th>Ingrediente</th><th class="r">Por dia</th><th class="r">Total ({{ f.pacotes }} pac.)</th></tr></thead>
+            <tbody>
+              @for (ing of f.ingredientes; track ing.nome) { <tr><td>{{ ing.nome }}</td><td class="r">{{ fmtPeso(porDia(ing.gramas, f.pacotes)) }}</td><td class="r">{{ fmtPeso(ing.gramas) }}</td></tr> }
+            </tbody>
+          </table>
+        } @else {
+          <table class="fp-ing">
+            <tbody>
+              @for (ing of f.ingredientes; track ing.nome) { <tr><td>{{ ing.nome }}</td><td class="r">{{ fmtPeso(ing.gramas) }}</td></tr> }
+            </tbody>
+          </table>
+        }
         @if (f.observacoes) { <div class="fp-obs">Obs.: {{ f.observacoes }}</div> }
       </article>
     }

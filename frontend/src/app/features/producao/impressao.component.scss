@@ -25,8 +25,9 @@
 .fp-entrega { display: block; font-size: 0.8rem; color: #555; font-weight: 400; }
 .fp-meta { font-size: 0.9rem; margin: 0.3rem 0; }
 .fp-ing { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.fp-ing th { text-align: left; font-size: 0.72rem; text-transform: uppercase; color: #555; border-bottom: 1px solid #ccc; padding: 0.2rem 0; }
 .fp-ing td { border-bottom: 1px dashed #ddd; padding: 0.2rem 0; }
-.fp-ing td.r { text-align: right; }
+.fp-ing th.r, .fp-ing td.r { text-align: right; }
 .fp-obs { margin-top: 0.4rem; font-size: 0.82rem; color: #555; }
 
 @media print {
