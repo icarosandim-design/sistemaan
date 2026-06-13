@@ -24,8 +24,8 @@
               <div class="card-meta">{{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
               @if (f.observacoes) { <div class="card-obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
               <div class="card-acoes">
-                <button mat-flat-button class="btn-av" (click)="avancar(f)">
-                  <mat-icon>check</mat-icon>
+                <button mat-flat-button class="btn-av" (click)="col.status === 'Envasando' ? concluir(f) : avancar(f)">
+                  <mat-icon>{{ col.status === 'Envasando' ? 'task_alt' : 'check' }}</mat-icon>
                   {{ col.status === 'Envasando' ? 'Concluir' : 'Avançar' }}
                 </button>
                 <button mat-icon-button class="btn-no" (click)="naoFeita(f)" matTooltip="Não feita"><mat-icon>close</mat-icon></button>

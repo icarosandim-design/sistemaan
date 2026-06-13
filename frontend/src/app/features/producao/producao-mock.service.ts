@@ -94,6 +94,26 @@ export class ProducaoMockService {
     this.fichas.update((xs) => xs.map((f) => (f.id === id ? { ...f, status } : f)));
   }
 
+  /** Conclui uma ficha (ou marca como não feita). Personalizada não feita volta a "não pronta". */
+  concluirFicha(id: number, dados: { status: StatusFichaMock; pacotesFeitos?: number | null; motivo?: string | null }): void {
+    this.fichas.update((xs) =>
+      xs.map((f) => {
+        if (f.id !== id) {
+          return f;
+        }
+        const novo = { ...f, status: dados.status, pacotesFeitos: dados.pacotesFeitos ?? null, motivoNaoFeita: dados.motivo ?? null };
+        if (f.tipo === 'Personalizada') {
+          if (dados.status === 'NaoFeita') {
+            novo.prontidao = 'NaoPronta';
+          } else if (dados.status === 'Concluida') {
+            novo.prontidao = (dados.pacotesFeitos ?? f.pacotes) < f.pacotes ? 'ParcialmentePronta' : 'Pronta';
+          }
+        }
+        return novo;
+      }),
+    );
+  }
+
   // Avança para o próximo status na fila da cozinha.
   avancarFicha(id: number): void {
     const ordem: StatusFichaMock[] = ['Pendente', 'EmProducao', 'Envasando', 'Concluida'];

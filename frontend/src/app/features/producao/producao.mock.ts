@@ -29,6 +29,9 @@ export interface FichaMock {
   ingredientes: IngredienteFichaMock[];
   observacoes: string | null;
   status: StatusFichaMock;
+  /** Pacotes realmente feitos (Casa pode ser parcial: 30 de 60). */
+  pacotesFeitos?: number | null;
+  motivoNaoFeita?: string | null;
 }
 
 export interface DemandaPersonalizadaMock {
@@ -62,6 +65,9 @@ export interface IngredienteConsolidadoMock {
   cozidoGramas: number;
   cruGramas: number;
   estoqueGramas: number;
+  /** Cru realmente usado (kg) informado pela cozinha — define a baixa do estoque. */
+  realCruKg?: number | null;
+  motivo?: string | null;
 }
 
 // ===== Formatação =====

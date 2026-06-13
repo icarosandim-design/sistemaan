@@ -31,7 +31,10 @@
 
 .tabela-ing { display: flex; flex-direction: column; }
 .ing-scroll { max-height: 560px; overflow-y: auto; padding-right: 0.25rem; }
-.thead, .trow { display: grid; grid-template-columns: 240px 100px 120px; justify-content: start; align-items: center; gap: 0.4rem 1.2rem; padding: 0.28rem 0.3rem; }
+.thead, .trow { display: grid; grid-template-columns: 220px 90px 110px 110px minmax(160px, 1fr); align-items: center; gap: 0.4rem 1rem; padding: 0.28rem 0.3rem; }
+.cru-input { width: 64px; padding: 0.2rem 0.3rem; border: 1px solid var(--an-fundo-secundario); border-radius: 6px; text-align: right; font-size: 0.85rem; }
+.motivo-input { width: 100%; padding: 0.2rem 0.4rem; border: 1px solid var(--an-fundo-secundario); border-radius: 6px; font-size: 0.85rem; }
+.nota-baixa { margin: 0.6rem 0 0; font-size: 0.78rem; color: var(--an-texto-secundario); font-style: italic; }
 .thead { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--an-texto-secundario); border-bottom: 1px solid var(--an-fundo-secundario); }
 .trow { border-bottom: 1px dashed var(--an-fundo-secundario); font-size: 0.8rem; }
 .grupo-cat {

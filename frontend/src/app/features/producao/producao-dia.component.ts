@@ -1,8 +1,11 @@
 import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { fmtPeso, FichaMock, IngredienteConsolidadoMock, rotuloProntidao, rotuloStatusFicha } from './producao.mock';
@@ -13,7 +16,7 @@ import { FichaMaxComponent, FichasMaxComponent, FULLSCREEN, IngredientesMaxCompo
 @Component({
   selector: 'app-producao-dia',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [FormsModule, RouterLink, MatButtonModule, MatIconModule, MatTooltipModule, MatFormFieldModule, MatInputModule],
   templateUrl: './producao-dia.component.html',
   styleUrl: './producao-dia.component.scss',
 })
