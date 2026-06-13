@@ -26,7 +26,7 @@ namespace SistemaAN.Infrastructure.Migrations
                 table: "entradas_estoque",
                 type: "boolean",
                 nullable: false,
-                defaultValue: true);
+                defaultValue: false);
         }
 
         /// <inheritdoc />

@@ -65,13 +65,13 @@ public class EntradaEstoque : AuditableEntity
     /// <summary>Valor unitário original do produto (sem frete).</summary>
     public decimal ValorUnitario { get; private set; }
 
-    /// <summary>Valor do frete da compra.</summary>
+    /// <summary>Valor do frete da compra (separado — não compõe o custo nesta fase).</summary>
     public decimal Frete { get; private set; }
 
-    /// <summary>Se o frete compõe o custo do estoque (rateado no custo unitário).</summary>
+    /// <summary>Reservado para uso futuro. Nesta fase o frete nunca compõe o custo (false).</summary>
     public bool FreteCompoeCusto { get; private set; }
 
-    /// <summary>Total real pago = (valor unitário × quantidade) + frete.</summary>
+    /// <summary>Valor dos produtos = valor unitário × quantidade (sem frete). Total pago = ValorTotal + Frete.</summary>
     public decimal ValorTotal { get; private set; }
 
     public DateOnly DataCompra { get; private set; }

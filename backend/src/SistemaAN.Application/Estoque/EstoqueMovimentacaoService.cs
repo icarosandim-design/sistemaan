@@ -64,12 +64,10 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             throw new ValidationException(erros);
         }
 
-        // Frete compõe o custo por padrão (custo real/landed).
-        var valorProdutos = valorUnitarioOriginal * request.Quantidade;
-        var custoUnitarioEfetivo = request.FreteCompoeCusto && request.Quantidade > 0m
-            ? Math.Round((valorProdutos + frete) / request.Quantidade, 4, MidpointRounding.AwayFromZero)
-            : valorUnitarioOriginal;
-        var valorTotal = Math.Round(valorProdutos + frete, 2, MidpointRounding.AwayFromZero);
+        // Frete NÃO compõe o custo nesta fase: custo do estoque = valor do produto.
+        // O frete fica registrado separadamente na entrada (informativo/relatório).
+        var custoUnitarioEstoque = valorUnitarioOriginal;
+        var valorProdutos = Math.Round(valorUnitarioOriginal * request.Quantidade, 2, MidpointRounding.AwayFromZero);
         var loteCodigo = string.IsNullOrWhiteSpace(request.LoteCodigo)
             ? $"L{DateTimeOffset.UtcNow:yyyyMMddHHmmss}"
             : request.LoteCodigo.Trim();
@@ -77,15 +75,15 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
 
         var saldoAnterior = item.QuantidadeAtual;
         var lote = LoteEstoque.Criar(item, loteCodigo, request.DataEntrada, request.Validade,
-            request.Quantidade, custoUnitarioEfetivo, request.FornecedorId, OrigemLote.Compra, null);
-        item.RegistrarEntrada(request.Quantidade, custoUnitarioEfetivo);
+            request.Quantidade, custoUnitarioEstoque, request.FornecedorId, OrigemLote.Compra, null);
+        item.RegistrarEntrada(request.Quantidade, custoUnitarioEstoque);
 
         var entrada = EntradaEstoque.Criar(item, lote, request.FornecedorId, request.Quantidade, item.UnidadeMedida,
-            valorUnitarioOriginal, frete, request.FreteCompoeCusto, valorTotal, request.DataCompra, request.DataEntrada,
+            valorUnitarioOriginal, frete, request.FreteCompoeCusto, valorProdutos, request.DataCompra, request.DataEntrada,
             request.Validade, loteCodigo, request.LocalArmazenamento, usuario, request.Observacoes);
 
         var mov = MovimentacaoEstoque.CriarEntrada(item, lote, TipoMovimentacao.EntradaCompra, request.Quantidade,
-            saldoAnterior, item.QuantidadeAtual, custoUnitarioEfetivo, usuario, agora, request.Observacoes);
+            saldoAnterior, item.QuantidadeAtual, custoUnitarioEstoque, usuario, agora, request.Observacoes);
         mov.Vincular(entrada);
 
         _db.LotesEstoque.Add(lote);
@@ -486,7 +484,7 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             r.Id, r.DataCompra, r.DataEntrada, r.FornecedorId,
             r.FornecedorId != null && fornNomes.TryGetValue(r.FornecedorId.Value, out var fn) ? fn : null,
             r.ItemEstoqueId, r.ItemNome, r.Categoria.ToString(), r.Quantidade, r.Unidade.ToString(),
-            r.ValorUnitario, r.Frete, r.FreteCompoeCusto, r.CustoEfetivo, r.ValorTotal, r.LoteCodigo, r.Validade,
+            r.ValorUnitario, r.CustoEfetivo, r.ValorTotal, r.Frete, r.ValorTotal + r.Frete, r.LoteCodigo, r.Validade,
             r.Usuario, r.Observacoes)).ToList();
     }
 

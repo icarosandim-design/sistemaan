@@ -145,7 +145,7 @@ public sealed record RegistrarEntradaRequest(
     string? LocalArmazenamento,
     string? Observacoes,
     decimal? Frete = null,
-    bool FreteCompoeCusto = true);
+    bool FreteCompoeCusto = false);
 
 // ===================== Movimentações (livro-razão geral) =====================
 public sealed record MovimentacaoGeralDto(
@@ -197,11 +197,11 @@ public sealed record EntradaCompraDto(
     string Categoria,
     decimal Quantidade,
     string Unidade,
-    decimal ValorUnitarioOriginal,
+    decimal ValorUnitario,
+    decimal CustoUnitarioEstoque,
+    decimal ValorProdutos,
     decimal Frete,
-    bool FreteCompoeCusto,
-    decimal CustoUnitarioEfetivo,
-    decimal ValorTotal,
+    decimal ValorTotalPago,
     string LoteCodigo,
     DateOnly? Validade,
     string Usuario,
