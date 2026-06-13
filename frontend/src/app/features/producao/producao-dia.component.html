@@ -24,7 +24,10 @@
 
   <!-- Consolidado de ingredientes -->
   <section class="bloco">
-    <h2 class="bloco-titulo"><mat-icon>inventory_2</mat-icon> Lista consolidada de ingredientes</h2>
+    <div class="bloco-cab">
+      <h2 class="bloco-titulo"><mat-icon>inventory_2</mat-icon> Lista consolidada de ingredientes</h2>
+      <button mat-stroked-button (click)="maximizarIngredientes()"><mat-icon>open_in_full</mat-icon> Maximizar</button>
+    </div>
     <div class="tabela-ing">
       <div class="thead"><span>Ingrediente</span><span class="t-r">Cozido</span><span class="t-r">Cru estimado</span></div>
       <div class="ing-scroll">
@@ -44,7 +47,10 @@
 
   <!-- Fichas técnicas -->
   <section class="bloco">
-    <h2 class="bloco-titulo"><mat-icon>description</mat-icon> Fichas técnicas <span class="cont-fichas">{{ mock.fichas().length }} fichas</span></h2>
+    <div class="bloco-cab">
+      <h2 class="bloco-titulo"><mat-icon>description</mat-icon> Fichas técnicas <span class="cont-fichas">{{ mock.fichas().length }} fichas</span></h2>
+      <button mat-stroked-button (click)="maximizarFichas()"><mat-icon>open_in_full</mat-icon> Maximizar</button>
+    </div>
     <div class="fichas fichas-scroll">
       @for (f of mock.fichas(); track f.id) {
         <article class="ficha" [class.casa]="f.tipo === 'Casa'">
@@ -54,6 +60,7 @@
               <span class="ficha-cod">{{ f.receitaCodigo }}</span>
             </div>
             <span class="status-chip" [attr.data-s]="f.status">{{ rotuloStatusFicha(f.status) }}</span>
+            <button mat-icon-button class="ficha-max" (click)="maximizarFicha(f)" matTooltip="Maximizar ficha"><mat-icon>open_in_full</mat-icon></button>
           </div>
           @if (f.cliente) { <div class="ficha-sub">{{ f.cliente }} · entrega {{ f.dataEntrega }}</div> }
           @else { <div class="ficha-sub">Receita da Casa · {{ f.dataEntrega }}</div> }

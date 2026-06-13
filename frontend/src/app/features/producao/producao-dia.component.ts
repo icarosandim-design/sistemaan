@@ -5,9 +5,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { fmtPeso, IngredienteConsolidadoMock, rotuloProntidao, rotuloStatusFicha } from './producao.mock';
+import { fmtPeso, FichaMock, IngredienteConsolidadoMock, rotuloProntidao, rotuloStatusFicha } from './producao.mock';
 import { ProducaoMockService } from './producao-mock.service';
 import { ProducaoFinalizarDialogComponent } from './finalizar-dialog.component';
+import { FichaMaxComponent, FichasMaxComponent, FULLSCREEN, IngredientesMaxComponent } from './producao-max-dialogs.component';
 
 @Component({
   selector: 'app-producao-dia',
@@ -42,6 +43,18 @@ export class ProducaoDiaComponent {
 
   falta(i: IngredienteConsolidadoMock): number {
     return this.mock.faltaConsolidado(i);
+  }
+
+  maximizarIngredientes(): void {
+    this.dialog.open(IngredientesMaxComponent, FULLSCREEN);
+  }
+
+  maximizarFichas(): void {
+    this.dialog.open(FichasMaxComponent, FULLSCREEN);
+  }
+
+  maximizarFicha(ficha: FichaMock): void {
+    this.dialog.open(FichaMaxComponent, { ...FULLSCREEN, data: { ficha } });
   }
 
   imprimirMapa(): void {
