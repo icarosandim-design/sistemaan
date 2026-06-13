@@ -192,6 +192,7 @@ export interface RegistrarEntradaRequest {
   loteCodigo: string | null;
   localArmazenamento: string | null;
   observacoes: string | null;
+  frete: number | null;
 }
 
 export interface RegistrarSaidaRequest {

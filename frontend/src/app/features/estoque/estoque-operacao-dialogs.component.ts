@@ -151,6 +151,7 @@ export class EntradaDialogComponent implements OnInit {
       loteCodigo: v.loteCodigo.trim() ? v.loteCodigo.trim() : null,
       localArmazenamento: null,
       observacoes: v.observacoes.trim() ? v.observacoes.trim() : null,
+      frete: null,
     });
   }
 
