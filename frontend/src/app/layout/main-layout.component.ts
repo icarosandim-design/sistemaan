@@ -57,7 +57,15 @@ export class MainLayoutComponent {
         { label: 'Pets', icone: 'pets', rota: null },
       ],
     },
-    { label: 'Produção', icone: 'factory', rota: null },
+    {
+      label: 'Produção',
+      icone: 'factory',
+      filhos: [
+        { label: 'Planejar produção', icone: 'event_note', rota: '/producao/planejar' },
+        { label: 'Produção do dia', icone: 'soup_kitchen', rota: '/producao/dia' },
+        { label: 'Cozinha', icone: 'tv', rota: '/producao/cozinha' },
+      ],
+    },
     {
       label: 'Estoque',
       icone: 'inventory_2',

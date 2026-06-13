@@ -1,0 +1,57 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Cozinha</h1>
+      <p class="subtitulo">Fila de produção · protótipo (mock)</p>
+    </div>
+    <a mat-stroked-button routerLink="/producao/dia"><mat-icon>arrow_back</mat-icon> Produção do dia</a>
+  </header>
+
+  <div class="colunas">
+    @for (col of colunas; track col.status) {
+      <div class="coluna">
+        <div class="coluna-head">{{ col.titulo }} <span class="cont">{{ porStatus(col.status).length }}</span></div>
+        <div class="coluna-body">
+          @for (f of porStatus(col.status); track f.id) {
+            <article class="card" [class.casa]="f.tipo === 'Casa'">
+              <div class="card-top">
+                <span class="card-titulo">{{ f.pet || f.receitaNome }}</span>
+                <span class="card-cod">{{ f.receitaCodigo }}</span>
+              </div>
+              <div class="card-meta">{{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
+              @if (f.observacoes) { <div class="card-obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
+              <div class="card-acoes">
+                <button mat-flat-button class="btn-av" (click)="avancar(f)">
+                  <mat-icon>check</mat-icon>
+                  {{ col.status === 'Envasando' ? 'Concluir' : 'Avançar' }}
+                </button>
+                <button mat-icon-button class="btn-no" (click)="naoFeita(f)" matTooltip="Não feita"><mat-icon>close</mat-icon></button>
+              </div>
+            </article>
+          } @empty {
+            <p class="vazio">—</p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Concluídas / Não feitas -->
+  <section class="rodape">
+    <button class="toggle" (click)="mostrarConcluidas.set(!mostrarConcluidas())">
+      <mat-icon>{{ mostrarConcluidas() ? 'expand_less' : 'expand_more' }}</mat-icon>
+      Concluídas ({{ concluidas().length }}) · Não feitas ({{ naoFeitas().length }})
+    </button>
+    @if (mostrarConcluidas()) {
+      <div class="finalizadas">
+        @for (f of concluidas(); track f.id) {
+          <span class="pill ok"><mat-icon>check_circle</mat-icon> {{ f.pet || f.receitaNome }} ({{ f.pacotes }} pac.)</span>
+        }
+        @for (f of naoFeitas(); track f.id) {
+          <span class="pill no" (click)="reabrir(f)" matTooltip="Reabrir"><mat-icon>cancel</mat-icon> {{ f.pet || f.receitaNome }}</span>
+        }
+        @if (!concluidas().length && !naoFeitas().length) { <span class="vazio">Nada concluído ainda.</span> }
+      </div>
+    }
+  </section>
+</section>

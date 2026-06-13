@@ -15,9 +15,15 @@ import { FornecedoresComponent } from './features/estoque/fornecedores.component
 import { MovimentacoesComponent } from './features/estoque/movimentacoes.component';
 import { ComprasComponent } from './features/estoque/compras.component';
 import { CategoriasComponent } from './features/categorias/categorias.component';
+import { ProducaoPlanejarComponent } from './features/producao/planejar.component';
+import { ProducaoDiaComponent } from './features/producao/producao-dia.component';
+import { ProducaoCozinhaComponent } from './features/producao/cozinha.component';
+import { ProducaoImpressaoComponent } from './features/producao/impressao.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  // Pré-visualização de impressão (tela cheia, sem layout) — protótipo
+  { path: 'producao/impressao/:tipo', component: ProducaoImpressaoComponent, canActivate: [authGuard] },
   {
     path: '',
     component: MainLayoutComponent,
@@ -31,6 +37,9 @@ export const routes: Routes = [
       { path: 'estoque/movimentacoes', component: MovimentacoesComponent },
       { path: 'estoque/fornecedores', component: FornecedoresComponent },
       { path: 'cadastros/categorias', component: CategoriasComponent },
+      { path: 'producao/planejar', component: ProducaoPlanejarComponent },
+      { path: 'producao/dia', component: ProducaoDiaComponent },
+      { path: 'producao/cozinha', component: ProducaoCozinhaComponent },
       { path: 'ingredientes', component: IngredientesComponent },
       { path: 'tabela-consumo', component: ConsumoComponent },
       { path: 'receitas', component: ReceitasComponent },

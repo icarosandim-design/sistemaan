@@ -1,0 +1,44 @@
+<div class="barra-no-print">
+  <span><mat-icon>science</mat-icon> Pré-visualização de impressão (protótipo)</span>
+  <button mat-flat-button class="btn-cta" (click)="imprimir()"><mat-icon>print</mat-icon> Imprimir / Salvar PDF</button>
+</div>
+
+<div class="folha">
+  @if (tipo === 'mapa') {
+    <h1 class="doc-titulo">Mapa de Produção — {{ mock.dataProducao }}</h1>
+    <p class="doc-sub">Lista consolidada de ingredientes</p>
+    <table class="doc-tabela">
+      <thead>
+        <tr><th>Ingrediente</th><th class="r">Cozido</th><th class="r">Cru estimado</th><th class="r">Estoque</th><th>Situação</th></tr>
+      </thead>
+      <tbody>
+        @for (i of mock.consolidado(); track i.nome) {
+          <tr [class.falta]="falta(i.cruGramas, i.estoqueGramas) > 0">
+            <td>{{ i.nome }}</td>
+            <td class="r">{{ fmtPeso(i.cozidoGramas) }}</td>
+            <td class="r">{{ fmtPeso(i.cruGramas) }}</td>
+            <td class="r">{{ fmtPeso(i.estoqueGramas) }}</td>
+            <td>{{ falta(i.cruGramas, i.estoqueGramas) > 0 ? 'FALTAM ' + fmtPeso(falta(i.cruGramas, i.estoqueGramas)) : 'ok' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <h1 class="doc-titulo">Fichas Técnicas — {{ mock.dataProducao }}</h1>
+    @for (f of mock.fichas(); track f.id) {
+      <article class="ficha-print">
+        <div class="fp-head">
+          <strong>{{ f.pet || f.receitaNome }}</strong> — {{ f.receitaCodigo }}
+          <span class="fp-entrega">{{ f.cliente ? (f.cliente + ' · entrega ' + f.dataEntrega) : ('Receita da Casa · ' + f.dataEntrega) }}</span>
+        </div>
+        <div class="fp-meta">Total da bacia: <strong>{{ fmtPeso(f.totalBaciaGramas) }}</strong> · {{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
+        <table class="fp-ing">
+          <tbody>
+            @for (ing of f.ingredientes; track ing.nome) { <tr><td>{{ ing.nome }}</td><td class="r">{{ fmtPeso(ing.gramas) }}</td></tr> }
+          </tbody>
+        </table>
+        @if (f.observacoes) { <div class="fp-obs">Obs.: {{ f.observacoes }}</div> }
+      </article>
+    }
+  }
+</div>

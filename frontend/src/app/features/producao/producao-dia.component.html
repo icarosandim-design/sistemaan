@@ -1,0 +1,75 @@
+<section class="pagina">
+  <div class="mock-banner"><mat-icon>science</mat-icon> Protótipo visual com dados fictícios (mock). Nada é salvo.</div>
+
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Produção do Dia</h1>
+      <p class="subtitulo">Produção de <strong>{{ mock.dataProducao }}</strong> · status: <strong>Em andamento</strong></p>
+    </div>
+    <div class="head-acoes">
+      <a mat-stroked-button routerLink="/producao/planejar"><mat-icon>edit</mat-icon> Editar seleção</a>
+      <a mat-stroked-button routerLink="/producao/cozinha"><mat-icon>tv</mat-icon> Tela da cozinha</a>
+      <button mat-stroked-button (click)="imprimirMapa()"><mat-icon>print</mat-icon> Mapa</button>
+      <button mat-stroked-button (click)="imprimirFichas()"><mat-icon>print</mat-icon> Fichas</button>
+      <button mat-flat-button class="btn-cta" (click)="finalizar()"><mat-icon>check_circle</mat-icon> Finalizar</button>
+    </div>
+  </header>
+
+  <!-- Resumo -->
+  <div class="resumo">
+    <div class="kpi"><span class="num">{{ mock.fichas().length }}</span><span class="lbl">Fichas</span></div>
+    <div class="kpi"><span class="num pend">{{ mock.fichasPendentes().length }}</span><span class="lbl">Pendentes</span></div>
+    <div class="kpi"><span class="num ok">{{ mock.fichasConcluidas().length }}</span><span class="lbl">Concluídas</span></div>
+    <div class="kpi"><span class="num alerta">{{ mock.alertasEstoque() }}</span><span class="lbl">Alertas de estoque</span></div>
+  </div>
+
+  <!-- Consolidado de ingredientes -->
+  <section class="bloco">
+    <h2 class="bloco-titulo"><mat-icon>inventory_2</mat-icon> Lista consolidada de ingredientes</h2>
+    <div class="tabela-ing">
+      <div class="thead"><span>Ingrediente</span><span class="t-r">Cozido</span><span class="t-r">Cru estimado</span><span class="t-r">Estoque</span><span>Situação</span></div>
+      @for (i of mock.consolidado(); track i.nome) {
+        <div class="trow" [class.falta]="falta(i) > 0">
+          <span class="ing">{{ i.nome }}</span>
+          <span class="t-r">{{ fmtPeso(i.cozidoGramas) }}</span>
+          <span class="t-r">{{ fmtPeso(i.cruGramas) }}</span>
+          <span class="t-r">{{ fmtPeso(i.estoqueGramas) }}</span>
+          <span>
+            @if (falta(i) > 0) {
+              <span class="sit alerta"><mat-icon>warning</mat-icon> faltam {{ fmtPeso(falta(i)) }}</span>
+            } @else {
+              <span class="sit ok"><mat-icon>check_circle</mat-icon> ok</span>
+            }
+          </span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Fichas técnicas -->
+  <section class="bloco">
+    <h2 class="bloco-titulo"><mat-icon>description</mat-icon> Fichas técnicas</h2>
+    <div class="fichas">
+      @for (f of mock.fichas(); track f.id) {
+        <article class="ficha" [class.casa]="f.tipo === 'Casa'">
+          <div class="ficha-head">
+            <div>
+              <span class="ficha-titulo">{{ f.pet || f.receitaNome }}</span>
+              <span class="ficha-cod">{{ f.receitaCodigo }}</span>
+            </div>
+            <span class="status-chip" [attr.data-s]="f.status">{{ rotuloStatusFicha(f.status) }}</span>
+          </div>
+          @if (f.cliente) { <div class="ficha-sub">{{ f.cliente }} · entrega {{ f.dataEntrega }}</div> }
+          @else { <div class="ficha-sub">Receita da Casa · {{ f.dataEntrega }}</div> }
+          <div class="ficha-meta">
+            Bacia <strong>{{ fmtPeso(f.totalBaciaGramas) }}</strong> · {{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}
+          </div>
+          <ul class="ficha-ing">
+            @for (ing of f.ingredientes; track ing.nome) { <li>{{ ing.nome }} <strong>{{ fmtPeso(ing.gramas) }}</strong></li> }
+          </ul>
+          @if (f.observacoes) { <div class="ficha-obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
+        </article>
+      }
+    </div>
+  </section>
+</section>

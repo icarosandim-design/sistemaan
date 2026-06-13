@@ -1,0 +1,73 @@
+import { Injectable, computed, signal } from '@angular/core';
+import {
+  DemandaCasaMock,
+  DemandaPersonalizadaMock,
+  FichaMock,
+  IngredienteConsolidadoMock,
+  seedCasa,
+  seedConsolidado,
+  seedFichas,
+  seedPersonalizadas,
+  StatusFichaMock,
+} from './producao.mock';
+
+/**
+ * ⚠️ PROTÓTIPO/MOCK: estado em memória do Módulo de Produção (somente frontend).
+ * Mantém o estado entre as telas para a navegação do protótipo. Sem persistência real.
+ */
+@Injectable({ providedIn: 'root' })
+export class ProducaoMockService {
+  readonly personalizadas = signal<DemandaPersonalizadaMock[]>(seedPersonalizadas());
+  readonly casa = signal<DemandaCasaMock[]>(seedCasa());
+  readonly consolidado = signal<IngredienteConsolidadoMock[]>(seedConsolidado());
+  readonly fichas = signal<FichaMock[]>(seedFichas());
+
+  readonly dataProducao = 'hoje';
+
+  // ----- Planejar -----
+  alternarPersonalizada(id: number): void {
+    this.personalizadas.update((xs) => xs.map((x) => (x.id === id ? { ...x, selecionada: !x.selecionada } : x)));
+  }
+
+  alternarCasa(id: number): void {
+    this.casa.update((xs) => xs.map((x) => (x.id === id ? { ...x, incluir: !x.incluir } : x)));
+  }
+
+  definirQtdCasa(id: number, qtd: number): void {
+    this.casa.update((xs) => xs.map((x) => (x.id === id ? { ...x, qtdProduzir: qtd } : x)));
+  }
+
+  readonly totalSelecionadas = computed(
+    () => this.personalizadas().filter((p) => p.selecionada).length + this.casa().filter((c) => c.incluir).length,
+  );
+
+  // ----- Fichas / cozinha -----
+  readonly fichasPendentes = computed(() => this.fichas().filter((f) => f.status !== 'Concluida' && f.status !== 'NaoFeita'));
+  readonly fichasConcluidas = computed(() => this.fichas().filter((f) => f.status === 'Concluida'));
+  readonly fichasNaoFeitas = computed(() => this.fichas().filter((f) => f.status === 'NaoFeita'));
+
+  mudarStatusFicha(id: number, status: StatusFichaMock): void {
+    this.fichas.update((xs) => xs.map((f) => (f.id === id ? { ...f, status } : f)));
+  }
+
+  // Avança para o próximo status na fila da cozinha.
+  avancarFicha(id: number): void {
+    const ordem: StatusFichaMock[] = ['Pendente', 'EmProducao', 'Envasando', 'Concluida'];
+    this.fichas.update((xs) =>
+      xs.map((f) => {
+        if (f.id !== id) {
+          return f;
+        }
+        const i = ordem.indexOf(f.status);
+        const prox = i >= 0 && i < ordem.length - 1 ? ordem[i + 1] : f.status;
+        return { ...f, status: prox };
+      }),
+    );
+  }
+
+  faltaConsolidado(i: IngredienteConsolidadoMock): number {
+    return Math.max(0, i.cruGramas - i.estoqueGramas);
+  }
+
+  readonly alertasEstoque = computed(() => this.consolidado().filter((i) => this.faltaConsolidado(i) > 0).length);
+}
