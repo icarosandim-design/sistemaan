@@ -5,11 +5,28 @@
     <div class="page-title">
       <h1>Planejar Produção</h1>
     </div>
-    <a mat-flat-button class="btn-cta" routerLink="/producao/dia">
-      <mat-icon>arrow_forward</mat-icon>
-      Montar produção do dia ({{ mock.totalSelecionadas() }})
-    </a>
+    <button mat-flat-button class="btn-cta" (click)="planejar()">
+      <mat-icon>event_available</mat-icon>
+      Planejar produção ({{ personalizadasSelecionadas }})
+    </button>
   </header>
+
+  <!-- Produções já planejadas -->
+  @if (mock.producoesPlanejadas().length) {
+    <section class="planejadas">
+      <h2 class="bloco-titulo"><mat-icon>event_note</mat-icon> Produções planejadas</h2>
+      <div class="planejadas-cards">
+        @for (prod of mock.producoesPlanejadas(); track prod.dia) {
+          <article class="prod-card">
+            <div class="prod-dia"><mat-icon>calendar_today</mat-icon> {{ prod.dia }}</div>
+            <div class="prod-info">{{ prod.itens.length }} receita(s) personalizada(s) · status: <strong>Planejada</strong></div>
+            <div class="prod-pets">{{ prod.itens.length ? '' : '' }}@for (p of prod.itens; track p.id) {<span class="pet-chip">{{ p.pet }}</span>}</div>
+            <button mat-stroked-button (click)="editarProducao(prod.dia)"><mat-icon>edit</mat-icon> Editar</button>
+          </article>
+        }
+      </div>
+    </section>
+  }
 
   <!-- Janela -->
   <div class="janelas">
@@ -37,7 +54,7 @@
           @if (busca) { <button matSuffix mat-icon-button (click)="busca = ''"><mat-icon>close</mat-icon></button> }
         </mat-form-field>
         <button class="chip-filtro" [class.ativo]="apenasNaoProntas" (click)="apenasNaoProntas = !apenasNaoProntas">Só não prontas</button>
-        <span class="contador">{{ personalizadasFiltradas.length }} de {{ mock.personalizadas().length }} · {{ personalizadasSelecionadas }} selecionadas</span>
+        <span class="contador">{{ personalizadasFiltradas.length }} de {{ mock.disponiveis().length }} disponíveis · {{ personalizadasSelecionadas }} selecionadas</span>
       </div>
     </div>
 

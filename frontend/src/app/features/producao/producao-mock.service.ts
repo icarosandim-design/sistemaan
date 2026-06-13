@@ -25,6 +25,49 @@ export class ProducaoMockService {
   readonly dataProducao = 'hoje';
 
   // ----- Planejar -----
+  /** Personalizadas ainda disponíveis (não planejadas em nenhum dia). */
+  readonly disponiveis = computed(() => this.personalizadas().filter((p) => p.planejadaDia === null));
+
+  /** Produções já planejadas, agrupadas por dia. */
+  readonly producoesPlanejadas = computed(() => {
+    const map = new Map<string, DemandaPersonalizadaMock[]>();
+    for (const p of this.personalizadas()) {
+      if (p.planejadaDia) {
+        const lista = map.get(p.planejadaDia) ?? [];
+        lista.push(p);
+        map.set(p.planejadaDia, lista);
+      }
+    }
+    return [...map.entries()]
+      .map(([dia, itens]) => ({ dia, itens }))
+      .sort((a, b) => a.dia.localeCompare(b.dia));
+  });
+
+  /** Planeja as personalizadas selecionadas (e ainda disponíveis) para um dia. */
+  planejarSelecionadasPara(dia: string): number {
+    let qtd = 0;
+    this.personalizadas.update((xs) =>
+      xs.map((x) => {
+        if (x.planejadaDia === null && x.selecionada) {
+          qtd++;
+          return { ...x, planejadaDia: dia, selecionada: false };
+        }
+        return x;
+      }),
+    );
+    return qtd;
+  }
+
+  /** Remove um pet da produção planejada → volta para disponível (não pronta). */
+  removerDaProducao(id: number): void {
+    this.personalizadas.update((xs) => xs.map((x) => (x.id === id ? { ...x, planejadaDia: null, selecionada: false } : x)));
+  }
+
+  /** Adiciona um pet disponível a uma produção planejada de um dia → planejado. */
+  adicionarNaProducao(id: number, dia: string): void {
+    this.personalizadas.update((xs) => xs.map((x) => (x.id === id ? { ...x, planejadaDia: dia, selecionada: false } : x)));
+  }
+
   alternarPersonalizada(id: number): void {
     this.personalizadas.update((xs) => xs.map((x) => (x.id === id ? { ...x, selecionada: !x.selecionada } : x)));
   }

@@ -1,13 +1,15 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { fmtPeso, rotuloProntidao } from './producao.mock';
 import { ProducaoMockService } from './producao-mock.service';
+import { DataProducaoDialogComponent, EditarProducaoDialogComponent } from './producao-planejar-dialogs.component';
 
 // Fator MOCK para estimar cru a partir do cozido (no backend real virá do coeficiente por ingrediente).
 const FATOR_CRU_MOCK = 1.8;
@@ -15,12 +17,14 @@ const FATOR_CRU_MOCK = 1.8;
 @Component({
   selector: 'app-producao-planejar',
   standalone: true,
-  imports: [FormsModule, RouterLink, MatButtonModule, MatIconModule, MatCheckboxModule, MatInputModule, MatFormFieldModule],
+  imports: [FormsModule, MatButtonModule, MatIconModule, MatCheckboxModule, MatInputModule, MatFormFieldModule],
   templateUrl: './planejar.component.html',
   styleUrl: './planejar.component.scss',
 })
 export class ProducaoPlanejarComponent {
   readonly mock = inject(ProducaoMockService);
+  private readonly dialog = inject(MatDialog);
+  private readonly snack = inject(MatSnackBar);
   readonly fmtPeso = fmtPeso;
   readonly rotuloProntidao = rotuloProntidao;
 
@@ -32,7 +36,7 @@ export class ProducaoPlanejarComponent {
 
   get personalizadasFiltradas() {
     const t = this.busca.trim().toLowerCase();
-    return this.mock.personalizadas().filter((p) => {
+    return this.mock.disponiveis().filter((p) => {
       if (this.apenasNaoProntas && p.prontidao !== 'NaoPronta') {
         return false;
       }
@@ -44,7 +48,7 @@ export class ProducaoPlanejarComponent {
   }
 
   get personalizadasSelecionadas(): number {
-    return this.mock.personalizadas().filter((p) => p.selecionada).length;
+    return this.mock.disponiveis().filter((p) => p.selecionada).length;
   }
 
   get casaSelecionadas(): number {
@@ -53,7 +57,7 @@ export class ProducaoPlanejarComponent {
 
   // ----- Resumo das escolhas -----
   get totalCozidoSelecionado(): number {
-    const pers = this.mock.personalizadas().filter((p) => p.selecionada).reduce((s, p) => s + p.pacotes * p.pesoPacoteGramas, 0);
+    const pers = this.mock.disponiveis().filter((p) => p.selecionada).reduce((s, p) => s + p.pacotes * p.pesoPacoteGramas, 0);
     const casa = this.mock.casa().filter((c) => c.incluir).reduce((s, c) => s + c.qtdProduzir * this.tamanhoGramas(c.tamanho), 0);
     return pers + casa;
   }
@@ -76,5 +80,24 @@ export class ProducaoPlanejarComponent {
     const d = new Date();
     d.setDate(d.getDate() + dias);
     return d.toLocaleDateString('pt-BR');
+  }
+
+  planejar(): void {
+    const qtd = this.personalizadasSelecionadas;
+    if (qtd === 0) {
+      this.snack.open('Selecione ao menos uma receita personalizada.', 'OK', { duration: 3000 });
+      return;
+    }
+    const ref = this.dialog.open(DataProducaoDialogComponent, { data: { qtd }, autoFocus: false });
+    ref.afterClosed().subscribe((dia: string | undefined) => {
+      if (dia) {
+        const n = this.mock.planejarSelecionadasPara(dia);
+        this.snack.open(`${n} receita(s) planejada(s) para ${dia}.`, 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  editarProducao(dia: string): void {
+    this.dialog.open(EditarProducaoDialogComponent, { data: { dia }, autoFocus: false, maxWidth: '96vw' });
   }
 }

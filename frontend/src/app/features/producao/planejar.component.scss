@@ -19,6 +19,19 @@
 }
 .janela-info { margin-left: 0.5rem; font-size: 0.8rem; color: var(--an-texto-secundario); }
 
+.planejadas { background: var(--an-superficie); border: 1px solid var(--an-fundo-secundario); border-radius: var(--an-raio); padding: 0.9rem 1rem; }
+.planejadas-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.6rem; }
+.prod-card {
+  border: 1px solid var(--an-fundo-secundario); border-radius: var(--an-raio-sm, 10px); padding: 0.7rem 0.8rem;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  border-left: 4px solid var(--an-cta);
+}
+.prod-dia { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 800; color: var(--an-texto-titulo);
+  .mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; color: var(--an-cta); } }
+.prod-info { font-size: 0.82rem; color: var(--an-texto-secundario); strong { color: var(--an-primaria); } }
+.prod-pets { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.pet-chip { font-size: 0.72rem; font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--an-fundo); border: 1px solid var(--an-fundo-secundario); color: var(--an-texto-titulo); }
+
 .resumo-escolhas {
   display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center;
   background: var(--an-superficie); border: 1px solid var(--an-fundo-secundario); border-radius: var(--an-raio);

@@ -42,6 +42,8 @@ export interface DemandaPersonalizadaMock {
   pesoPacoteGramas: number;
   prontidao: ProntidaoMock;
   selecionada: boolean;
+  /** Dia da produção em que foi planejada (null = ainda disponível / não planejada). */
+  planejadaDia: string | null;
 }
 
 export interface DemandaCasaMock {
@@ -92,14 +94,15 @@ export function rotuloStatusFicha(s: StatusFichaMock): string {
 // ===== Seeds (dados fictícios) =====
 export function seedPersonalizadas(): DemandaPersonalizadaMock[] {
   return [
-    { id: 1, pet: 'Scooby', cliente: 'Ana Beatriz Souza', receitaCodigo: 'VET-001', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 5, pesoPacoteGramas: 200, prontidao: 'NaoPronta', selecionada: true },
-    { id: 2, pet: 'Thor', cliente: 'Carlos Eduardo Lima', receitaCodigo: 'VET-002', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 10, pesoPacoteGramas: 150, prontidao: 'NaoPronta', selecionada: true },
-    { id: 3, pet: 'Mel', cliente: 'Mariana Castro', receitaCodigo: 'VET-004', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 4, pesoPacoteGramas: 250, prontidao: 'NaoPronta', selecionada: true },
-    { id: 4, pet: 'Bidu', cliente: 'Rafael Antunes', receitaCodigo: 'VET-005', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 6, pesoPacoteGramas: 200, prontidao: 'NaoPronta', selecionada: true },
-    { id: 5, pet: 'Luna', cliente: 'Juliana Prado', receitaCodigo: 'VET-006', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 8, pesoPacoteGramas: 180, prontidao: 'NaoPronta', selecionada: false },
-    { id: 6, pet: 'Nina', cliente: 'Felipe Moraes', receitaCodigo: 'VET-003', dataEntrega: 'em 2 dias', diasParaEntrega: 2, pacotes: 7, pesoPacoteGramas: 300, prontidao: 'ParcialmentePronta', selecionada: true },
-    { id: 7, pet: 'Zeus', cliente: 'Patrícia Nogueira', receitaCodigo: 'VET-007', dataEntrega: 'em 3 dias', diasParaEntrega: 3, pacotes: 5, pesoPacoteGramas: 250, prontidao: 'NaoPronta', selecionada: false },
-    { id: 8, pet: 'Amora', cliente: 'Bruno Carvalho', receitaCodigo: 'VET-008', dataEntrega: 'em 5 dias', diasParaEntrega: 5, pacotes: 6, pesoPacoteGramas: 200, prontidao: 'NaoPronta', selecionada: false },
+    { id: 1, pet: 'Scooby', cliente: 'Ana Beatriz Souza', receitaCodigo: 'VET-001', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 5, pesoPacoteGramas: 200, prontidao: 'NaoPronta', selecionada: true, planejadaDia: null },
+    { id: 2, pet: 'Thor', cliente: 'Carlos Eduardo Lima', receitaCodigo: 'VET-002', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 10, pesoPacoteGramas: 150, prontidao: 'NaoPronta', selecionada: true, planejadaDia: null },
+    { id: 3, pet: 'Mel', cliente: 'Mariana Castro', receitaCodigo: 'VET-004', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 4, pesoPacoteGramas: 250, prontidao: 'NaoPronta', selecionada: true, planejadaDia: null },
+    { id: 4, pet: 'Bidu', cliente: 'Rafael Antunes', receitaCodigo: 'VET-005', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 6, pesoPacoteGramas: 200, prontidao: 'NaoPronta', selecionada: true, planejadaDia: null },
+    { id: 5, pet: 'Luna', cliente: 'Juliana Prado', receitaCodigo: 'VET-006', dataEntrega: 'amanhã', diasParaEntrega: 1, pacotes: 8, pesoPacoteGramas: 180, prontidao: 'NaoPronta', selecionada: false, planejadaDia: null },
+    { id: 6, pet: 'Nina', cliente: 'Felipe Moraes', receitaCodigo: 'VET-003', dataEntrega: 'em 2 dias', diasParaEntrega: 2, pacotes: 7, pesoPacoteGramas: 300, prontidao: 'ParcialmentePronta', selecionada: true, planejadaDia: null },
+    // já planejadas (demonstram a área de "Produções planejadas")
+    { id: 7, pet: 'Zeus', cliente: 'Patrícia Nogueira', receitaCodigo: 'VET-007', dataEntrega: 'em 3 dias', diasParaEntrega: 3, pacotes: 5, pesoPacoteGramas: 250, prontidao: 'NaoPronta', selecionada: false, planejadaDia: '16/06/2026' },
+    { id: 8, pet: 'Amora', cliente: 'Bruno Carvalho', receitaCodigo: 'VET-008', dataEntrega: 'em 5 dias', diasParaEntrega: 5, pacotes: 6, pesoPacoteGramas: 200, prontidao: 'NaoPronta', selecionada: false, planejadaDia: '16/06/2026' },
   ];
 }
 
