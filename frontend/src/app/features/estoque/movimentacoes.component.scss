@@ -1,0 +1,62 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.page-title h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+.subtitulo { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--an-texto-secundario); }
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.f {
+  flex: 0 1 160px;
+  margin-bottom: -1.25em;
+}
+
+.filtro-acoes {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  .btn-cta { background: var(--an-cta); color: #fff; }
+}
+
+.tabela-card {
+  background: var(--an-superficie);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
+}
+
+.tabela { width: 100%; background: var(--an-superficie); }
+
+th.mat-mdc-header-cell {
+  font-weight: 700;
+  color: var(--an-texto-secundario);
+  background: var(--an-fundo);
+  white-space: nowrap;
+}
+
+.cel-nome {
+  font-weight: 600;
+  color: var(--an-texto-titulo);
+  .sub { display: block; font-weight: 400; font-size: 0.75rem; color: var(--an-texto-secundario); }
+}
+
+.cel-sec { color: var(--an-texto-secundario); }
+.t-right { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.entrada { color: #3f4f2d; font-weight: 700; }
+.saida { color: #b3261e; font-weight: 700; }
+
+.sem-dados td {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--an-texto-secundario);
+}

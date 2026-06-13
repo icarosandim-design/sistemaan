@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -6,10 +6,14 @@ import {
   AtualizarItemEstoqueRequest,
   CriarItemInsumoRequest,
   CriarItemProdutoAcabadoRequest,
+  EntradaCompra,
+  FiltroEntradas,
+  FiltroMovimentacoes,
   Fornecedor,
   ItemEstoque,
   LoteEstoque,
   MovimentacaoEstoque,
+  MovimentacaoPagina,
   OpcaoSimples,
   RegistrarAjusteRequest,
   RegistrarEntradaRequest,
@@ -85,6 +89,14 @@ export class EstoqueService {
     return this.http.get<MovimentacaoEstoque[]>(`${this.api}/estoque/itens/${itemId}/movimentacoes`);
   }
 
+  listarMovimentacoesGeral(filtro: FiltroMovimentacoes): Observable<MovimentacaoPagina> {
+    return this.http.get<MovimentacaoPagina>(`${this.api}/estoque/movimentacoes`, { params: montarParams(filtro) });
+  }
+
+  listarEntradas(filtro: FiltroEntradas): Observable<EntradaCompra[]> {
+    return this.http.get<EntradaCompra[]>(`${this.api}/estoque/entradas`, { params: montarParams(filtro) });
+  }
+
   // ===== Opções para selects =====
   listarIngredientes(): Observable<OpcaoSimples[]> {
     return this.http
@@ -103,4 +115,15 @@ export class EstoqueService {
       .get<{ id: number; nome: string; pesoGramas: number; ativo: boolean }[]>(`${this.api}/tamanhos-pacote`)
       .pipe(map((xs) => xs.filter((x) => x.ativo).map((x) => ({ id: x.id, nome: x.nome }))));
   }
+}
+
+/** Monta HttpParams a partir de um objeto de filtros, ignorando null/undefined/''. */
+function montarParams(filtro: object): HttpParams {
+  let params = new HttpParams();
+  for (const [chave, valor] of Object.entries(filtro)) {
+    if (valor !== null && valor !== undefined && valor !== '') {
+      params = params.set(chave, String(valor));
+    }
+  }
+  return params;
 }

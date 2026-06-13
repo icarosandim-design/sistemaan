@@ -217,6 +217,99 @@ export interface OpcaoSimples {
   nome: string;
 }
 
+// ===== Movimentações (livro-razão geral) =====
+export interface MovimentacaoGeral {
+  id: number;
+  dataHora: string;
+  itemEstoqueId: number;
+  itemNome: string;
+  categoria: string;
+  tipo: string;
+  sentido: string;
+  quantidade: number;
+  unidade: string;
+  loteCodigo: string | null;
+  custoUnitario: number;
+  valorTotal: number;
+  saldoAnteriorItem: number;
+  saldoPosteriorItem: number;
+  usuario: string;
+  motivo: string | null;
+  observacao: string | null;
+  fornecedorNome: string | null;
+  origem: string;
+}
+
+export interface MovimentacaoPagina {
+  total: number;
+  itens: MovimentacaoGeral[];
+}
+
+export interface FiltroMovimentacoes {
+  dataInicio?: string | null;
+  dataFim?: string | null;
+  itemEstoqueId?: number | null;
+  categoria?: string | null;
+  tipo?: string | null;
+  fornecedorId?: number | null;
+  loteEstoqueId?: number | null;
+  usuario?: string | null;
+  motivo?: string | null;
+  origem?: string | null;
+  pagina?: number;
+  tamanhoPagina?: number;
+}
+
+// ===== Compras / Entradas =====
+export interface EntradaCompra {
+  id: number;
+  dataCompra: string;
+  dataEntrada: string;
+  fornecedorId: number | null;
+  fornecedorNome: string | null;
+  itemEstoqueId: number;
+  itemNome: string;
+  categoria: string;
+  quantidade: number;
+  unidade: string;
+  valorUnitario: number;
+  custoUnitarioEstoque: number;
+  valorProdutos: number;
+  frete: number;
+  valorTotalPago: number;
+  loteCodigo: string;
+  validade: string | null;
+  usuario: string;
+  observacoes: string | null;
+}
+
+export interface FiltroEntradas {
+  dataInicio?: string | null;
+  dataFim?: string | null;
+  fornecedorId?: number | null;
+  itemEstoqueId?: number | null;
+  categoria?: string | null;
+  loteEstoqueId?: number | null;
+  usuario?: string | null;
+  valorMin?: number | null;
+  valorMax?: number | null;
+  comFrete?: boolean | null;
+}
+
+/** Tipos de movimentação para filtros. */
+export const TIPOS_MOVIMENTACAO = [
+  'EntradaCompra', 'EntradaProducao', 'AjustePositivo', 'TransferenciaEntrada',
+  'SaidaProducao', 'Descarte', 'Perda', 'Vencimento', 'AjusteNegativo',
+  'TransferenciaSaida', 'ConsumoInterno', 'BaixaEntrega',
+] as const;
+
+export const ORIGENS_MOVIMENTACAO: { valor: string; label: string }[] = [
+  { valor: 'Compra', label: 'Compra' },
+  { valor: 'Ajuste', label: 'Ajuste' },
+  { valor: 'Producao', label: 'Produção' },
+  { valor: 'Entrega', label: 'Entrega' },
+];
+
 // ===== Helpers de formatação =====
 export function fmtQtd(n: number): string {
   return n.toLocaleString('pt-BR', { maximumFractionDigits: 3 });

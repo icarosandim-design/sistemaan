@@ -1,0 +1,59 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.page-title h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+.subtitulo { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--an-texto-secundario); }
+
+.tab-conteudo { padding: 1rem 0.25rem; }
+
+.tab-acoes { margin-bottom: 0.75rem; }
+
+.btn-cta { background: var(--an-cta); color: #fff; &:hover { background: var(--an-cta-hover); } }
+
+.tabela-card {
+  background: var(--an-superficie);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
+}
+
+.tabela { width: 100%; background: var(--an-superficie); }
+
+th.mat-mdc-header-cell { font-weight: 700; color: var(--an-texto-secundario); background: var(--an-fundo); }
+
+.cel-nome { font-weight: 600; color: var(--an-texto-titulo); }
+.cel-sec { color: var(--an-texto-secundario); }
+.t-center { text-align: center !important; }
+.t-acoes { text-align: right !important; width: 104px; white-space: nowrap; }
+
+.linha { cursor: pointer; }
+.linha:hover { background: rgba(168, 177, 126, 0.12); }
+
+.chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(63, 79, 45, 0.12);
+  color: var(--an-primaria);
+}
+.chip-inativo { background: var(--an-fundo-secundario); color: var(--an-texto-secundario); }
+
+.nota { font-size: 0.85rem; color: var(--an-texto-secundario); margin: 0 0 0.75rem; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip-ref {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: var(--an-fundo);
+  border: 1px solid var(--an-fundo-secundario);
+  color: var(--an-texto-titulo);
+}
+
+.sem-dados td { padding: 1.5rem; text-align: center; color: var(--an-texto-secundario); }

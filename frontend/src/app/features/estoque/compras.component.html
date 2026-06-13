@@ -1,0 +1,114 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Compras / Entradas</h1>
+      <p class="subtitulo">Histórico de entradas de estoque. O frete aparece separado e não compõe o custo.</p>
+    </div>
+    <button mat-flat-button class="btn-cta" (click)="novaEntrada()">
+      <mat-icon>add</mat-icon>
+      Nova entrada
+    </button>
+  </header>
+
+  <div class="filtros">
+    <mat-form-field appearance="outline" class="f">
+      <mat-label>De</mat-label>
+      <input matInput type="date" [(ngModel)]="dataInicio" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f">
+      <mat-label>Até</mat-label>
+      <input matInput type="date" [(ngModel)]="dataFim" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f">
+      <mat-label>Fornecedor</mat-label>
+      <mat-select [(ngModel)]="fornecedorId">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (f of fornecedores(); track f.id) { <mat-option [value]="f.id">{{ f.nome }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f">
+      <mat-label>Item</mat-label>
+      <mat-select [(ngModel)]="itemEstoqueId">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (i of itens(); track i.id) { <mat-option [value]="i.id">{{ i.nome }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f">
+      <mat-label>Categoria</mat-label>
+      <mat-select [(ngModel)]="categoria">
+        <mat-option value="">Todas</mat-option>
+        @for (c of categorias; track c) { <mat-option [value]="c">{{ rotulo(c) }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f">
+      <mat-label>Frete</mat-label>
+      <mat-select [(ngModel)]="comFrete">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="sim">Com frete</mat-option>
+        <mat-option value="nao">Sem frete</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f">
+      <mat-label>Usuário</mat-label>
+      <input matInput [(ngModel)]="usuario" />
+    </mat-form-field>
+    <div class="filtro-acoes">
+      <button mat-flat-button class="btn-cta" (click)="aplicar()"><mat-icon>search</mat-icon> Filtrar</button>
+      <button mat-button (click)="limpar()">Limpar</button>
+    </div>
+  </div>
+
+  <div class="tabela-card">
+    @if (carregando()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    <table mat-table [dataSource]="linhas()" class="tabela">
+      <ng-container matColumnDef="data">
+        <th mat-header-cell *matHeaderCellDef>Compra / Entrada</th>
+        <td mat-cell *matCellDef="let e" class="cel-sec">{{ e.dataCompra | date: 'dd/MM/yy' }}<span class="sub">ent. {{ e.dataEntrada | date: 'dd/MM/yy' }}</span></td>
+      </ng-container>
+      <ng-container matColumnDef="fornecedor">
+        <th mat-header-cell *matHeaderCellDef>Fornecedor</th>
+        <td mat-cell *matCellDef="let e" class="cel-sec">{{ e.fornecedorNome || '—' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="item">
+        <th mat-header-cell *matHeaderCellDef>Item</th>
+        <td mat-cell *matCellDef="let e" class="cel-nome">{{ e.itemNome }}<span class="sub">{{ rotulo(e.categoria) }}</span></td>
+      </ng-container>
+      <ng-container matColumnDef="quantidade">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Qtd</th>
+        <td mat-cell *matCellDef="let e" class="t-right">{{ fmtQtd(e.quantidade) }} {{ rotulo(e.unidade) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="valorUnitario">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Valor un.</th>
+        <td mat-cell *matCellDef="let e" class="t-right">{{ fmtMoeda(e.valorUnitario) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="custo">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Custo estoque</th>
+        <td mat-cell *matCellDef="let e" class="t-right cel-forte">{{ fmtMoeda(e.custoUnitarioEstoque) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="produtos">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Produtos</th>
+        <td mat-cell *matCellDef="let e" class="t-right">{{ fmtMoeda(e.valorProdutos) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="frete">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Frete</th>
+        <td mat-cell *matCellDef="let e" class="t-right" [class.tem-frete]="e.frete > 0">{{ fmtMoeda(e.frete) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="total">
+        <th mat-header-cell *matHeaderCellDef class="t-right">Total pago</th>
+        <td mat-cell *matCellDef="let e" class="t-right cel-forte">{{ fmtMoeda(e.valorTotalPago) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="lote">
+        <th mat-header-cell *matHeaderCellDef>Lote / Validade</th>
+        <td mat-cell *matCellDef="let e" class="cel-sec">{{ e.loteCodigo }}<span class="sub">{{ e.validade ? ('val. ' + (e.validade | date: 'dd/MM/yy')) : 'sem validade' }}</span></td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr class="sem-dados" *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length">Nenhuma entrada encontrada.</td>
+      </tr>
+    </table>
+  </div>
+</section>

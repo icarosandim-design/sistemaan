@@ -12,6 +12,9 @@ import { TamanhosPacoteComponent } from './features/tamanhos-pacote/tamanhos-pac
 import { EntregasComponent } from './features/entregas/entregas.component';
 import { ItensEstoqueComponent } from './features/estoque/itens-estoque.component';
 import { FornecedoresComponent } from './features/estoque/fornecedores.component';
+import { MovimentacoesComponent } from './features/estoque/movimentacoes.component';
+import { ComprasComponent } from './features/estoque/compras.component';
+import { CategoriasComponent } from './features/categorias/categorias.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -24,7 +27,10 @@ export const routes: Routes = [
       { path: 'clientes', component: ClientesComponent },
       { path: 'entregas', component: EntregasComponent },
       { path: 'estoque/itens', component: ItensEstoqueComponent },
+      { path: 'estoque/compras', component: ComprasComponent },
+      { path: 'estoque/movimentacoes', component: MovimentacoesComponent },
       { path: 'estoque/fornecedores', component: FornecedoresComponent },
+      { path: 'cadastros/categorias', component: CategoriasComponent },
       { path: 'ingredientes', component: IngredientesComponent },
       { path: 'tabela-consumo', component: ConsumoComponent },
       { path: 'receitas', component: ReceitasComponent },

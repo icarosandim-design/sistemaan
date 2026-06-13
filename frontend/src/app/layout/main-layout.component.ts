@@ -63,6 +63,8 @@ export class MainLayoutComponent {
       icone: 'inventory_2',
       filhos: [
         { label: 'Itens de Estoque', icone: 'inventory', rota: '/estoque/itens' },
+        { label: 'Compras / Entradas', icone: 'shopping_cart', rota: '/estoque/compras' },
+        { label: 'Movimentações', icone: 'sync_alt', rota: '/estoque/movimentacoes' },
         { label: 'Fornecedores', icone: 'local_shipping', rota: '/estoque/fornecedores' },
       ],
     },
@@ -74,6 +76,7 @@ export class MainLayoutComponent {
         { label: 'Receitas da Casa', icone: 'menu_book', rota: '/receitas' },
         { label: 'Tamanhos de Pacote', icone: 'inventory_2', rota: '/tamanhos-pacote' },
         { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes' },
+        { label: 'Categorias', icone: 'category', rota: '/cadastros/categorias' },
         { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo' },
         { label: 'Frequências de Entrega', icone: 'event_repeat', rota: '/frequencias-entrega' },
       ],
