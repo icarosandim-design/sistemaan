@@ -60,7 +60,6 @@ export class ComprasComponent implements OnInit {
   fornecedorId: number | null = null;
   itemEstoqueId: number | null = null;
   categoria = '';
-  usuario = '';
   comFrete = '';
 
   ngOnInit(): void {
@@ -78,7 +77,6 @@ export class ComprasComponent implements OnInit {
         fornecedorId: this.fornecedorId,
         itemEstoqueId: this.itemEstoqueId,
         categoria: this.categoria || null,
-        usuario: this.usuario.trim() || null,
         comFrete: this.comFrete === '' ? null : this.comFrete === 'sim',
       })
       .subscribe({
@@ -103,7 +101,6 @@ export class ComprasComponent implements OnInit {
     this.fornecedorId = null;
     this.itemEstoqueId = null;
     this.categoria = '';
-    this.usuario = '';
     this.comFrete = '';
     this.carregar();
   }
