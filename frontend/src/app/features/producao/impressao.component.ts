@@ -2,8 +2,10 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { fmtPeso, porDia } from './producao.mock';
+import { fmtPeso, IngredienteConsolidadoMock, porDia } from './producao.mock';
 import { ProducaoMockService } from './producao-mock.service';
+
+const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos', 'Suplementos', 'Outros'];
 
 /** ⚠️ PROTÓTIPO/MOCK: pré-visualização de impressão (Mapa de produção ou Fichas técnicas). */
 @Component({
@@ -20,8 +22,16 @@ export class ProducaoImpressaoComponent {
 
   readonly tipo: 'mapa' | 'fichas' = inject(ActivatedRoute).snapshot.paramMap.get('tipo') === 'fichas' ? 'fichas' : 'mapa';
 
-  falta(cru: number, estoque: number): number {
-    return Math.max(0, cru - estoque);
+  grupos(): { categoria: string; itens: IngredienteConsolidadoMock[] }[] {
+    const map = new Map<string, IngredienteConsolidadoMock[]>();
+    for (const i of this.mock.consolidado()) {
+      const l = map.get(i.categoria) ?? [];
+      l.push(i);
+      map.set(i.categoria, l);
+    }
+    const ord = ORDEM_CATS.filter((c) => map.has(c));
+    const extras = [...map.keys()].filter((c) => !ORDEM_CATS.includes(c));
+    return [...ord, ...extras].map((c) => ({ categoria: c, itens: map.get(c)! }));
   }
 
   imprimir(): void {

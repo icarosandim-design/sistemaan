@@ -9,17 +9,18 @@
     <p class="doc-sub">Lista consolidada de ingredientes</p>
     <table class="doc-tabela">
       <thead>
-        <tr><th>Ingrediente</th><th class="r">Cozido</th><th class="r">Cru estimado</th><th class="r">Estoque</th><th>Situação</th></tr>
+        <tr><th>Ingrediente</th><th class="r">Cozido</th><th class="r">Cru estimado</th></tr>
       </thead>
       <tbody>
-        @for (i of mock.consolidado(); track i.nome) {
-          <tr [class.falta]="falta(i.cruGramas, i.estoqueGramas) > 0">
-            <td>{{ i.nome }}</td>
-            <td class="r">{{ fmtPeso(i.cozidoGramas) }}</td>
-            <td class="r">{{ fmtPeso(i.cruGramas) }}</td>
-            <td class="r">{{ fmtPeso(i.estoqueGramas) }}</td>
-            <td>{{ falta(i.cruGramas, i.estoqueGramas) > 0 ? 'FALTAM ' + fmtPeso(falta(i.cruGramas, i.estoqueGramas)) : 'ok' }}</td>
-          </tr>
+        @for (g of grupos(); track g.categoria) {
+          <tr class="cat"><td colspan="3">{{ g.categoria }}</td></tr>
+          @for (i of g.itens; track i.nome) {
+            <tr>
+              <td>{{ i.nome }}</td>
+              <td class="r">{{ fmtPeso(i.cozidoGramas) }}</td>
+              <td class="r">{{ fmtPeso(i.cruGramas) }}</td>
+            </tr>
+          }
         }
       </tbody>
     </table>
