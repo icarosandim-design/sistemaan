@@ -49,10 +49,6 @@
         @for (f of fornecedores(); track f.id) { <mat-option [value]="f.id">{{ f.nome }}</mat-option> }
       </mat-select>
     </mat-form-field>
-    <mat-form-field appearance="outline" class="f">
-      <mat-label>Motivo</mat-label>
-      <input matInput [(ngModel)]="motivo" />
-    </mat-form-field>
     <div class="filtro-acoes">
       <button mat-flat-button class="btn-cta" (click)="aplicar()"><mat-icon>search</mat-icon> Filtrar</button>
       <button mat-button (click)="limpar()">Limpar</button>

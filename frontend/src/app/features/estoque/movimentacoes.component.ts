@@ -68,7 +68,6 @@ export class MovimentacoesComponent implements OnInit {
   tipo = '';
   fornecedorId: number | null = null;
   origem = '';
-  motivo = '';
 
   pagina = 1;
   tamanho = 50;
@@ -90,7 +89,6 @@ export class MovimentacoesComponent implements OnInit {
         tipo: this.tipo || null,
         fornecedorId: this.fornecedorId,
         origem: this.origem || null,
-        motivo: this.motivo.trim() || null,
         pagina: this.pagina,
         tamanhoPagina: this.tamanho,
       })
@@ -120,7 +118,6 @@ export class MovimentacoesComponent implements OnInit {
     this.tipo = '';
     this.fornecedorId = null;
     this.origem = '';
-    this.motivo = '';
     this.pagina = 1;
     this.carregar();
   }
