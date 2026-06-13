@@ -4,7 +4,10 @@
   <header class="page-head">
     <div class="page-title">
       <h1>Produção do Dia</h1>
-      <p class="subtitulo">Produção de <strong>{{ mock.dataProducao }}</strong> · status: <strong>Em andamento</strong></p>
+      <p class="subtitulo">
+        <span class="dia-chip" matTooltip="Somente visualização"><mat-icon>calendar_today</mat-icon> {{ mock.dataProducao }}</span>
+        · status: <strong>Em andamento</strong>
+      </p>
     </div>
     <div class="head-acoes">
       <a mat-stroked-button routerLink="/producao/planejar"><mat-icon>edit</mat-icon> Editar seleção</a>

@@ -22,7 +22,8 @@ export class ProducaoMockService {
   readonly consolidado = signal<IngredienteConsolidadoMock[]>(seedConsolidado());
   readonly fichas = signal<FichaMock[]>(seedFichas());
 
-  readonly dataProducao = 'hoje';
+  // Dia da produção em visualização (protótipo: hoje). Informativo — as telas não trocam o dia.
+  readonly dataProducao = new Date().toLocaleDateString('pt-BR');
 
   // ----- Planejar -----
   /** Personalizadas ainda disponíveis (não planejadas em nenhum dia). */

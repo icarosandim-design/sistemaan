@@ -9,7 +9,9 @@
 
 .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .page-title h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-.subtitulo { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--an-texto-secundario); }
+.subtitulo { margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--an-texto-secundario); display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.dia-chip { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 700; color: var(--an-primaria); background: rgba(63,79,45,0.12); padding: 0.15rem 0.6rem; border-radius: 999px;
+  .mat-icon { font-size: 1rem; width: 1rem; height: 1rem; } }
 .head-acoes { display: flex; flex-wrap: wrap; gap: 0.4rem; .btn-cta { background: var(--an-cta); color: #fff; } }
 
 .resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; }

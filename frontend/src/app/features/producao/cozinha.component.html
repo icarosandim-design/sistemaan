@@ -2,7 +2,10 @@
   <header class="page-head">
     <div class="page-title">
       <h1>Cozinha</h1>
-      <p class="subtitulo">Fila de produção · protótipo (mock)</p>
+      <p class="subtitulo">
+        Fila de produção ·
+        <span class="dia-chip" matTooltip="Somente visualização"><mat-icon>calendar_today</mat-icon> {{ mock.dataProducao }}</span>
+      </p>
     </div>
     <a mat-stroked-button routerLink="/producao/dia"><mat-icon>arrow_back</mat-icon> Produção do dia</a>
   </header>
