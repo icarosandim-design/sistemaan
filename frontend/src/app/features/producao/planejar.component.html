@@ -19,29 +19,52 @@
     <span class="janela-info">Mostrando demanda: <strong>{{ janela }}</strong> (mock)</span>
   </div>
 
+  <!-- Resumo das escolhas -->
+  <div class="resumo-escolhas">
+    <span class="re-item"><mat-icon>check_circle</mat-icon> {{ personalizadasSelecionadas }} personalizadas · {{ casaSelecionadas }} da casa</span>
+    <span class="re-item">Comida cozida: <strong>{{ fmtPeso(totalCozidoSelecionado) }}</strong></span>
+    <span class="re-item">Cru estimado: <strong>~{{ fmtPeso(totalCruSelecionado) }}</strong> <span class="re-obs">(estimativa)</span></span>
+  </div>
+
   <!-- Personalizadas -->
   <section class="bloco">
-    <h2 class="bloco-titulo"><mat-icon>restaurant</mat-icon> Receitas Personalizadas <span class="sub">prioridade: entregas mais próximas não prontas</span></h2>
-    <div class="cards">
-      @for (p of mock.personalizadas(); track p.id) {
-        <article class="card-pers" [class.sel]="p.selecionada" [class.parcial]="p.prontidao === 'ParcialmentePronta'">
-          <mat-checkbox [checked]="p.selecionada" (change)="mock.alternarPersonalizada(p.id)"></mat-checkbox>
-          <div class="card-body">
-            <div class="linha1">
-              <span class="pet">{{ p.pet }}</span>
-              <span class="cod">{{ p.receitaCodigo }}</span>
-              <span class="prontidao" [class.nao]="p.prontidao === 'NaoPronta'" [class.parc]="p.prontidao === 'ParcialmentePronta'">
-                {{ rotuloProntidao(p.prontidao) }}
-              </span>
+    <div class="bloco-top">
+      <h2 class="bloco-titulo"><mat-icon>restaurant</mat-icon> Receitas Personalizadas</h2>
+      <div class="bloco-ferramentas">
+        <mat-form-field appearance="outline" class="busca">
+          <mat-label>Buscar pet ou cliente</mat-label>
+          <input matInput [(ngModel)]="busca" />
+          @if (busca) { <button matSuffix mat-icon-button (click)="busca = ''"><mat-icon>close</mat-icon></button> }
+        </mat-form-field>
+        <button class="chip-filtro" [class.ativo]="apenasNaoProntas" (click)="apenasNaoProntas = !apenasNaoProntas">Só não prontas</button>
+        <span class="contador">{{ personalizadasFiltradas.length }} de {{ mock.personalizadas().length }} · {{ personalizadasSelecionadas }} selecionadas</span>
+      </div>
+    </div>
+
+    <div class="cards-scroll">
+      <div class="cards">
+        @for (p of personalizadasFiltradas; track p.id) {
+          <article class="card-pers" [class.sel]="p.selecionada" [class.parcial]="p.prontidao === 'ParcialmentePronta'">
+            <mat-checkbox [checked]="p.selecionada" (change)="mock.alternarPersonalizada(p.id)"></mat-checkbox>
+            <div class="card-body">
+              <div class="linha1">
+                <span class="pet">{{ p.pet }}</span>
+                <span class="cod">{{ p.receitaCodigo }}</span>
+                <span class="prontidao" [class.nao]="p.prontidao === 'NaoPronta'" [class.parc]="p.prontidao === 'ParcialmentePronta'">
+                  {{ rotuloProntidao(p.prontidao) }}
+                </span>
+              </div>
+              <div class="linha2">
+                <span>{{ p.cliente }}</span>
+                <span class="entrega"><mat-icon>event</mat-icon> {{ p.dataEntrega }} · {{ dataDe(p.diasParaEntrega) }}</span>
+                <span>{{ p.pacotes }} pacotes de {{ fmtPeso(p.pesoPacoteGramas) }}</span>
+              </div>
             </div>
-            <div class="linha2">
-              <span>{{ p.cliente }}</span>
-              <span class="entrega"><mat-icon>event</mat-icon> {{ p.dataEntrega }} · {{ dataDe(p.diasParaEntrega) }}</span>
-              <span>{{ p.pacotes }} pacotes de {{ fmtPeso(p.pesoPacoteGramas) }}</span>
-            </div>
-          </div>
-        </article>
-      }
+          </article>
+        } @empty {
+          <p class="vazio-lista">Nenhuma receita encontrada com esse filtro.</p>
+        }
+      </div>
     </div>
   </section>
 
@@ -52,27 +75,29 @@
       <div class="thead">
         <span></span><span>Receita</span><span class="t-r">Necessário</span><span class="t-r">Estoque</span><span class="t-r">Faltam</span><span>Situação</span><span class="t-r">Produzir</span>
       </div>
-      @for (c of mock.casa(); track c.id) {
-        <div class="trow" [class.incluir]="c.incluir" [class.falta]="falta(c.necessario, c.estoque) > 0">
-          <mat-checkbox [checked]="c.incluir" (change)="mock.alternarCasa(c.id)"></mat-checkbox>
-          <span class="rec">{{ c.receitaNome }} {{ c.tamanho }}</span>
-          <span class="t-r">{{ c.necessario }}</span>
-          <span class="t-r">{{ c.estoque }}</span>
-          <span class="t-r">{{ falta(c.necessario, c.estoque) || '—' }}</span>
-          <span>
-            @if (falta(c.necessario, c.estoque) > 0) {
-              <span class="sit sugerir"><mat-icon>warning</mat-icon> sugerir produção</span>
-            } @else {
-              <span class="sit ok"><mat-icon>check_circle</mat-icon> estoque cobre</span>
-            }
-          </span>
-          <span class="t-r">
-            @if (c.incluir) {
-              <input class="qtd" type="number" [ngModel]="c.qtdProduzir" (ngModelChange)="mock.definirQtdCasa(c.id, $event)" /> pac.
-            } @else { — }
-          </span>
-        </div>
-      }
+      <div class="casa-scroll">
+        @for (c of mock.casa(); track c.id) {
+          <div class="trow" [class.incluir]="c.incluir" [class.falta]="falta(c.necessario, c.estoque) > 0">
+            <mat-checkbox [checked]="c.incluir" (change)="mock.alternarCasa(c.id)"></mat-checkbox>
+            <span class="rec">{{ c.receitaNome }} {{ c.tamanho }}</span>
+            <span class="t-r">{{ c.necessario }}</span>
+            <span class="t-r">{{ c.estoque }}</span>
+            <span class="t-r">{{ falta(c.necessario, c.estoque) || '—' }}</span>
+            <span>
+              @if (falta(c.necessario, c.estoque) > 0) {
+                <span class="sit sugerir"><mat-icon>warning</mat-icon> sugerir produção</span>
+              } @else {
+                <span class="sit ok"><mat-icon>check_circle</mat-icon> estoque cobre</span>
+              }
+            </span>
+            <span class="t-r">
+              @if (c.incluir) {
+                <input class="qtd" type="number" [ngModel]="c.qtdProduzir" (ngModelChange)="mock.definirQtdCasa(c.id, $event)" /> pac.
+              } @else { — }
+            </span>
+          </div>
+        }
+      </div>
     </div>
     <p class="dica">O operador pode incluir manualmente uma Receita da Casa mesmo sem falta, para reforço de estoque.</p>
   </section>
