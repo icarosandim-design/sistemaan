@@ -2,7 +2,6 @@
   <header class="page-head">
     <div class="page-title">
       <h1>Movimentações</h1>
-      <p class="subtitulo">Livro-razão geral do estoque (somente consulta).</p>
     </div>
   </header>
 
@@ -49,10 +48,6 @@
         <mat-option [value]="null">Todos</mat-option>
         @for (f of fornecedores(); track f.id) { <mat-option [value]="f.id">{{ f.nome }}</mat-option> }
       </mat-select>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="f">
-      <mat-label>Usuário</mat-label>
-      <input matInput [(ngModel)]="usuario" />
     </mat-form-field>
     <mat-form-field appearance="outline" class="f">
       <mat-label>Motivo</mat-label>
