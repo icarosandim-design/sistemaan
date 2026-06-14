@@ -1,9 +1,9 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, computed, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { fmtPeso, FichaMock, IngredienteConsolidadoMock, porDia } from './producao.mock';
-import { ProducaoMockService } from './producao-mock.service';
+import { ConsumoConsolidado, FichaProducao, fmtPeso, porDia } from './producao.model';
+import { ProducaoStore } from './producao.store';
 
 export const FULLSCREEN = { width: '100vw', maxWidth: '100vw', height: '100vh', maxHeight: '100vh', panelClass: 'prod-max-dialog', autoFocus: false };
 
@@ -23,8 +23,8 @@ const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos
       <div class="thead"><span>Ingrediente</span><span class="t-r">Cozido</span><span class="t-r">Cru estimado</span></div>
       @for (g of grupos(); track g.categoria) {
         <div class="grupo">{{ g.categoria }}</div>
-        @for (i of g.itens; track i.nome) {
-          <div class="trow"><span class="ing">{{ i.nome }}</span><span class="t-r">{{ fmtPeso(i.cozidoGramas) }}</span><span class="t-r">{{ fmtPeso(i.cruGramas) }}</span></div>
+        @for (i of g.itens; track i.ingredienteId) {
+          <div class="trow"><span class="ing">{{ i.ingredienteNome }}</span><span class="t-r">{{ fmtPeso(i.cozidoGramas) }}</span><span class="t-r">{{ fmtPeso(i.cruGramas) }}</span></div>
         }
       }
     </div>
@@ -43,12 +43,12 @@ const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos
   `],
 })
 export class IngredientesMaxComponent {
-  private readonly mock = inject(ProducaoMockService);
+  private readonly store = inject(ProducaoStore);
   readonly fmtPeso = fmtPeso;
   constructor(readonly ref: MatDialogRef<IngredientesMaxComponent>) {}
-  grupos(): { categoria: string; itens: IngredienteConsolidadoMock[] }[] {
-    const map = new Map<string, IngredienteConsolidadoMock[]>();
-    for (const i of this.mock.consolidado()) {
+  grupos(): { categoria: string; itens: ConsumoConsolidado[] }[] {
+    const map = new Map<string, ConsumoConsolidado[]>();
+    for (const i of this.store.ordem()?.consolidado ?? []) {
       const l = map.get(i.categoria) ?? [];
       l.push(i);
       map.set(i.categoria, l);
@@ -66,25 +66,25 @@ export class IngredientesMaxComponent {
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   template: `
     <div class="max-head">
-      <h2>{{ f.pet || f.receitaNome }} <span class="cod">{{ f.receitaCodigo }}</span></h2>
+      <h2>{{ f.petNome || f.receitaNome }} <span class="cod">{{ f.receitaCodigo }}</span></h2>
       <button mat-icon-button (click)="ref.close()"><mat-icon>close</mat-icon></button>
     </div>
     <div class="max-body">
-      @if (f.cliente) { <div class="sub">{{ f.cliente }} · entrega {{ f.dataEntrega }}</div> }
-      <div class="bacia">Total da bacia: <strong>{{ fmtPeso(f.totalBaciaGramas) }}</strong> · {{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
+      @if (f.clienteNome) { <div class="sub">{{ f.clienteNome }}@if (f.dataEntrega) { · entrega {{ fmtData(f.dataEntrega) }} }</div> }
+      <div class="bacia">Total da bacia: <strong>{{ fmtPeso(f.quantidadeTotalGramas) }}</strong> · {{ f.quantidadePacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
       <h3>Ingredientes</h3>
       @if (f.tipo === 'Personalizada') {
         <table class="ing-tab">
-          <thead><tr><th>Ingrediente</th><th class="r">Por dia</th><th class="r">Total ({{ f.pacotes }} pacotes)</th></tr></thead>
+          <thead><tr><th>Ingrediente</th><th class="r">Por dia</th><th class="r">Total ({{ f.quantidadePacotes }} pacotes)</th></tr></thead>
           <tbody>
-            @for (ing of f.ingredientes; track ing.nome) {
-              <tr><td>{{ ing.nome }}</td><td class="r">{{ fmtPeso(porDia(ing.gramas, f.pacotes)) }}</td><td class="r"><strong>{{ fmtPeso(ing.gramas) }}</strong></td></tr>
+            @for (ing of f.ingredientes; track ing.ingredienteId) {
+              <tr><td>{{ ing.ingredienteNome }}</td><td class="r">{{ fmtPeso(porDia(ing.gramasCozidas, f.quantidadePacotes)) }}</td><td class="r"><strong>{{ fmtPeso(ing.gramasCozidas) }}</strong></td></tr>
             }
           </tbody>
         </table>
       } @else {
         <ul class="ing">
-          @for (ing of f.ingredientes; track ing.nome) { <li><span>{{ ing.nome }}</span><strong>{{ fmtPeso(ing.gramas) }}</strong></li> }
+          @for (ing of f.ingredientes; track ing.ingredienteId) { <li><span>{{ ing.ingredienteNome }}</span><strong>{{ fmtPeso(ing.gramasCozidas) }}</strong></li> }
         </ul>
       }
       @if (f.observacoes) { <div class="obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
@@ -113,9 +113,13 @@ export class IngredientesMaxComponent {
 export class FichaMaxComponent {
   readonly fmtPeso = fmtPeso;
   readonly porDia = porDia;
-  readonly f: FichaMock;
-  constructor(readonly ref: MatDialogRef<FichaMaxComponent>, @Inject(MAT_DIALOG_DATA) data: { ficha: FichaMock }) {
+  readonly f: FichaProducao;
+  constructor(readonly ref: MatDialogRef<FichaMaxComponent>, @Inject(MAT_DIALOG_DATA) data: { ficha: FichaProducao }) {
     this.f = data.ficha;
+  }
+  fmtData(iso: string): string {
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
   }
 }
 
@@ -126,16 +130,16 @@ export class FichaMaxComponent {
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   template: `
     <div class="max-head">
-      <h2><mat-icon>description</mat-icon> Fichas técnicas ({{ mock.fichas().length }})</h2>
+      <h2><mat-icon>description</mat-icon> Fichas técnicas ({{ fichas().length }})</h2>
       <button mat-icon-button (click)="ref.close()"><mat-icon>close</mat-icon></button>
     </div>
     <div class="max-body">
       <div class="grid">
-        @for (f of mock.fichas(); track f.id) {
+        @for (f of fichas(); track f.id) {
           <article class="ficha" [class.casa]="f.tipo === 'Casa'" (click)="abrir(f)">
-            <div class="fh"><span class="t">{{ f.pet || f.receitaNome }}</span><span class="cod">{{ f.receitaCodigo }}</span><mat-icon class="exp">open_in_full</mat-icon></div>
-            <div class="meta">Bacia {{ fmtPeso(f.totalBaciaGramas) }} · {{ f.pacotes }} × {{ fmtPeso(f.pesoPacoteGramas) }}</div>
-            <ul class="ing">@for (ing of f.ingredientes; track ing.nome) { <li>{{ ing.nome }} <strong>{{ fmtPeso(ing.gramas) }}</strong></li> }</ul>
+            <div class="fh"><span class="t">{{ f.petNome || f.receitaNome }}</span><span class="cod">{{ f.receitaCodigo }}</span><mat-icon class="exp">open_in_full</mat-icon></div>
+            <div class="meta">Bacia {{ fmtPeso(f.quantidadeTotalGramas) }} · {{ f.quantidadePacotes }} × {{ fmtPeso(f.pesoPacoteGramas) }}</div>
+            <ul class="ing">@for (ing of f.ingredientes; track ing.ingredienteId) { <li>{{ ing.ingredienteNome }} <strong>{{ fmtPeso(ing.gramasCozidas) }}</strong></li> }</ul>
           </article>
         }
       </div>
@@ -160,11 +164,12 @@ export class FichaMaxComponent {
   `],
 })
 export class FichasMaxComponent {
-  readonly mock = inject(ProducaoMockService);
+  private readonly store = inject(ProducaoStore);
   private readonly dialog = inject(MatDialog);
   readonly fmtPeso = fmtPeso;
+  readonly fichas = computed(() => this.store.ordem()?.fichas ?? []);
   constructor(readonly ref: MatDialogRef<FichasMaxComponent>) {}
-  abrir(ficha: FichaMock): void {
+  abrir(ficha: FichaProducao): void {
     this.dialog.open(FichaMaxComponent, { ...FULLSCREEN, data: { ficha } });
   }
 }

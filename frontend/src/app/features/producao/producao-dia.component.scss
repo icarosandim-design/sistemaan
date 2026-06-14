@@ -67,3 +67,14 @@
 .status-chip[data-s='Envasando'] { background: #e8eef7; color: #2a5599; }
 .status-chip[data-s='Concluida'] { background: rgba(63,79,45,0.16); color: var(--an-primaria); }
 .status-chip[data-s='NaoFeita'] { background: #fbeceb; color: #b3261e; }
+
+/* ----- Wiring real: seletor de dia, carregando, vazio ----- */
+.dia-select { width: 190px; }
+.dia-select ::ng-deep .mat-mdc-text-field-wrapper { background: rgba(63,79,45,0.10); }
+.dia-select ::ng-deep .mdc-notched-outline__leading,
+.dia-select ::ng-deep .mdc-notched-outline__notch,
+.dia-select ::ng-deep .mdc-notched-outline__trailing { border-color: transparent; }
+.carregando { display: flex; justify-content: center; padding: 3rem 0; }
+.vazio-estado { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 3rem 1rem; color: var(--an-texto-secundario); text-align: center;
+  .mat-icon { font-size: 2.4rem; width: 2.4rem; height: 2.4rem; opacity: 0.6; }
+  .btn-cta { background: var(--an-cta); color: #fff; margin-top: 0.5rem; } }

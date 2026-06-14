@@ -115,6 +115,12 @@ export class EstoqueService {
       .get<{ id: number; nome: string; pesoGramas: number; ativo: boolean }[]>(`${this.api}/tamanhos-pacote`)
       .pipe(map((xs) => xs.filter((x) => x.ativo).map((x) => ({ id: x.id, nome: x.nome }))));
   }
+
+  listarTamanhosComPeso(): Observable<{ id: number; pesoGramas: number }[]> {
+    return this.http
+      .get<{ id: number; pesoGramas: number }[]>(`${this.api}/tamanhos-pacote`)
+      .pipe(map((xs) => xs.map((x) => ({ id: x.id, pesoGramas: x.pesoGramas }))));
+  }
 }
 
 /** Monta HttpParams a partir de um objeto de filtros, ignorando null/undefined/''. */

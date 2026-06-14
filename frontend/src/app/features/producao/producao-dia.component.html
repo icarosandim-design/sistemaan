@@ -1,28 +1,46 @@
 <section class="pagina">
-  <div class="mock-banner"><mat-icon>science</mat-icon> Protótipo visual com dados fictícios (mock). Nada é salvo.</div>
-
   <header class="page-head">
     <div class="page-title">
       <h1>Produção do Dia</h1>
       <p class="subtitulo">
-        <span class="dia-chip" matTooltip="Somente visualização"><mat-icon>calendar_today</mat-icon> {{ mock.dataProducao }}</span>
-        · status: <strong>Em andamento</strong>
+        <mat-form-field appearance="outline" class="dia-select" subscriptSizing="dynamic">
+          <mat-select [value]="store.dataSelecionada()" (selectionChange)="trocarDia($event.value)" panelWidth="">
+            @for (o of store.ordensResumo(); track o.id) {
+              <mat-option [value]="o.data">{{ fmtData(o.data) }} · {{ o.totalFichas }} ficha(s)</mat-option>
+            }
+            @if (!store.ordensResumo().length) {
+              <mat-option [value]="store.dataSelecionada()" disabled>Nenhuma produção</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        @if (ordem()) { · status: <strong>{{ rotuloStatusOrdem(ordem()!.status) }}</strong> }
       </p>
     </div>
     <div class="head-acoes">
-      <a mat-stroked-button routerLink="/producao/planejar"><mat-icon>edit</mat-icon> Editar seleção</a>
+      <a mat-stroked-button routerLink="/producao/planejar"><mat-icon>edit</mat-icon> Planejar</a>
       <a mat-stroked-button routerLink="/producao/cozinha"><mat-icon>tv</mat-icon> Tela da cozinha</a>
-      <button mat-stroked-button (click)="imprimirMapa()"><mat-icon>print</mat-icon> Mapa</button>
-      <button mat-stroked-button (click)="imprimirFichas()"><mat-icon>print</mat-icon> Fichas</button>
-      <button mat-flat-button class="btn-cta" (click)="finalizar()"><mat-icon>check_circle</mat-icon> Finalizar</button>
+      <button mat-stroked-button (click)="imprimirMapa()" [disabled]="!ordem()"><mat-icon>print</mat-icon> Mapa</button>
+      <button mat-stroked-button (click)="imprimirFichas()" [disabled]="!ordem()"><mat-icon>print</mat-icon> Fichas</button>
+      <button mat-flat-button class="btn-cta" (click)="finalizar()" [disabled]="!ordem() || finalizada()">
+        <mat-icon>check_circle</mat-icon> {{ finalizada() ? 'Finalizada' : 'Finalizar' }}
+      </button>
     </div>
   </header>
 
+  @if (store.carregandoDia()) {
+    <div class="carregando"><mat-spinner diameter="32"></mat-spinner></div>
+  } @else if (!ordem()) {
+    <div class="vazio-estado">
+      <mat-icon>event_busy</mat-icon>
+      <p>Não há produção planejada para este dia.</p>
+      <a mat-flat-button class="btn-cta" routerLink="/producao/planejar"><mat-icon>event_available</mat-icon> Planejar produção</a>
+    </div>
+  } @else {
   <!-- Resumo -->
   <div class="resumo">
-    <div class="kpi"><span class="num">{{ mock.fichas().length }}</span><span class="lbl">Fichas</span></div>
-    <div class="kpi"><span class="num pend">{{ mock.fichasPendentes().length }}</span><span class="lbl">Pendentes</span></div>
-    <div class="kpi"><span class="num ok">{{ mock.fichasConcluidas().length }}</span><span class="lbl">Concluídas</span></div>
+    <div class="kpi"><span class="num">{{ totalFichas() }}</span><span class="lbl">Fichas</span></div>
+    <div class="kpi"><span class="num pend">{{ pendentes() }}</span><span class="lbl">Pendentes</span></div>
+    <div class="kpi"><span class="num ok">{{ concluidas() }}</span><span class="lbl">Concluídas</span></div>
   </div>
 
   <!-- Consolidado de ingredientes -->
@@ -34,15 +52,15 @@
     <div class="tabela-ing">
       <div class="thead"><span>Ingrediente</span><span class="t-r">Cozido</span><span class="t-r">Cru estimado</span><span class="t-r">Cru usado</span><span>Motivo</span></div>
       <div class="ing-scroll">
-        @for (g of gruposConsolidado; track g.categoria) {
+        @for (g of gruposConsolidado(); track g.categoria) {
           <div class="grupo-cat">{{ g.categoria }}</div>
-          @for (i of g.itens; track i.nome) {
+          @for (i of g.itens; track i.ingredienteId) {
             <div class="trow">
-              <span class="ing">{{ i.nome }}</span>
+              <span class="ing">{{ i.ingredienteNome }}</span>
               <span class="t-r">{{ fmtPeso(i.cozidoGramas) }}</span>
               <span class="t-r">{{ fmtPeso(i.cruGramas) }}</span>
-              <span class="t-r"><input class="cru-input" type="number" step="0.1" [(ngModel)]="i.realCruKg" placeholder="—" /> kg</span>
-              <span><input class="motivo-input" [(ngModel)]="i.motivo" placeholder="motivo (se divergir)" /></span>
+              <span class="t-r"><input class="cru-input" type="number" step="0.1" [ngModel]="cruDe(i)" (ngModelChange)="setCru(i, $event)" [disabled]="finalizada()" placeholder="—" /> kg</span>
+              <span><input class="motivo-input" [ngModel]="motivoDe(i)" (ngModelChange)="setMotivo(i, $event)" [disabled]="finalizada()" placeholder="motivo (se divergir)" /></span>
             </div>
           }
         }
@@ -54,31 +72,32 @@
   <!-- Fichas técnicas -->
   <section class="bloco">
     <div class="bloco-cab">
-      <h2 class="bloco-titulo"><mat-icon>description</mat-icon> Fichas técnicas <span class="cont-fichas">{{ mock.fichas().length }} fichas</span></h2>
+      <h2 class="bloco-titulo"><mat-icon>description</mat-icon> Fichas técnicas <span class="cont-fichas">{{ totalFichas() }} fichas</span></h2>
       <button mat-stroked-button (click)="maximizarFichas()"><mat-icon>open_in_full</mat-icon> Maximizar</button>
     </div>
     <div class="fichas fichas-scroll">
-      @for (f of mock.fichas(); track f.id) {
+      @for (f of fichas(); track f.id) {
         <article class="ficha" [class.casa]="f.tipo === 'Casa'">
           <div class="ficha-head">
             <div>
-              <span class="ficha-titulo">{{ f.pet || f.receitaNome }}</span>
+              <span class="ficha-titulo">{{ f.petNome || f.receitaNome }}</span>
               <span class="ficha-cod">{{ f.receitaCodigo }}</span>
             </div>
             <span class="status-chip" [attr.data-s]="f.status">{{ rotuloStatusFicha(f.status) }}</span>
             <button mat-icon-button class="ficha-max" (click)="maximizarFicha(f)" matTooltip="Maximizar ficha"><mat-icon>open_in_full</mat-icon></button>
           </div>
-          @if (f.cliente) { <div class="ficha-sub">{{ f.cliente }} · entrega {{ f.dataEntrega }}</div> }
-          @else { <div class="ficha-sub">Receita da Casa · {{ f.dataEntrega }}</div> }
+          @if (f.clienteNome) { <div class="ficha-sub">{{ f.clienteNome }}@if (f.dataEntrega) { · entrega {{ fmtData(f.dataEntrega) }} }</div> }
+          @else { <div class="ficha-sub">Receita da Casa</div> }
           <div class="ficha-meta">
-            Bacia <strong>{{ fmtPeso(f.totalBaciaGramas) }}</strong> · {{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}
+            Bacia <strong>{{ fmtPeso(f.quantidadeTotalGramas) }}</strong> · {{ f.quantidadePacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}
           </div>
           <ul class="ficha-ing">
-            @for (ing of f.ingredientes; track ing.nome) { <li>{{ ing.nome }} <strong>{{ fmtPeso(ing.gramas) }}</strong></li> }
+            @for (ing of f.ingredientes; track ing.ingredienteId) { <li>{{ ing.ingredienteNome }} <strong>{{ fmtPeso(ing.gramasCozidas) }}</strong></li> }
           </ul>
           @if (f.observacoes) { <div class="ficha-obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
         </article>
       }
     </div>
   </section>
+  }
 </section>

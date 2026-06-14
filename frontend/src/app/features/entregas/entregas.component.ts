@@ -9,7 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { forkJoin } from 'rxjs';
+import { Observable, forkJoin, map, of } from 'rxjs';
 import {
   classeStatus,
   enderecoResumo,
@@ -27,6 +27,7 @@ import {
   STATUS_ENTREGA,
 } from './entregas.model';
 import { EntregasService } from './entregas.service';
+import { EstoqueService } from '../estoque/estoque.service';
 import { EntregaDetalheDialogComponent } from './entrega-detalhe-dialog.component';
 
 interface DiaCalendario {
@@ -56,8 +57,13 @@ interface DiaCalendario {
 })
 export class EntregasComponent implements OnInit {
   private readonly service = inject(EntregasService);
+  private readonly estoque = inject(EstoqueService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+
+  // Saldo real de produto acabado (Casa): `${receitaId}-${pesoGramas}` → pacotes.
+  readonly estoqueProdutoAcabado = signal<Map<string, number>>(new Map());
+  private estoqueCarregado = false;
 
   readonly statusOpcoes = STATUS_ENTREGA;
   readonly labelStatus = labelStatus;
@@ -279,16 +285,41 @@ export class EntregasComponent implements OnInit {
       return;
     }
     this.carregandoOperacional.set(true);
-    forkJoin(pendentes.map((e) => this.service.obter(e.id))).subscribe({
-      next: (detalhes) => {
-        const ops = new Map(detalhes.map((d) => [d.id, operacionalDeDetalhe(d)]));
-        this.todas.update((arr) =>
-          arr.map((e) => (ops.has(e.id) ? { ...e, operacional: ops.get(e.id) } : e)),
-        );
-        this.carregandoOperacional.set(false);
-      },
-      error: () => this.carregandoOperacional.set(false),
+    this.garantirEstoqueProdutoAcabado().subscribe(() => {
+      forkJoin(pendentes.map((e) => this.service.obter(e.id))).subscribe({
+        next: (detalhes) => {
+          const ops = new Map(detalhes.map((d) => [d.id, operacionalDeDetalhe(d, this.estoqueProdutoAcabado())]));
+          this.todas.update((arr) =>
+            arr.map((e) => (ops.has(e.id) ? { ...e, operacional: ops.get(e.id) } : e)),
+          );
+          this.carregandoOperacional.set(false);
+        },
+        error: () => this.carregandoOperacional.set(false),
+      });
     });
+  }
+
+  /** Carrega (uma vez) o saldo real de produto acabado da Casa, por receita + peso. */
+  private garantirEstoqueProdutoAcabado(): Observable<void> {
+    if (this.estoqueCarregado) {
+      return of(void 0);
+    }
+    return forkJoin([this.estoque.listarItens(), this.estoque.listarTamanhosComPeso()]).pipe(
+      map(([itens, tamanhos]) => {
+        const pesoPorTamanho = new Map(tamanhos.map((t) => [t.id, t.pesoGramas]));
+        const mapa = new Map<string, number>();
+        for (const i of itens) {
+          if (i.tipo === 'ProdutoAcabadoCasa' && i.receitaId != null && i.tamanhoPacoteId != null) {
+            const peso = pesoPorTamanho.get(i.tamanhoPacoteId);
+            if (peso != null) {
+              mapa.set(`${i.receitaId}-${peso}`, Math.floor(i.quantidadeAtual));
+            }
+          }
+        }
+        this.estoqueProdutoAcabado.set(mapa);
+        this.estoqueCarregado = true;
+      }),
+    );
   }
 
   get resumoCasaDia(): ResumoCasaDia[] {

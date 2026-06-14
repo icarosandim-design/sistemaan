@@ -37,6 +37,7 @@ public sealed record FichaIngredienteDto(long IngredienteId, string IngredienteN
 public sealed record FichaProducaoDto(
     long Id,
     string Tipo,
+    long? EntregaItemId,
     string? ClienteNome,
     string? PetNome,
     string ReceitaCodigo,
@@ -48,6 +49,7 @@ public sealed record FichaProducaoDto(
     string Status,
     int? QuantidadePacotesReal,
     string? MotivoNaoFeita,
+    string? Observacoes,
     IReadOnlyList<FichaIngredienteDto> Ingredientes);
 
 public sealed record ConsumoConsolidadoDto(

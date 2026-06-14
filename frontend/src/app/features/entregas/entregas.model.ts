@@ -40,10 +40,11 @@ export interface EntregaResumo {
 
 /** Item de Receita da Casa dentro do resumo operacional da entrega. */
 export interface ItemCasaOperacional {
+  receitaId: number;
   receitaNome: string;
   pacotes: number;
   tamanhoGramas: number;
-  estoqueDisponivel: number; // ⚠️ MOCK
+  estoqueDisponivel: number; // saldo real de produto acabado (pacotes)
 }
 
 /** Item de Receita Personalizada dentro do resumo operacional da entrega. */
@@ -52,7 +53,8 @@ export interface ItemPersonalizadaOperacional {
   receitaCodigo: string;
   pacotes: number;
   tamanhoGramas: number;
-  pronta: boolean; // ⚠️ MOCK
+  pronta: boolean; // prontidão real (preenchida pela Produção)
+  parcial?: boolean;
 }
 
 export interface ResumoOperacional {
@@ -138,6 +140,8 @@ export interface EntregaItem {
   quantidadeCicloGramas: number | null;
   tamanhoPacoteGramas: number | null;
   quantidadePacotes: number | null;
+  statusPreparo: string;
+  pacotesProntos: number | null;
   pacotes: EntregaItemPacote[];
   ingredientes: EntregaItemIngrediente[];
 }
@@ -273,8 +277,11 @@ export interface AlterarAgendaRequest {
 // mas a estrutura já está pronta para integrar Estoque/Produção depois.
 // =====================================================================
 
-/** Constrói o resumo operacional a partir do detalhe da entrega. */
-export function operacionalDeDetalhe(d: EntregaDetalhe): ResumoOperacional {
+/**
+ * Constrói o resumo operacional a partir do detalhe da entrega.
+ * `estoqueProdutoAcabado`: mapa `${receitaId}-${pesoGramas}` → saldo real (pacotes).
+ */
+export function operacionalDeDetalhe(d: EntregaDetalhe, estoqueProdutoAcabado?: Map<string, number>): ResumoOperacional {
   const casaMap = new Map<string, ItemCasaOperacional>();
   const personalizadas: ItemPersonalizadaOperacional[] = [];
 
@@ -288,10 +295,11 @@ export function operacionalDeDetalhe(d: EntregaDetalhe): ResumoOperacional {
             ex.pacotes += pac.quantidade;
           } else {
             casaMap.set(key, {
+              receitaId: it.receitaId,
               receitaNome: it.receitaNome,
               tamanhoGramas: pac.pesoGramas,
               pacotes: pac.quantidade,
-              estoqueDisponivel: estoqueMockPacotes(it.receitaNome, pac.pesoGramas),
+              estoqueDisponivel: estoqueProdutoAcabado?.get(`${it.receitaId}-${pac.pesoGramas}`) ?? 0,
             });
           }
         }
@@ -301,7 +309,8 @@ export function operacionalDeDetalhe(d: EntregaDetalhe): ResumoOperacional {
           receitaCodigo: it.receitaCodigo,
           pacotes: it.quantidadePacotes ?? 0,
           tamanhoGramas: it.tamanhoPacoteGramas ?? 0,
-          pronta: prontaMock(`${d.id}-${it.receitaCodigo}`),
+          pronta: it.statusPreparo === 'Pronta',
+          parcial: it.statusPreparo === 'ParcialmentePronta',
         });
       }
     }
@@ -491,6 +500,7 @@ function mockOperacional(entregaId: number, i: number, soCasa: boolean, mista: b
       const rec = MOCK_RECEITAS_CASA[(i + r) % MOCK_RECEITAS_CASA.length];
       const pacotes = 2 + ((i + r) % 5);
       casa.push({
+        receitaId: 0,
         receitaNome: rec.nome,
         tamanhoGramas: rec.tamanho,
         pacotes,

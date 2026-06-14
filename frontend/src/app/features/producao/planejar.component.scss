@@ -107,3 +107,6 @@
   .thead { display: none; }
   .trow { grid-template-columns: 28px 1fr auto; grid-auto-rows: auto; }
 }
+
+/* ----- Wiring real: chip da casa nas produções planejadas ----- */
+.pet-chip.casa { background: rgba(140,107,63,0.14); border-color: rgba(140,107,63,0.35); color: #8c6b3f; }

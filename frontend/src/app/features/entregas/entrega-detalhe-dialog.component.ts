@@ -17,7 +17,9 @@ import {
   ProntidaoEntrega,
   prontidaoEntrega,
 } from './entregas.model';
+import { forkJoin } from 'rxjs';
 import { EntregasService } from './entregas.service';
+import { EstoqueService } from '../estoque/estoque.service';
 import { MotivoDialogComponent } from './motivo-dialog.component';
 import { ReagendarDialogComponent, ReagendarDialogResult } from './reagendar-dialog.component';
 
@@ -41,8 +43,11 @@ export interface EntregaDetalheDialogData {
 })
 export class EntregaDetalheDialogComponent {
   private readonly service = inject(EntregasService);
+  private readonly estoque = inject(EstoqueService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+
+  readonly estoqueProdutoAcabado = signal<Map<string, number>>(new Map());
 
   readonly labelStatus = labelStatus;
   readonly classeStatus = classeStatus;
@@ -63,6 +68,26 @@ export class EntregaDetalheDialogComponent {
     @Inject(MAT_DIALOG_DATA) readonly data: EntregaDetalheDialogData,
   ) {
     this.recarregar();
+    this.carregarEstoque();
+  }
+
+  private carregarEstoque(): void {
+    forkJoin([this.estoque.listarItens(), this.estoque.listarTamanhosComPeso()]).subscribe({
+      next: ([itens, tamanhos]) => {
+        const pesoPorTamanho = new Map(tamanhos.map((t) => [t.id, t.pesoGramas]));
+        const mapa = new Map<string, number>();
+        for (const i of itens) {
+          if (i.tipo === 'ProdutoAcabadoCasa' && i.receitaId != null && i.tamanhoPacoteId != null) {
+            const peso = pesoPorTamanho.get(i.tamanhoPacoteId);
+            if (peso != null) {
+              mapa.set(`${i.receitaId}-${peso}`, Math.floor(i.quantidadeAtual));
+            }
+          }
+        }
+        this.estoqueProdutoAcabado.set(mapa);
+      },
+      error: () => {},
+    });
   }
 
   get podeFluxo(): boolean {
@@ -73,7 +98,7 @@ export class EntregaDetalheDialogComponent {
   /** Prontidão consolidada (estoque da Casa + prontidão das Personalizadas). */
   prontidao(): ProntidaoEntrega {
     const d = this.detalhe();
-    return prontidaoEntrega(d ? operacionalDeDetalhe(d) : undefined);
+    return prontidaoEntrega(d ? operacionalDeDetalhe(d, this.estoqueProdutoAcabado()) : undefined);
   }
 
   /** Bloqueia o avanço de status enquanto houver pendência (não pronta / sem estoque). */

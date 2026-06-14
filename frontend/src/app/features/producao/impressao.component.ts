@@ -1,13 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { fmtPeso, IngredienteConsolidadoMock, porDia } from './producao.mock';
-import { ProducaoMockService } from './producao-mock.service';
+import { firstValueFrom } from 'rxjs';
+import { ConsumoConsolidado, OrdemProducao, fmtPeso, porDia } from './producao.model';
+import { ProducaoService } from './producao.service';
 
 const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos', 'Suplementos', 'Outros'];
 
-/** ⚠️ PROTÓTIPO/MOCK: pré-visualização de impressão (Mapa de produção ou Fichas técnicas). */
+/** Pré-visualização de impressão (Mapa de produção ou Fichas técnicas) de uma ordem. */
 @Component({
   selector: 'app-producao-impressao',
   standalone: true,
@@ -15,16 +16,35 @@ const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos
   templateUrl: './impressao.component.html',
   styleUrl: './impressao.component.scss',
 })
-export class ProducaoImpressaoComponent {
-  readonly mock = inject(ProducaoMockService);
+export class ProducaoImpressaoComponent implements OnInit {
+  private readonly api = inject(ProducaoService);
+  private readonly route = inject(ActivatedRoute);
   readonly fmtPeso = fmtPeso;
   readonly porDia = porDia;
 
-  readonly tipo: 'mapa' | 'fichas' = inject(ActivatedRoute).snapshot.paramMap.get('tipo') === 'fichas' ? 'fichas' : 'mapa';
+  readonly tipo: 'mapa' | 'fichas' = this.route.snapshot.paramMap.get('tipo') === 'fichas' ? 'fichas' : 'mapa';
+  readonly ordem = signal<OrdemProducao | null>(null);
 
-  grupos(): { categoria: string; itens: IngredienteConsolidadoMock[] }[] {
-    const map = new Map<string, IngredienteConsolidadoMock[]>();
-    for (const i of this.mock.consolidado()) {
+  async ngOnInit(): Promise<void> {
+    const id = Number(this.route.snapshot.queryParamMap.get('ordem'));
+    if (id) {
+      try {
+        this.ordem.set(await firstValueFrom(this.api.obter(id)));
+      } catch {
+        this.ordem.set(null);
+      }
+    }
+  }
+
+  fmtData(iso: string | null | undefined): string {
+    if (!iso) return '—';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  grupos(): { categoria: string; itens: ConsumoConsolidado[] }[] {
+    const map = new Map<string, ConsumoConsolidado[]>();
+    for (const i of this.ordem()?.consolidado ?? []) {
       const l = map.get(i.categoria) ?? [];
       l.push(i);
       map.set(i.categoria, l);

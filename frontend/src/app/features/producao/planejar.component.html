@@ -1,27 +1,29 @@
 <section class="pagina">
-  <div class="mock-banner"><mat-icon>science</mat-icon> Protótipo visual com dados fictícios (mock). Nada é salvo.</div>
-
   <header class="page-head">
     <div class="page-title">
       <h1>Planejar Produção</h1>
     </div>
     <button mat-flat-button class="btn-cta" (click)="planejar()">
       <mat-icon>event_available</mat-icon>
-      Planejar produção ({{ personalizadasSelecionadas }})
+      Planejar produção ({{ personalizadasSelecionadas + casaSelecionadas }})
     </button>
   </header>
 
   <!-- Produções já planejadas -->
-  @if (mock.producoesPlanejadas().length) {
+  @if (store.ordensPlanejadas().length) {
     <section class="planejadas">
       <h2 class="bloco-titulo"><mat-icon>event_note</mat-icon> Produções planejadas</h2>
       <div class="planejadas-cards">
-        @for (prod of mock.producoesPlanejadas(); track prod.dia) {
+        @for (prod of store.ordensPlanejadas(); track prod.id) {
           <article class="prod-card">
-            <div class="prod-dia"><mat-icon>calendar_today</mat-icon> {{ prod.dia }}</div>
-            <div class="prod-info">{{ prod.itens.length }} receita(s) personalizada(s) · status: <strong>Planejada</strong></div>
-            <div class="prod-pets">{{ prod.itens.length ? '' : '' }}@for (p of prod.itens; track p.id) {<span class="pet-chip">{{ p.pet }}</span>}</div>
-            <button mat-stroked-button (click)="editarProducao(prod.dia)"><mat-icon>edit</mat-icon> Editar</button>
+            <div class="prod-dia"><mat-icon>calendar_today</mat-icon> {{ fmtData(prod.data) }}</div>
+            <div class="prod-info">{{ prod.fichas.length }} ficha(s) · status: <strong>{{ prod.status === 'Planejada' ? 'Planejada' : 'Em andamento' }}</strong></div>
+            <div class="prod-pets">
+              @for (f of prod.fichas; track f.id) {
+                <span class="pet-chip" [class.casa]="f.tipo === 'Casa'">{{ f.tipo === 'Casa' ? f.receitaNome : f.petNome }}</span>
+              }
+            </div>
+            <button mat-stroked-button (click)="editarProducao(prod.id)"><mat-icon>edit</mat-icon> Editar</button>
           </article>
         }
       </div>
@@ -36,10 +38,12 @@
     <button class="chip-janela" [class.ativo]="personalizado" (click)="ativarPersonalizado()"><mat-icon>date_range</mat-icon> Personalizado</button>
     @if (personalizado) {
       <span class="range">
-        <input type="date" [(ngModel)]="rangeDe" /> <span class="ate">até</span> <input type="date" [(ngModel)]="rangeAte" />
+        <input type="date" [(ngModel)]="rangeDe" (change)="aplicarRange()" /> <span class="ate">até</span>
+        <input type="date" [(ngModel)]="rangeAte" (change)="aplicarRange()" />
       </span>
     }
-    <span class="janela-info">Mostrando demanda: <strong>{{ janelaTexto }}</strong> (mock)</span>
+    <span class="janela-info">Demanda do período: <strong>{{ janelaTexto }}</strong></span>
+    @if (store.carregandoPlanejar()) { <mat-spinner diameter="18"></mat-spinner> }
   </div>
 
   <!-- Resumo das escolhas -->
@@ -61,32 +65,32 @@
           @if (busca) { <button matSuffix mat-icon-button (click)="busca = ''"><mat-icon>close</mat-icon></button> }
         </mat-form-field>
         <button class="chip-filtro" [class.ativo]="apenasNaoProntas" (click)="apenasNaoProntas = !apenasNaoProntas">Só não prontas</button>
-        <span class="contador">{{ personalizadasFiltradas.length }} de {{ mock.disponiveis().length }} disponíveis · {{ personalizadasSelecionadas }} selecionadas</span>
+        <span class="contador">{{ personalizadasFiltradas.length }} de {{ disponiveis().length }} disponíveis · {{ personalizadasSelecionadas }} selecionadas</span>
       </div>
     </div>
 
     <div class="cards-scroll">
       <div class="cards">
-        @for (p of personalizadasFiltradas; track p.id) {
-          <article class="card-pers" [class.sel]="p.selecionada" [class.parcial]="p.prontidao === 'ParcialmentePronta'">
-            <mat-checkbox [checked]="p.selecionada" (change)="mock.alternarPersonalizada(p.id)"></mat-checkbox>
+        @for (p of personalizadasFiltradas; track p.entregaItemId) {
+          <article class="card-pers" [class.sel]="persSelecionada(p.entregaItemId)" [class.parcial]="p.statusPreparo === 'ParcialmentePronta'">
+            <mat-checkbox [checked]="persSelecionada(p.entregaItemId)" (change)="togglePers(p.entregaItemId)"></mat-checkbox>
             <div class="card-body">
               <div class="linha1">
-                <span class="pet">{{ p.pet }}</span>
+                <span class="pet">{{ p.petNome }}</span>
                 <span class="cod">{{ p.receitaCodigo }}</span>
-                <span class="prontidao" [class.nao]="p.prontidao === 'NaoPronta'" [class.parc]="p.prontidao === 'ParcialmentePronta'">
-                  {{ rotuloProntidao(p.prontidao) }}
+                <span class="prontidao" [class.nao]="p.statusPreparo === 'NaoPronta'" [class.parc]="p.statusPreparo === 'ParcialmentePronta'">
+                  {{ rotuloStatusPreparo(p.statusPreparo) }}
                 </span>
               </div>
               <div class="linha2">
-                <span>{{ p.cliente }}</span>
-                <span class="entrega"><mat-icon>event</mat-icon> {{ p.dataEntrega }} · {{ dataDe(p.diasParaEntrega) }}</span>
+                <span>{{ p.clienteNome }}</span>
+                <span class="entrega"><mat-icon>event</mat-icon> {{ relativo(p.dataEntrega) }} · {{ fmtData(p.dataEntrega) }}</span>
                 <span>{{ p.pacotes }} pacotes de {{ fmtPeso(p.pesoPacoteGramas) }}</span>
               </div>
             </div>
           </article>
         } @empty {
-          <p class="vazio-lista">Nenhuma receita encontrada com esse filtro.</p>
+          <p class="vazio-lista">Nenhuma receita personalizada pendente neste período.</p>
         }
       </div>
     </div>
@@ -100,26 +104,30 @@
         <span></span><span>Receita</span><span class="t-r">Necessário</span><span class="t-r">Estoque</span><span class="t-r">Faltam</span><span>Situação</span><span class="t-r">Produzir</span>
       </div>
       <div class="casa-scroll">
-        @for (c of mock.casa(); track c.id) {
-          <div class="trow" [class.incluir]="c.incluir" [class.falta]="falta(c.necessario, c.estoque) > 0">
-            <mat-checkbox [checked]="c.incluir" (change)="mock.alternarCasa(c.id)"></mat-checkbox>
-            <span class="rec">{{ c.receitaNome }} {{ c.tamanho }}</span>
+        @for (c of store.demanda().casa; track casaKey(c)) {
+          <div class="trow" [class.incluir]="casaIncluida(c)" [class.falta]="c.falta > 0">
+            <mat-checkbox [checked]="casaIncluida(c)" [disabled]="!podeIncluirCasa(c)" (change)="alternarCasa(c)"></mat-checkbox>
+            <span class="rec">{{ c.receitaNome }} {{ c.tamanhoNome }}</span>
             <span class="t-r">{{ c.necessario }}</span>
             <span class="t-r">{{ c.estoque }}</span>
-            <span class="t-r">{{ falta(c.necessario, c.estoque) || '—' }}</span>
+            <span class="t-r">{{ c.falta || '—' }}</span>
             <span>
-              @if (falta(c.necessario, c.estoque) > 0) {
+              @if (!podeIncluirCasa(c)) {
+                <span class="sit sugerir"><mat-icon>help</mat-icon> sem tamanho cadastrado</span>
+              } @else if (c.falta > 0) {
                 <span class="sit sugerir"><mat-icon>warning</mat-icon> sugerir produção</span>
               } @else {
                 <span class="sit ok"><mat-icon>check_circle</mat-icon> estoque cobre</span>
               }
             </span>
             <span class="t-r">
-              @if (c.incluir) {
-                <input class="qtd" type="number" [ngModel]="c.qtdProduzir" (ngModelChange)="mock.definirQtdCasa(c.id, $event)" /> pac.
+              @if (casaIncluida(c)) {
+                <input class="qtd" type="number" [ngModel]="casaQtd(c)" (ngModelChange)="definirQtdCasa(c, $event)" /> pac.
               } @else { — }
             </span>
           </div>
+        } @empty {
+          <div class="trow"><span class="rec" style="grid-column: 1 / -1; color: var(--an-texto-secundario);">Nenhuma receita da casa demandada neste período.</span></div>
         }
       </div>
     </div>

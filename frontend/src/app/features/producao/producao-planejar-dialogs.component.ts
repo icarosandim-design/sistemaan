@@ -1,14 +1,16 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { fmtMoeda, fmtPeso } from './producao.mock';
-import { ProducaoMockService } from './producao-mock.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { fmtMoeda, fmtPeso } from './producao.model';
+import { ProducaoStore } from './producao.store';
 
-function paraBr(iso: string): string {
+function fmtData(iso: string): string {
+  if (!iso) return '—';
   const [y, m, d] = iso.split('-');
   return `${d}/${m}/${y}`;
 }
@@ -21,13 +23,15 @@ function paraBr(iso: string): string {
   template: `
     <h2 mat-dialog-title>Planejar produção</h2>
     <mat-dialog-content>
-      <p class="info">{{ data.qtd }} receita(s) personalizada(s) selecionada(s) entrarão nesta produção.</p>
-      <div class="custo"><mat-icon>payments</mat-icon> Custo estimado desta produção: <strong>~{{ fmtMoeda(data.custo) }}</strong> <span class="obs">(visualização)</span></div>
+      <p class="info">
+        {{ data.qtd }} personalizada(s)@if (data.qtdCasa) { · {{ data.qtdCasa }} da casa } entrarão nesta produção.
+      </p>
+      <div class="custo"><mat-icon>payments</mat-icon> Custo estimado: <strong>~{{ fmtMoeda(data.custo) }}</strong> <span class="obs">(visualização)</span></div>
       <mat-form-field appearance="outline" class="full">
         <mat-label>Dia da produção</mat-label>
         <input matInput type="date" [(ngModel)]="dataIso" />
       </mat-form-field>
-      <p class="nota">As receitas selecionadas passarão de <strong>Não pronta</strong> para <strong>Planejada</strong> neste dia.</p>
+      <p class="nota">Se já existir uma produção neste dia, as receitas serão adicionadas a ela.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button (click)="ref.close()">Cancelar</button>
@@ -50,11 +54,11 @@ export class DataProducaoDialogComponent {
   readonly fmtMoeda = fmtMoeda;
   constructor(
     readonly ref: MatDialogRef<DataProducaoDialogComponent, string>,
-    @Inject(MAT_DIALOG_DATA) readonly data: { qtd: number; custo: number },
+    @Inject(MAT_DIALOG_DATA) readonly data: { qtd: number; qtdCasa: number; custo: number },
   ) {}
   confirmar(): void {
     if (this.dataIso) {
-      this.ref.close(paraBr(this.dataIso));
+      this.ref.close(this.dataIso);
     }
   }
 }
@@ -65,32 +69,32 @@ export class DataProducaoDialogComponent {
   standalone: true,
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   template: `
-    <h2 mat-dialog-title>Produção planejada — {{ data.dia }}</h2>
+    <h2 mat-dialog-title>Produção planejada — {{ ordem() ? fmtData(ordem()!.data) : '—' }}</h2>
     <mat-dialog-content>
-      <h3 class="secao">Receitas nesta produção ({{ itens().length }})</h3>
-      @for (p of itens(); track p.id) {
+      <h3 class="secao">Receitas nesta produção ({{ fichas().length }})</h3>
+      @for (f of fichas(); track f.id) {
         <div class="linha">
           <div>
-            <span class="pet">{{ p.pet }}</span> <span class="cod">{{ p.receitaCodigo }}</span>
-            <span class="meta">{{ p.cliente }} · {{ p.pacotes }} pacotes de {{ fmtPeso(p.pesoPacoteGramas) }}</span>
+            <span class="pet">{{ f.tipo === 'Casa' ? f.receitaNome : f.petNome }}</span> <span class="cod">{{ f.receitaCodigo }}</span>
+            <span class="meta">{{ f.tipo === 'Casa' ? 'Receita da Casa' : f.clienteNome }} · {{ f.quantidadePacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</span>
           </div>
-          <button mat-stroked-button class="btn-rem" (click)="mock.removerDaProducao(p.id)"><mat-icon>close</mat-icon> Remover</button>
+          <button mat-stroked-button class="btn-rem" (click)="remover(f.id)"><mat-icon>close</mat-icon> Remover</button>
         </div>
       } @empty {
         <p class="vazio">Nenhuma receita nesta produção.</p>
       }
 
-      <h3 class="secao">Adicionar receitas disponíveis ({{ mock.disponiveis().length }})</h3>
-      @for (p of mock.disponiveis(); track p.id) {
+      <h3 class="secao">Adicionar personalizadas disponíveis ({{ disponiveis().length }})</h3>
+      @for (p of disponiveis(); track p.entregaItemId) {
         <div class="linha disp">
           <div>
-            <span class="pet">{{ p.pet }}</span> <span class="cod">{{ p.receitaCodigo }}</span>
-            <span class="meta">{{ p.cliente }} · entrega {{ p.dataEntrega }} · {{ p.pacotes }} pacotes de {{ fmtPeso(p.pesoPacoteGramas) }}</span>
+            <span class="pet">{{ p.petNome }}</span> <span class="cod">{{ p.receitaCodigo }}</span>
+            <span class="meta">{{ p.clienteNome }} · entrega {{ fmtData(p.dataEntrega) }} · {{ p.pacotes }} pacotes de {{ fmtPeso(p.pesoPacoteGramas) }}</span>
           </div>
-          <button mat-flat-button class="btn-add" (click)="mock.adicionarNaProducao(p.id, data.dia)"><mat-icon>add</mat-icon> Adicionar</button>
+          <button mat-flat-button class="btn-add" (click)="adicionar(p.entregaItemId)"><mat-icon>add</mat-icon> Adicionar</button>
         </div>
       } @empty {
-        <p class="vazio">Não há receitas disponíveis para adicionar.</p>
+        <p class="vazio">Não há personalizadas disponíveis para adicionar.</p>
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -113,15 +117,35 @@ export class DataProducaoDialogComponent {
   `],
 })
 export class EditarProducaoDialogComponent {
-  readonly mock = inject(ProducaoMockService);
+  readonly store = inject(ProducaoStore);
+  private readonly snack = inject(MatSnackBar);
   readonly fmtPeso = fmtPeso;
+  readonly fmtData = fmtData;
+
+  readonly ordem = computed(() => this.store.ordensPlanejadas().find((o) => o.id === this.data.ordemId) ?? null);
+  readonly fichas = computed(() => this.ordem()?.fichas ?? []);
+  readonly disponiveis = computed(() =>
+    this.store.demanda().personalizadas.filter((p) => !this.store.planejadosIds().has(p.entregaItemId)),
+  );
 
   constructor(
     readonly ref: MatDialogRef<EditarProducaoDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) readonly data: { dia: string },
+    @Inject(MAT_DIALOG_DATA) readonly data: { ordemId: number },
   ) {}
 
-  itens() {
-    return this.mock.personalizadas().filter((p) => p.planejadaDia === this.data.dia);
+  async adicionar(entregaItemId: number): Promise<void> {
+    try {
+      await this.store.adicionarNaProducao(this.data.ordemId, entregaItemId);
+    } catch {
+      this.snack.open('Não foi possível adicionar.', 'OK', { duration: 3000 });
+    }
+  }
+
+  async remover(fichaId: number): Promise<void> {
+    try {
+      await this.store.removerFicha(fichaId);
+    } catch {
+      this.snack.open('Não foi possível remover.', 'OK', { duration: 3000 });
+    }
   }
 }

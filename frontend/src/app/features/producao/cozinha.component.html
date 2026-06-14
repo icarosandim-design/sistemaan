@@ -4,29 +4,34 @@
       <h1>Cozinha</h1>
       <p class="subtitulo">
         Fila de produção ·
-        <span class="dia-chip" matTooltip="Somente visualização"><mat-icon>calendar_today</mat-icon> {{ mock.dataProducao }}</span>
+        <span class="dia-chip" matTooltip="Somente visualização"><mat-icon>calendar_today</mat-icon> {{ fmtData(store.dataSelecionada()) }}</span>
       </p>
     </div>
     <a mat-stroked-button routerLink="/producao/dia"><mat-icon>arrow_back</mat-icon> Produção do dia</a>
   </header>
 
+  @if (store.carregandoDia()) {
+    <div class="carregando"><mat-spinner diameter="32"></mat-spinner></div>
+  } @else if (!store.ordem()) {
+    <p class="vazio">Não há produção carregada para este dia.</p>
+  } @else {
   <div class="colunas">
-    @for (col of colunas; track col.status) {
+    @for (col of colunas; track col.key) {
       <div class="coluna">
-        <div class="coluna-head">{{ col.titulo }} <span class="cont">{{ porStatus(col.status).length }}</span></div>
+        <div class="coluna-head">{{ col.titulo }} <span class="cont">{{ porColuna(col).length }}</span></div>
         <div class="coluna-body">
-          @for (f of porStatus(col.status); track f.id) {
+          @for (f of porColuna(col); track f.id) {
             <article class="card" [class.casa]="f.tipo === 'Casa'">
               <div class="card-top">
-                <span class="card-titulo">{{ f.pet || f.receitaNome }}</span>
+                <span class="card-titulo">{{ f.petNome || f.receitaNome }}</span>
                 <span class="card-cod">{{ f.receitaCodigo }}</span>
               </div>
-              <div class="card-meta">{{ f.pacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
+              <div class="card-meta">{{ f.quantidadePacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
               @if (f.observacoes) { <div class="card-obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
               <div class="card-acoes">
-                <button mat-flat-button class="btn-av" (click)="col.status === 'Envasando' ? concluir(f) : avancar(f)">
-                  <mat-icon>{{ col.status === 'Envasando' ? 'task_alt' : 'check' }}</mat-icon>
-                  {{ col.status === 'Envasando' ? 'Concluir' : 'Avançar' }}
+                <button mat-flat-button class="btn-av" (click)="ehEnvasada(f) ? concluir(f) : avancar(f)">
+                  <mat-icon>{{ ehEnvasada(f) ? 'task_alt' : 'check' }}</mat-icon>
+                  {{ ehEnvasada(f) ? 'Concluir' : 'Avançar' }}
                 </button>
                 <button mat-icon-button class="btn-no" (click)="naoFeita(f)" matTooltip="Não feita"><mat-icon>close</mat-icon></button>
               </div>
@@ -43,18 +48,19 @@
   <section class="rodape">
     <button class="toggle" (click)="mostrarConcluidas.set(!mostrarConcluidas())">
       <mat-icon>{{ mostrarConcluidas() ? 'expand_less' : 'expand_more' }}</mat-icon>
-      Concluídas ({{ concluidas().length }}) · Não feitas ({{ naoFeitas().length }})
+      Conferidas ({{ concluidas().length }}) · Não feitas ({{ naoFeitas().length }})
     </button>
     @if (mostrarConcluidas()) {
       <div class="finalizadas">
         @for (f of concluidas(); track f.id) {
-          <span class="pill ok"><mat-icon>check_circle</mat-icon> {{ f.pet || f.receitaNome }} ({{ f.pacotes }} pac.)</span>
+          <span class="pill ok"><mat-icon>check_circle</mat-icon> {{ f.petNome || f.receitaNome }} ({{ f.quantidadePacotesReal ?? f.quantidadePacotes }} pac.)</span>
         }
         @for (f of naoFeitas(); track f.id) {
-          <span class="pill no" (click)="reabrir(f)" matTooltip="Reabrir"><mat-icon>cancel</mat-icon> {{ f.pet || f.receitaNome }}</span>
+          <span class="pill no" (click)="reabrir(f)" matTooltip="Reabrir"><mat-icon>cancel</mat-icon> {{ f.petNome || f.receitaNome }}</span>
         }
-        @if (!concluidas().length && !naoFeitas().length) { <span class="vazio">Nada concluído ainda.</span> }
+        @if (!concluidas().length && !naoFeitas().length) { <span class="vazio">Nada conferido ainda.</span> }
       </div>
     }
   </section>
+  }
 </section>

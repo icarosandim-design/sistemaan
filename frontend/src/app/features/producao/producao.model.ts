@@ -54,6 +54,7 @@ export interface FichaIngrediente {
 export interface FichaProducao {
   id: number;
   tipo: TipoFicha;
+  entregaItemId: number | null;
   clienteNome: string | null;
   petNome: string | null;
   receitaCodigo: string;
@@ -65,6 +66,7 @@ export interface FichaProducao {
   status: StatusFicha;
   quantidadePacotesReal: number | null;
   motivoNaoFeita: string | null;
+  observacoes: string | null;
   ingredientes: FichaIngrediente[];
 }
 
@@ -160,7 +162,24 @@ export interface FinalizacaoResultado {
   consumos: ResumoConsumo[];
 }
 
-// ===== Rótulos / formatação =====
+// ===== Formatação =====
+export function fmtPeso(gramas: number): string {
+  if (Math.abs(gramas) >= 1000) {
+    return `${(gramas / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} kg`;
+  }
+  return `${gramas.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} g`;
+}
+
+export function fmtMoeda(valor: number): string {
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+/** Quantidade por dia (por pacote) = total ÷ nº de pacotes. */
+export function porDia(gramasTotal: number, pacotes: number): number {
+  return pacotes > 0 ? gramasTotal / pacotes : gramasTotal;
+}
+
+// ===== Rótulos =====
 export function rotuloStatusFicha(s: StatusFicha): string {
   switch (s) {
     case 'Pendente': return 'A fazer';

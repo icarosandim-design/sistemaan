@@ -6,44 +6,50 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
-import { fmtPeso, FichaMock, StatusFichaMock } from './producao.mock';
+import { FichaProducao, fmtPeso } from './producao.model';
 
 export interface ConcluirFichaResult {
-  status: StatusFichaMock;
-  pacotesFeitos: number | null;
+  naoFeita: boolean;
+  pacotesReais: number | null;
+  pesoEnvasadoGramas: number | null;
+  observacoes: string | null;
   motivo: string | null;
 }
 
-/** ⚠️ PROTÓTIPO/MOCK: concluir ficha (feito X de Y) ou marcar não feita com motivo. */
+/** Concluir uma ficha (feito X de Y) ou marcá-la como não feita com motivo. */
 @Component({
   selector: 'app-concluir-ficha-dialog',
   standalone: true,
   imports: [FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatRadioModule, MatIconModule],
   template: `
-    <h2 mat-dialog-title>{{ f.pet || f.receitaNome }} <span class="cod">{{ f.receitaCodigo }}</span></h2>
+    <h2 mat-dialog-title>{{ f.petNome || f.receitaNome }} <span class="cod">{{ f.receitaCodigo }}</span></h2>
     <mat-dialog-content>
-      <p class="plan">Planejado: <strong>{{ f.pacotes }}</strong> pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</p>
+      <p class="plan">Planejado: <strong>{{ f.quantidadePacotes }}</strong> pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</p>
 
-      <mat-radio-group [(ngModel)]="status" class="radios">
-        <mat-radio-button value="Concluida">Concluída</mat-radio-button>
-        <mat-radio-button value="NaoFeita">Não feita</mat-radio-button>
+      <mat-radio-group [(ngModel)]="naoFeita" class="radios">
+        <mat-radio-button [value]="false">Concluída</mat-radio-button>
+        <mat-radio-button [value]="true">Não feita</mat-radio-button>
       </mat-radio-group>
 
-      @if (status === 'Concluida') {
+      @if (!naoFeita) {
         <mat-form-field appearance="outline" class="full">
           <mat-label>Pacotes realmente feitos</mat-label>
-          <input matInput type="number" [(ngModel)]="pacotesFeitos" [max]="f.pacotes" />
-          <span matTextSuffix>de {{ f.pacotes }}</span>
+          <input matInput type="number" [(ngModel)]="pacotesReais" [max]="f.quantidadePacotes" />
+          <span matTextSuffix>de {{ f.quantidadePacotes }}</span>
         </mat-form-field>
-        @if (pacotesFeitos !== null && pacotesFeitos < f.pacotes) {
-          <p class="aviso"><mat-icon>info</mat-icon> Parcial: {{ pacotesFeitos }} de {{ f.pacotes }}.</p>
+        @if (pacotesReais !== null && pacotesReais < f.quantidadePacotes) {
+          <p class="aviso"><mat-icon>info</mat-icon> Parcial: {{ pacotesReais }} de {{ f.quantidadePacotes }}.</p>
         }
         @if (f.tipo === 'Casa') {
-          <p class="estoque"><mat-icon>inventory_2</mat-icon> Entrará no estoque: <strong>{{ pacotesFeitos ?? f.pacotes }}</strong> pacote(s) de {{ f.receitaNome }}.</p>
+          <p class="estoque"><mat-icon>inventory_2</mat-icon> Entrará no estoque (ao finalizar): <strong>{{ pacotesReais ?? f.quantidadePacotes }}</strong> pacote(s) de {{ f.receitaNome }}.</p>
         } @else {
-          <p class="estoque"><mat-icon>check_circle</mat-icon> A entrega ficará <strong>{{ (pacotesFeitos ?? f.pacotes) < f.pacotes ? 'parcialmente pronta' : 'pronta' }}</strong>.</p>
+          <p class="estoque"><mat-icon>check_circle</mat-icon> A entrega ficará <strong>{{ (pacotesReais ?? f.quantidadePacotes) < f.quantidadePacotes ? 'parcialmente pronta' : 'pronta' }}</strong> (ao finalizar).</p>
         }
-      } @else if (status === 'NaoFeita') {
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Observações (opcional)</mat-label>
+          <input matInput [(ngModel)]="observacoes" />
+        </mat-form-field>
+      } @else {
         <mat-form-field appearance="outline" class="full">
           <mat-label>Motivo (não feita)</mat-label>
           <textarea matInput rows="2" [(ngModel)]="motivo" placeholder="Ex.: faltou insumo, não deu tempo…"></textarea>
@@ -55,7 +61,7 @@ export interface ConcluirFichaResult {
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button (click)="ref.close()">Cancelar</button>
-      <button mat-flat-button class="btn-cta" [disabled]="!status" (click)="confirmar()"><mat-icon>check</mat-icon> Confirmar</button>
+      <button mat-flat-button class="btn-cta" [disabled]="naoFeita && !motivo.trim()" (click)="confirmar()"><mat-icon>check</mat-icon> Confirmar</button>
     </mat-dialog-actions>
   `,
   styles: [`
@@ -72,25 +78,33 @@ export interface ConcluirFichaResult {
 })
 export class ConcluirFichaDialogComponent {
   readonly fmtPeso = fmtPeso;
-  readonly f: FichaMock;
-  status: StatusFichaMock;
-  pacotesFeitos: number | null;
+  readonly f: FichaProducao;
+  naoFeita: boolean;
+  pacotesReais: number | null;
+  observacoes = '';
   motivo = '';
 
   constructor(
     readonly ref: MatDialogRef<ConcluirFichaDialogComponent, ConcluirFichaResult>,
-    @Inject(MAT_DIALOG_DATA) data: { ficha: FichaMock; modoInicial: StatusFichaMock },
+    @Inject(MAT_DIALOG_DATA) data: { ficha: FichaProducao; naoFeita: boolean },
   ) {
     this.f = data.ficha;
-    this.status = data.modoInicial;
-    this.pacotesFeitos = data.ficha.pacotes;
+    this.naoFeita = data.naoFeita;
+    this.pacotesReais = data.ficha.quantidadePacotesReal ?? data.ficha.quantidadePacotes;
   }
 
   confirmar(): void {
-    if (this.status === 'Concluida') {
-      this.ref.close({ status: 'Concluida', pacotesFeitos: this.pacotesFeitos, motivo: null });
+    if (this.naoFeita) {
+      if (!this.motivo.trim()) return;
+      this.ref.close({ naoFeita: true, pacotesReais: null, pesoEnvasadoGramas: null, observacoes: null, motivo: this.motivo.trim() });
     } else {
-      this.ref.close({ status: 'NaoFeita', pacotesFeitos: null, motivo: this.motivo.trim() || null });
+      this.ref.close({
+        naoFeita: false,
+        pacotesReais: this.pacotesReais,
+        pesoEnvasadoGramas: null,
+        observacoes: this.observacoes.trim() || null,
+        motivo: null,
+      });
     }
   }
 }

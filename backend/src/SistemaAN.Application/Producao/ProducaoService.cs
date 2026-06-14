@@ -426,9 +426,9 @@ public sealed class ProducaoService : IProducaoService
     private async Task<OrdemProducaoDto> MapOrdemAsync(OrdemProducao ordem, CancellationToken cancellationToken)
     {
         var fichas = ordem.Fichas.Select(f => new FichaProducaoDto(
-            f.Id, f.Tipo.ToString(), f.ClienteNome, f.PetNome, f.ReceitaCodigo, f.ReceitaNome, f.DataEntrega,
+            f.Id, f.Tipo.ToString(), f.EntregaItemId, f.ClienteNome, f.PetNome, f.ReceitaCodigo, f.ReceitaNome, f.DataEntrega,
             f.QuantidadePacotes, f.PesoPacoteGramas, f.QuantidadeTotalGramas, f.Status.ToString(),
-            f.QuantidadePacotesReal, f.MotivoNaoFeita,
+            f.QuantidadePacotesReal, f.MotivoNaoFeita, f.Observacoes,
             f.Ingredientes.Select(g => new FichaIngredienteDto(g.IngredienteId, g.IngredienteNome, g.Categoria, g.GramasCozidas, g.Coeficiente)).ToList()))
             .ToList();
 

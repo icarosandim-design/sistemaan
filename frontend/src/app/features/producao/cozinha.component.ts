@@ -1,70 +1,116 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { fmtPeso, FichaMock, StatusFichaMock } from './producao.mock';
-import { ProducaoMockService } from './producao-mock.service';
+import { FichaProducao, StatusFicha, fmtPeso } from './producao.model';
+import { ProducaoStore } from './producao.store';
 import { ConcluirFichaDialogComponent, ConcluirFichaResult } from './concluir-ficha-dialog.component';
+
+interface Coluna {
+  key: string;
+  titulo: string;
+  statuses: StatusFicha[];
+}
+
+const AVANCO: StatusFicha[] = ['Pendente', 'EmPreparo', 'Produzida', 'Envasada'];
 
 @Component({
   selector: 'app-producao-cozinha',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [RouterLink, MatButtonModule, MatIconModule, MatTooltipModule, MatProgressSpinnerModule],
   templateUrl: './cozinha.component.html',
   styleUrl: './cozinha.component.scss',
 })
-export class ProducaoCozinhaComponent {
-  readonly mock = inject(ProducaoMockService);
+export class ProducaoCozinhaComponent implements OnInit {
+  readonly store = inject(ProducaoStore);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
   readonly fmtPeso = fmtPeso;
 
   readonly mostrarConcluidas = signal(false);
 
-  readonly colunas: { status: StatusFichaMock; titulo: string }[] = [
-    { status: 'Pendente', titulo: 'A fazer' },
-    { status: 'EmProducao', titulo: 'Em produção' },
-    { status: 'Envasando', titulo: 'Envasando' },
+  readonly colunas: Coluna[] = [
+    { key: 'afazer', titulo: 'A fazer', statuses: ['Pendente'] },
+    { key: 'producao', titulo: 'Em produção', statuses: ['EmPreparo', 'Produzida'] },
+    { key: 'envasando', titulo: 'Envasando', statuses: ['Envasada'] },
   ];
 
-  porStatus = (s: StatusFichaMock): FichaMock[] => this.mock.fichas().filter((f) => f.status === s);
-
-  readonly concluidas = computed(() => this.mock.fichasConcluidas());
-  readonly naoFeitas = computed(() => this.mock.fichasNaoFeitas());
-
-  avancar(f: FichaMock): void {
-    this.mock.avancarFicha(f.id);
+  ngOnInit(): void {
+    this.store.garantirOrdemDia();
   }
 
-  concluir(f: FichaMock): void {
-    this.abrirConclusao(f, 'Concluida');
+  fmtData(iso: string): string {
+    if (!iso) return '—';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
   }
 
-  naoFeita(f: FichaMock): void {
-    this.abrirConclusao(f, 'NaoFeita');
+  readonly fichas = computed(() => this.store.ordem()?.fichas ?? []);
+  readonly concluidas = computed(() => this.fichas().filter((f) => f.status === 'Conferida'));
+  readonly naoFeitas = computed(() => this.fichas().filter((f) => f.status === 'NaoFeita'));
+
+  porColuna(col: Coluna): FichaProducao[] {
+    return this.fichas().filter((f) => col.statuses.includes(f.status));
   }
 
-  private abrirConclusao(f: FichaMock, modoInicial: StatusFichaMock): void {
-    const ref = this.dialog.open(ConcluirFichaDialogComponent, { data: { ficha: f, modoInicial }, autoFocus: false });
-    ref.afterClosed().subscribe((res: ConcluirFichaResult | undefined) => {
-      if (!res) {
-        return;
+  ehEnvasada(f: FichaProducao): boolean {
+    return f.status === 'Envasada';
+  }
+
+  async avancar(f: FichaProducao): Promise<void> {
+    const i = AVANCO.indexOf(f.status);
+    if (i >= 0 && i < AVANCO.length - 1) {
+      try {
+        await this.store.mudarStatusFicha(f.id, AVANCO[i + 1]);
+      } catch {
+        this.snack.open('Não foi possível avançar a ficha.', 'OK', { duration: 3000 });
       }
-      this.mock.concluirFicha(f.id, res);
-      if (res.status === 'NaoFeita') {
-        this.snack.open(`${f.pet || f.receitaNome} marcada como não feita.`, 'OK', { duration: 3000 });
-      } else if (f.tipo === 'Casa') {
-        this.snack.open(`Estoque: +${res.pacotesFeitos ?? f.pacotes} pacote(s) de ${f.receitaNome} (mock).`, 'OK', { duration: 3500 });
-      } else {
-        this.snack.open(`${f.pet} concluída.`, 'OK', { duration: 2500 });
+    }
+  }
+
+  concluir(f: FichaProducao): void {
+    this.abrirConclusao(f, false);
+  }
+
+  naoFeita(f: FichaProducao): void {
+    this.abrirConclusao(f, true);
+  }
+
+  private abrirConclusao(f: FichaProducao, naoFeita: boolean): void {
+    const ref = this.dialog.open(ConcluirFichaDialogComponent, { data: { ficha: f, naoFeita }, autoFocus: false });
+    ref.afterClosed().subscribe(async (res: ConcluirFichaResult | undefined) => {
+      if (!res) return;
+      try {
+        if (res.naoFeita) {
+          await this.store.marcarNaoFeita(f.id, res.motivo ?? '');
+          this.snack.open(`${f.petNome || f.receitaNome} marcada como não feita.`, 'OK', { duration: 3000 });
+        } else {
+          await this.store.concluirFicha(f.id, {
+            pacotesReais: res.pacotesReais ?? f.quantidadePacotes,
+            pesoEnvasadoGramas: res.pesoEnvasadoGramas,
+            observacoes: res.observacoes,
+          });
+          if (f.tipo === 'Casa') {
+            this.snack.open(`${f.receitaNome} conferida (${res.pacotesReais ?? f.quantidadePacotes} pacotes).`, 'OK', { duration: 3000 });
+          } else {
+            this.snack.open(`${f.petNome} conferida.`, 'OK', { duration: 2500 });
+          }
+        }
+      } catch {
+        this.snack.open('Não foi possível registrar a ficha.', 'OK', { duration: 3000 });
       }
     });
   }
 
-  reabrir(f: FichaMock): void {
-    this.mock.mudarStatusFicha(f.id, 'Pendente');
+  async reabrir(f: FichaProducao): Promise<void> {
+    try {
+      await this.store.mudarStatusFicha(f.id, 'Pendente');
+    } catch {
+      this.snack.open('Não foi possível reabrir.', 'OK', { duration: 3000 });
+    }
   }
 }

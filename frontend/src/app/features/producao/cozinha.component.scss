@@ -36,3 +36,6 @@
 .pill.no { background: #fbeceb; color: #b3261e; cursor: pointer; }
 
 @media (max-width: 860px) { .colunas { grid-template-columns: 1fr; } }
+
+/* ----- Wiring real: carregando ----- */
+.carregando { display: flex; justify-content: center; padding: 3rem 0; }
