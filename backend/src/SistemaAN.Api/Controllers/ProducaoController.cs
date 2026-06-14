@@ -13,6 +13,8 @@ public sealed class ProducaoController : ControllerBase
 
     public ProducaoController(IProducaoService service) => _service = service;
 
+    private string Usuario => User.Identity?.Name ?? "sistema";
+
     /// <summary>Demanda de produção (personalizadas não prontas + Casa com falta) no período.</summary>
     [HttpGet("demanda")]
     public async Task<ActionResult<DemandaDto>> Demanda([FromQuery] DateOnly inicio, [FromQuery] DateOnly fim, CancellationToken ct)
@@ -50,4 +52,29 @@ public sealed class ProducaoController : ControllerBase
     [HttpDelete("fichas/{fichaId:long}")]
     public async Task<ActionResult<OrdemProducaoDto>> RemoverFicha(long fichaId, CancellationToken ct)
         => Ok(await _service.RemoverFichaAsync(fichaId, ct));
+
+    /// <summary>Avança/define o status de uma ficha (fila da cozinha).</summary>
+    [HttpPut("fichas/{fichaId:long}/status")]
+    public async Task<ActionResult<OrdemProducaoDto>> MudarStatusFicha(long fichaId, MudarStatusFichaRequest request, CancellationToken ct)
+        => Ok(await _service.MudarStatusFichaAsync(fichaId, request.Status, ct));
+
+    /// <summary>Conclui uma ficha (pacotes reais + envasado).</summary>
+    [HttpPut("fichas/{fichaId:long}/concluir")]
+    public async Task<ActionResult<OrdemProducaoDto>> ConcluirFicha(long fichaId, ConcluirFichaRequest request, CancellationToken ct)
+        => Ok(await _service.ConcluirFichaAsync(fichaId, request, Usuario, ct));
+
+    /// <summary>Marca uma ficha como não feita (com motivo).</summary>
+    [HttpPut("fichas/{fichaId:long}/nao-feita")]
+    public async Task<ActionResult<OrdemProducaoDto>> NaoFeita(long fichaId, MarcarNaoFeitaRequest request, CancellationToken ct)
+        => Ok(await _service.MarcarNaoFeitaAsync(fichaId, request.Motivo, Usuario, ct));
+
+    /// <summary>Registra a pesagem real (cru/cozido) por ingrediente.</summary>
+    [HttpPut("{id:long}/consumo")]
+    public async Task<ActionResult<OrdemProducaoDto>> RegistrarConsumo(long id, RegistrarConsumoRequest request, CancellationToken ct)
+        => Ok(await _service.RegistrarConsumoAsync(id, request, ct));
+
+    /// <summary>Finaliza a ordem: baixa de insumos, produto acabado e prontidão.</summary>
+    [HttpPost("{id:long}/finalizar")]
+    public async Task<ActionResult<FinalizacaoResultadoDto>> Finalizar(long id, FinalizarProducaoRequest request, CancellationToken ct)
+        => Ok(await _service.FinalizarAsync(id, request, Usuario, ct));
 }

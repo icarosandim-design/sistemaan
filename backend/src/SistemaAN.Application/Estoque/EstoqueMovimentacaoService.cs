@@ -488,6 +488,79 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             r.Usuario, r.Observacoes)).ToList();
     }
 
+    public async Task<bool> BaixarPorProducaoAsync(long itemEstoqueId, decimal quantidade, long ordemProducaoId, string usuario, string? observacao, CancellationToken cancellationToken = default)
+    {
+        if (quantidade <= 0m)
+        {
+            return true;
+        }
+
+        var item = await _db.ItensEstoque.FirstOrDefaultAsync(x => x.Id == itemEstoqueId, cancellationToken);
+        if (item is null || quantidade > item.QuantidadeAtual)
+        {
+            return false; // saldo insuficiente → vira pendência (não baixa nada)
+        }
+
+        var agora = DateTimeOffset.UtcNow;
+        var lotes = await _db.LotesEstoque
+            .Where(l => l.ItemEstoqueId == item.Id && l.QuantidadeAtual > 0m && l.Status == StatusLote.Ativo)
+            .ToListAsync(cancellationToken);
+        var fifo = lotes.OrderBy(l => l.Validade ?? DateOnly.MaxValue).ThenBy(l => l.DataEntrada).ThenBy(l => l.Id).ToList();
+
+        var saldoCorrente = item.QuantidadeAtual;
+        var restante = quantidade;
+        foreach (var lote in fifo)
+        {
+            if (restante <= 0m)
+            {
+                break;
+            }
+            var consumir = Math.Min(restante, lote.QuantidadeAtual);
+            lote.Consumir(consumir);
+            var mov = MovimentacaoEstoque.CriarSaida(item, lote, TipoMovimentacao.SaidaProducao, consumir, saldoCorrente, saldoCorrente - consumir,
+                lote.CustoUnitario, usuario, agora, MotivoSaida.Producao, observacao, null);
+            mov.VincularOrdemProducao(ordemProducaoId);
+            _db.MovimentacoesEstoque.Add(mov);
+            saldoCorrente -= consumir;
+            restante -= consumir;
+        }
+        if (restante > 0m)
+        {
+            var mov = MovimentacaoEstoque.CriarSaida(item, null, TipoMovimentacao.SaidaProducao, restante, saldoCorrente, saldoCorrente - restante,
+                item.CustoMedio, usuario, agora, MotivoSaida.Producao, observacao, null);
+            mov.VincularOrdemProducao(ordemProducaoId);
+            _db.MovimentacoesEstoque.Add(mov);
+        }
+
+        item.RegistrarSaida(quantidade);
+        return true;
+    }
+
+    public async Task EntrarPorProducaoAsync(long itemEstoqueId, decimal quantidade, long ordemProducaoId, string usuario, CancellationToken cancellationToken = default)
+    {
+        if (quantidade <= 0m)
+        {
+            return;
+        }
+
+        var item = await _db.ItensEstoque.FirstOrDefaultAsync(x => x.Id == itemEstoqueId, cancellationToken);
+        if (item is null)
+        {
+            return;
+        }
+
+        var agora = DateTimeOffset.UtcNow;
+        var saldoAnterior = item.QuantidadeAtual;
+        var lote = LoteEstoque.Criar(item, $"PROD{agora:yyyyMMddHHmmss}", DateOnly.FromDateTime(agora.UtcDateTime), null,
+            quantidade, 0m, null, OrigemLote.Producao, ordemProducaoId);
+        item.RegistrarEntrada(quantidade, 0m);
+        var mov = MovimentacaoEstoque.CriarEntrada(item, lote, TipoMovimentacao.EntradaProducao, quantidade,
+            saldoAnterior, item.QuantidadeAtual, 0m, usuario, agora, "Produção");
+        mov.VincularOrdemProducao(ordemProducaoId);
+        _db.LotesEstoque.Add(lote);
+        _db.MovimentacoesEstoque.Add(mov);
+    }
+
     private static string OrigemMovimentacao(long? entrada, long? ajuste, long? producao, long? entrega, TipoMovimentacao tipo)
     {
         if (entrada != null)

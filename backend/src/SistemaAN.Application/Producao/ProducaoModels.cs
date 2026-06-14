@@ -77,3 +77,34 @@ public sealed record FichaCasaRequest(long ReceitaId, long TamanhoPacoteId, int 
 public sealed record AdicionarFichasRequest(
     IReadOnlyList<long> EntregaItemIds,
     IReadOnlyList<FichaCasaRequest> Casa);
+
+// ===================== Execução / finalização (Fase 3) =====================
+public sealed record MudarStatusFichaRequest(string Status);
+
+public sealed record ConcluirFichaRequest(int PacotesReais, int? PesoEnvasadoGramas, string? Observacoes);
+
+public sealed record MarcarNaoFeitaRequest(string Motivo);
+
+public sealed record ConsumoRealRequest(long IngredienteId, decimal? RealCruGramas, decimal? RealCozidoGramas, string? Motivo);
+
+public sealed record RegistrarConsumoRequest(IReadOnlyList<ConsumoRealRequest> Itens);
+
+public sealed record FinalizarProducaoRequest(bool TudoProduzido, string? Observacoes);
+
+public sealed record ResumoConsumoDto(
+    string IngredienteNome,
+    int PlanejadoCruGramas,
+    decimal? RealCruGramas,
+    int PlanejadoCozidoGramas,
+    decimal? RealCozidoGramas,
+    bool BaixaRealizada);
+
+public sealed record FinalizacaoResultadoDto(
+    long OrdemId,
+    string Status,
+    int FichasConcluidas,
+    int FichasNaoFeitas,
+    int ProdutoAcabadoGerado,
+    int PersonalizadasProntas,
+    IReadOnlyList<string> PendenciasEstoque,
+    IReadOnlyList<ResumoConsumoDto> Consumos);
