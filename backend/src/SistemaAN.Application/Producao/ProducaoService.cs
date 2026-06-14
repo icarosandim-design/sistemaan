@@ -70,7 +70,7 @@ public sealed class ProducaoService : IProducaoService
                     foreach (var pac in i.Pacotes)
                     {
                         var chave = (i.ReceitaId, pac.PesoGramas);
-                        var atual = necessarioCasa.TryGetValue(chave, out var v) ? v : (i.ReceitaNome, 0);
+                        var atual = necessarioCasa.TryGetValue(chave, out var v) ? v : (Nome: i.ReceitaNome, Qtd: 0);
                         necessarioCasa[chave] = (atual.Nome, atual.Qtd + pac.Quantidade);
                     }
                 }
