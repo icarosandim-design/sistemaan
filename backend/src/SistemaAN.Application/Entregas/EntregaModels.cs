@@ -14,6 +14,8 @@ public sealed record EntregaItemDto(
     int? QuantidadeCicloGramas,
     int? TamanhoPacoteGramas,
     int? QuantidadePacotes,
+    string StatusPreparo,
+    int? PacotesProntos,
     IReadOnlyList<EntregaItemPacoteDto> Pacotes,
     IReadOnlyList<EntregaItemIngredienteDto> Ingredientes);
 

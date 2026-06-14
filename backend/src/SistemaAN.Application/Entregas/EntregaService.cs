@@ -485,6 +485,7 @@ public sealed class EntregaService : IEntregaService
     private static EntregaItemDto MapItem(EntregaItem i) => new(
         i.Id, i.ReceitaId, i.ReceitaCodigo, i.ReceitaNome, i.Tipo.ToString(),
         i.QuantidadeCicloGramas, i.TamanhoPacoteGramas, i.QuantidadePacotes,
+        i.StatusPreparo.ToString(), i.PacotesProntos,
         i.Pacotes.OrderBy(x => x.Id).Select(x => new EntregaItemPacoteDto(x.TamanhoLabel, x.PesoGramas, x.Quantidade)).ToList(),
         i.Ingredientes.OrderBy(x => x.Id).Select(x => new EntregaItemIngredienteDto(x.IngredienteId, x.IngredienteNome, x.Categoria, x.GramasCozidas)).ToList());
 
