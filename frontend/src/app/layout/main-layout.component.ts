@@ -84,8 +84,15 @@ export class MainLayoutComponent {
         { label: 'Fornecedores', icone: 'local_shipping', rota: '/estoque/fornecedores', papeis: ADMIN_OPERADOR },
       ],
     },
-    { label: 'Entregas', icone: 'local_shipping', rota: '/entregas', papeis: ADMIN_OPERADOR },
-    { label: 'Planejar Rotas', icone: 'alt_route', rota: '/rotas', papeis: ADMIN_OPERADOR },
+    {
+      label: 'Entregas',
+      icone: 'local_shipping',
+      papeis: ADMIN_OPERADOR,
+      filhos: [
+        { label: 'Entregas', icone: 'list_alt', rota: '/entregas', papeis: ADMIN_OPERADOR },
+        { label: 'Planejar Rotas', icone: 'alt_route', rota: '/rotas', papeis: ADMIN_OPERADOR },
+      ],
+    },
     {
       label: 'Cadastros',
       icone: 'tune',
