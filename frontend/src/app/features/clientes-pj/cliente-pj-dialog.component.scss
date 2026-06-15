@@ -1,0 +1,11 @@
+.secao { margin: 1rem 0 0.5rem; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--an-texto-secundario); display: flex; align-items: center; gap: 0.5rem;
+  button { font-size: 0.72rem; } .mat-icon { font-size: 1rem; width: 1rem; height: 1rem; } }
+.secao:first-child { margin-top: 0; }
+.grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem 0.75rem; }
+.col2 { grid-column: span 2; }
+.full { width: 100%; }
+.erro { display: flex; align-items: center; gap: 0.4rem; color: #b3261e; font-size: 0.85rem; margin: 0.25rem 0 0;
+  .mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; } }
+.btn-cta { background: var(--an-cta); color: #fff; }
+mat-dialog-content { min-width: 640px; max-width: 90vw; }
+@media (max-width: 680px) { mat-dialog-content { min-width: auto; } .grade { grid-template-columns: 1fr 1fr; } .col2 { grid-column: span 2; } }

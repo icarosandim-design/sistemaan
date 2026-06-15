@@ -15,8 +15,8 @@ public sealed class ClientesController : ControllerBase
 
     /// <summary>Lista os clientes.</summary>
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ClienteDto>>> Listar(CancellationToken ct)
-        => Ok(await _service.ListarAsync(ct));
+    public async Task<ActionResult<IReadOnlyList<ClienteDto>>> Listar([FromQuery] string? natureza, CancellationToken ct)
+        => Ok(await _service.ListarAsync(natureza, ct));
 
     /// <summary>Obtém um cliente.</summary>
     [HttpGet("{id:long}")]

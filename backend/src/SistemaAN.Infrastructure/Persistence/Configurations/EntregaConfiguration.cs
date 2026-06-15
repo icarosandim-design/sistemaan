@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Entregas;
-using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Infrastructure.Persistence.Configurations;
@@ -38,6 +37,10 @@ public sealed class EntregaConfiguration : IEntityTypeConfiguration<Entrega>
         builder.Property(e => e.MotivoNaoEntrega).HasMaxLength(255);
         builder.Property(e => e.MotivoReagendamento).HasMaxLength(255);
         builder.Property(e => e.MotivoCancelamento).HasMaxLength(255);
+
+        // Pedido PJ de origem (id-only, sem FK rígida — padrão snapshot).
+        builder.Property(e => e.PedidoId);
+        builder.HasIndex(e => e.PedidoId).HasDatabaseName("ix_entregas_pedido");
 
         builder.HasIndex(e => new { e.ClienteId, e.DataPrevista }).HasDatabaseName("ix_entregas_cliente_data");
         builder.HasIndex(e => e.DataPrevista).HasDatabaseName("ix_entregas_data");
@@ -77,7 +80,8 @@ public sealed class EntregaPetConfiguration : IEntityTypeConfiguration<EntregaPe
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.EntregaId).IsRequired();
-        builder.Property(p => p.PetId).IsRequired();
+        // PetId é id-only e NULLABLE: entregas de Pedido PJ usam um grupo "container" sem pet.
+        builder.Property(p => p.PetId);
         builder.Property(p => p.PetNome).HasMaxLength(80).IsRequired();
         builder.Property(p => p.TipoAlimentacao).HasConversion<string>().HasMaxLength(15).IsRequired();
         builder.Property(p => p.GramasDia);
@@ -85,13 +89,6 @@ public sealed class EntregaPetConfiguration : IEntityTypeConfiguration<EntregaPe
 
         builder.HasIndex(p => p.EntregaId).HasDatabaseName("ix_entrega_pets_entrega");
         builder.HasIndex(p => p.PetId).HasDatabaseName("ix_entrega_pets_pet");
-
-        builder
-            .HasOne<Pet>()
-            .WithMany()
-            .HasForeignKey(p => p.PetId)
-            .OnDelete(DeleteBehavior.Restrict)
-            .HasConstraintName("fk_entrega_pets_pet");
 
         builder
             .HasMany(p => p.Itens)

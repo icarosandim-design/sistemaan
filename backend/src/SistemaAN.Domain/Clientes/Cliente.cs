@@ -10,6 +10,7 @@ public class Cliente : AuditableEntity
 {
     private Cliente() { } // EF Core
 
+    public NaturezaCliente Natureza { get; private set; }
     public string Nome { get; private set; } = string.Empty;
     public string? Cpf { get; private set; }
     public string? Telefone { get; private set; }
@@ -76,6 +77,7 @@ public class Cliente : AuditableEntity
 
     private void Aplicar(DadosCliente d)
     {
+        Natureza = d.Natureza;
         Nome = d.Nome.Trim();
         Cpf = Limpar(d.Cpf);
         Telefone = d.Telefone?.Trim();
@@ -131,4 +133,5 @@ public sealed record DadosCliente(
     int? DiaCobranca,
     decimal ValorRecorrenteMensal,
     StatusFinanceiro StatusFinanceiro,
-    string? ObservacoesFinanceiras);
+    string? ObservacoesFinanceiras,
+    NaturezaCliente Natureza = NaturezaCliente.PessoaFisica);

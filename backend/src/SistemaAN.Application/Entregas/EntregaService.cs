@@ -300,7 +300,8 @@ public sealed class EntregaService : IEntregaService
     // ===================== Carga de dados =====================
     private async Task<List<Cliente>> ClientesElegiveisAsync(long? clienteId, CancellationToken ct)
         => await _db.Clientes
-            .Where(c => c.Ativo && c.FrequenciaEntregaId != null && c.PrimeiraEntrega != null
+            .Where(c => c.Ativo && c.Natureza == NaturezaCliente.PessoaFisica
+                && c.FrequenciaEntregaId != null && c.PrimeiraEntrega != null
                 && (clienteId == null || c.Id == clienteId))
             .ToListAsync(ct);
 
@@ -476,6 +477,7 @@ public sealed class EntregaService : IEntregaService
             e.Id, e.ClienteId, e.ClienteNome, e.Telefone, e.Rua, e.Numero, e.Complemento,
             e.DataPrevista, e.Status.ToString(), e.Bairro, e.Cidade,
             string.Join(", ", tipos), e.Pets.Sum(p => p.QuantidadeTotalGramas), totalPacotes, e.EntregadorId,
+            e.PedidoId,
             e.Pets.Select(p => p.PetNome).ToList());
     }
 
@@ -484,6 +486,7 @@ public sealed class EntregaService : IEntregaService
         e.Rua, e.Numero, e.Complemento, e.Cep, e.Bairro, e.Cidade, e.Estado, e.FrequenciaNome, e.DiasCiclo,
         e.ObservacoesInternas, e.ObservacoesEntregador, e.EntregadorId,
         e.MotivoNaoEntrega, e.MotivoReagendamento, e.ReagendadaDeId, e.ReagendadaParaId, e.MotivoCancelamento,
+        e.PedidoId,
         e.Pets.OrderBy(p => p.Id).Select(MapPet).ToList(),
         e.Historico.OrderBy(h => h.Quando).Select(h => new EntregaHistoricoDto(
             h.Quando, h.Usuario, h.Evento, h.StatusDe?.ToString(), h.StatusPara?.ToString())).ToList());

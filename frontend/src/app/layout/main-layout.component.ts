@@ -58,6 +58,7 @@ export class MainLayoutComponent {
       papeis: ADMIN_OPERADOR,
       filhos: [
         { label: 'Clientes', icone: 'badge', rota: '/clientes', papeis: ADMIN_OPERADOR },
+        { label: 'Clientes PJ', icone: 'store', rota: '/clientes-pj', papeis: ADMIN_OPERADOR },
         { label: 'Pets', icone: 'pets', rota: null, papeis: ADMIN_OPERADOR },
       ],
     },

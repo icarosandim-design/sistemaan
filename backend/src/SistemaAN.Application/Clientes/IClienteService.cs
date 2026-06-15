@@ -2,7 +2,7 @@ namespace SistemaAN.Application.Clientes;
 
 public interface IClienteService
 {
-    Task<IReadOnlyList<ClienteDto>> ListarAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ClienteDto>> ListarAsync(string? natureza = null, CancellationToken cancellationToken = default);
 
     Task<ClienteDto> ObterAsync(long id, CancellationToken cancellationToken = default);
 

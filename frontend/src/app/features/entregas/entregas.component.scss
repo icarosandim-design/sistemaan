@@ -506,3 +506,8 @@
 .st-erro { background: #fbeceb; color: #b3261e; }
 .st-aviso { background: #fdf4e3; color: #8c6b3f; }
 .st-cancel { background: var(--an-fundo-secundario); color: var(--an-texto-secundario); }
+
+/* Badge Cliente PJ */
+.badge-pj { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; font-weight: 700;
+  background: #e8eef7; color: #2a5599; border-radius: 999px; padding: 0.1rem 0.5rem; margin-left: 0.4rem;
+  .mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; } }

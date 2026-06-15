@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar pedido' : 'Novo pedido' }}</h2>
+<mat-dialog-content>
+  <div class="datas">
+    <mat-form-field appearance="outline"><mat-label>Data do pedido</mat-label><input matInput type="date" [(ngModel)]="dataPedido" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Data de entrega *</mat-label><input matInput type="date" [(ngModel)]="dataEntrega" /></mat-form-field>
+  </div>
+
+  <h3 class="secao">Itens (produto acabado da Casa)</h3>
+  <div class="itens">
+    <div class="ihead"><span>Receita da Casa</span><span>Tamanho</span><span class="t-r">Pacotes</span><span>Observação</span><span></span></div>
+    @for (l of itens; track $index) {
+      <div class="irow">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="l.receitaId" placeholder="Receita">
+            @for (r of receitas(); track r.id) { <mat-option [value]="r.id">{{ r.nome }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select [(ngModel)]="l.tamanhoPacoteId" placeholder="Tamanho">
+            @for (t of tamanhos(); track t.id) { <mat-option [value]="t.id">{{ t.nome }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qtd">
+          <input matInput type="number" min="1" [(ngModel)]="l.quantidade" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [(ngModel)]="l.observacao" placeholder="opcional" />
+        </mat-form-field>
+        <button mat-icon-button (click)="removerLinha($index)" matTooltip="Remover"><mat-icon>delete</mat-icon></button>
+      </div>
+    }
+    <button mat-stroked-button class="add" (click)="adicionarLinha()"><mat-icon>add</mat-icon> Adicionar item</button>
+  </div>
+
+  <mat-form-field appearance="outline" class="full"><mat-label>Observações</mat-label><textarea matInput rows="2" [(ngModel)]="observacoes"></textarea></mat-form-field>
+
+  @if (erro()) { <p class="erro"><mat-icon>error</mat-icon> {{ erro() }}</p> }
+  <p class="nota">Salva como rascunho. A entrega só é gerada ao <strong>confirmar</strong> o pedido.</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="ref.close()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" [disabled]="salvando()" (click)="salvar()"><mat-icon>save</mat-icon> Salvar rascunho</button>
+</mat-dialog-actions>

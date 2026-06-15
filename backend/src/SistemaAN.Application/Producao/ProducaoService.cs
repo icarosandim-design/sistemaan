@@ -44,7 +44,7 @@ public sealed class ProducaoService : IProducaoService
                     }
 
                     personalizadas.Add(new DemandaPersonalizadaDto(
-                        i.Id, e.Id, p.Id, p.PetId, e.ClienteId, p.PetNome, e.ClienteNome,
+                        i.Id, e.Id, p.Id, p.PetId ?? 0, e.ClienteId, p.PetNome, e.ClienteNome,
                         i.ReceitaCodigo, i.ReceitaNome, e.DataPrevista,
                         i.QuantidadePacotes ?? 0, i.TamanhoPacoteGramas ?? 0, i.StatusPreparo.ToString()));
                 }
@@ -184,7 +184,7 @@ public sealed class ProducaoService : IProducaoService
                         var ingredientes = i.Ingredientes.Select(g =>
                             FichaProducaoIngrediente.Criar(g.IngredienteId, g.IngredienteNome, g.Categoria, g.GramasCozidas, g.Coeficiente));
                         ordem.AdicionarFicha(FichaProducao.CriarPersonalizada(
-                            e.Id, p.Id, i.Id, p.PetId, e.ClienteId, e.ClienteNome, p.PetNome,
+                            e.Id, p.Id, i.Id, p.PetId ?? 0, e.ClienteId, e.ClienteNome, p.PetNome,
                             i.ReceitaCodigo, i.ReceitaNome, e.DataPrevista,
                             i.QuantidadePacotes ?? 0, i.TamanhoPacoteGramas ?? 0, ingredientes));
                     }

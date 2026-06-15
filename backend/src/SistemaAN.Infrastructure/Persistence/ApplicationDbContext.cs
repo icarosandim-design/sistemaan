@@ -8,6 +8,7 @@ using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Pacotes;
+using SistemaAN.Domain.Pedidos;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Producao;
@@ -46,6 +47,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Cliente> Clientes => Set<Cliente>();
 
+    public DbSet<ClientePj> ClientesPj => Set<ClientePj>();
+
     public DbSet<Pet> Pets => Set<Pet>();
 
     public DbSet<TamanhoPacote> TamanhosPacote => Set<TamanhoPacote>();
@@ -75,6 +78,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FichaProducao> FichasProducao => Set<FichaProducao>();
 
     public DbSet<ConsumoIngredienteProducao> ConsumosProducao => Set<ConsumoIngredienteProducao>();
+
+    public DbSet<Pedido> Pedidos => Set<Pedido>();
+
+    public DbSet<PedidoItem> PedidoItens => Set<PedidoItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

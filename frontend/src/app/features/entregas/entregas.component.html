@@ -148,6 +148,9 @@
             <mat-icon class="ec-toggle">{{ aberta ? 'expand_less' : 'expand_more' }}</mat-icon>
             <div class="ec-cliente">
               <span class="ec-nome">{{ e.clienteNome }}</span>
+              @if (e.pedidoId) {
+                <span class="badge-pj" matTooltip="Entrega de Pedido PJ"><mat-icon>store</mat-icon> Cliente PJ</span>
+              }
               @if (e.foraDaRota) {
                 <span class="badge-fora" matTooltip="Ainda não incluída em uma rota planejada">
                   <mat-icon>alt_route</mat-icon> Fora da rota
@@ -167,7 +170,11 @@
           </header>
 
           <div class="ec-sub">
-            <span class="ec-meta"><mat-icon>pets</mat-icon>{{ e.pets.length ? e.pets.join(', ') : '—' }}</span>
+            @if (e.pedidoId) {
+              <span class="ec-meta"><mat-icon>receipt_long</mat-icon>Pedido PJ</span>
+            } @else {
+              <span class="ec-meta"><mat-icon>pets</mat-icon>{{ e.pets.length ? e.pets.join(', ') : '—' }}</span>
+            }
             <span class="ec-meta"><mat-icon>place</mat-icon>{{ enderecoResumo(e) }}</span>
             <span class="ec-meta"><mat-icon>map</mat-icon>{{ e.bairro || '—' }}{{ e.cidade ? ' · ' + e.cidade : '' }}</span>
           </div>

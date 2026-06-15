@@ -1,0 +1,58 @@
+<h2 mat-dialog-title>{{ edicao ? 'Editar Cliente PJ' : 'Novo Cliente PJ' }}</h2>
+<mat-dialog-content>
+  <h3 class="secao">Dados cadastrais</h3>
+  <div class="grade">
+    <mat-form-field appearance="outline"><mat-label>Razão social</mat-label><input matInput [(ngModel)]="f.razaoSocial" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Nome fantasia</mat-label><input matInput [(ngModel)]="f.nomeFantasia" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>CNPJ</mat-label><input matInput [(ngModel)]="f.cnpj" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Inscrição estadual</mat-label><input matInput [(ngModel)]="f.inscricaoEstadual" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Telefone</mat-label><input matInput [(ngModel)]="f.telefone" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>WhatsApp</mat-label><input matInput [(ngModel)]="f.whatsapp" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>E-mail</mat-label><input matInput [(ngModel)]="f.email" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Pessoa de contato</mat-label><input matInput [(ngModel)]="f.pessoaContato" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Cargo do contato</mat-label><input matInput [(ngModel)]="f.cargoContato" /></mat-form-field>
+  </div>
+
+  <h3 class="secao">Endereço comercial</h3>
+  <div class="grade">
+    <mat-form-field appearance="outline" class="col2"><mat-label>Rua</mat-label><input matInput [(ngModel)]="f.rua" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Número</mat-label><input matInput [(ngModel)]="f.numero" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Complemento</mat-label><input matInput [(ngModel)]="f.complemento" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Bairro</mat-label><input matInput [(ngModel)]="f.bairro" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Cidade</mat-label><input matInput [(ngModel)]="f.cidade" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Estado</mat-label><input matInput maxlength="2" [(ngModel)]="f.estado" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>CEP</mat-label><input matInput [(ngModel)]="f.cep" /></mat-form-field>
+  </div>
+
+  <h3 class="secao">Endereço de entrega <button mat-button type="button" (click)="copiarEnderecoComercial()"><mat-icon>content_copy</mat-icon> Igual ao comercial</button></h3>
+  <div class="grade">
+    <mat-form-field appearance="outline" class="col2"><mat-label>Rua</mat-label><input matInput [(ngModel)]="f.entregaRua" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Número</mat-label><input matInput [(ngModel)]="f.entregaNumero" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Complemento</mat-label><input matInput [(ngModel)]="f.entregaComplemento" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Bairro</mat-label><input matInput [(ngModel)]="f.entregaBairro" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Cidade</mat-label><input matInput [(ngModel)]="f.entregaCidade" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Estado</mat-label><input matInput maxlength="2" [(ngModel)]="f.entregaEstado" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>CEP</mat-label><input matInput [(ngModel)]="f.entregaCep" /></mat-form-field>
+  </div>
+
+  <h3 class="secao">Dados comerciais</h3>
+  <div class="grade">
+    <mat-form-field appearance="outline"><mat-label>Tipo de cliente PJ</mat-label>
+      <mat-select [(ngModel)]="f.tipoPJ">
+        @for (t of tipos(); track t.valor) { <mat-option [value]="t.valor">{{ t.rotulo }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Condição comercial</mat-label><input matInput [(ngModel)]="f.condicaoComercial" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Prazo de pagamento</mat-label><input matInput [(ngModel)]="f.prazoPagamento" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Dia de entrega preferencial</mat-label><input matInput type="number" [(ngModel)]="f.diaEntregaPreferencial" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Frequência de compra</mat-label><input matInput [(ngModel)]="f.frequenciaCompra" /></mat-form-field>
+  </div>
+  <mat-form-field appearance="outline" class="full"><mat-label>Observações comerciais</mat-label><textarea matInput rows="2" [(ngModel)]="f.observacoesComerciais"></textarea></mat-form-field>
+  <mat-form-field appearance="outline" class="full"><mat-label>Observações</mat-label><textarea matInput rows="2" [(ngModel)]="f.observacoes"></textarea></mat-form-field>
+
+  @if (erro()) { <p class="erro"><mat-icon>error</mat-icon> {{ erro() }}</p> }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="ref.close()">Cancelar</button>
+  <button mat-flat-button class="btn-cta" [disabled]="salvando()" (click)="salvar()"><mat-icon>check</mat-icon> Salvar</button>
+</mat-dialog-actions>

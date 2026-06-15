@@ -23,6 +23,7 @@ import { ProducaoCozinhaComponent } from './features/producao/cozinha.component'
 import { ProducaoImpressaoComponent } from './features/producao/impressao.component';
 import { ProducaoRendimentosComponent } from './features/producao/rendimentos.component';
 import { UsuariosComponent } from './features/usuarios/usuarios.component';
+import { ClientesPjComponent } from './features/clientes-pj/clientes-pj.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -36,6 +37,7 @@ export const routes: Routes = [
     children: [
       { path: 'central', component: CentralOperacionalComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'clientes', component: ClientesComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'clientes-pj', component: ClientesPjComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'entregas', component: EntregasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'estoque/itens', component: ItensEstoqueComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'estoque/compras', component: ComprasComponent, data: { papeis: ADMIN_OPERADOR } },

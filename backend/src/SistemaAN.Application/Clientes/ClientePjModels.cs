@@ -1,0 +1,83 @@
+namespace SistemaAN.Application.Clientes;
+
+public sealed record ClientePjResumoDto(
+    long Id,
+    string NomeFantasia,
+    string RazaoSocial,
+    string Cnpj,
+    string? Cidade,
+    string? Telefone,
+    string TipoPJ,
+    bool Ativo);
+
+public sealed record ClientePjDto(
+    long Id,
+    string RazaoSocial,
+    string NomeFantasia,
+    string Cnpj,
+    string? InscricaoEstadual,
+    string? Telefone,
+    string? Whatsapp,
+    string? Email,
+    string? PessoaContato,
+    string? CargoContato,
+    // Endereço comercial (no Cliente)
+    string? Rua,
+    string? Numero,
+    string? Complemento,
+    string? Bairro,
+    string? Cidade,
+    string? Estado,
+    string? Cep,
+    // Endereço de entrega (no ClientePj)
+    string? EntregaRua,
+    string? EntregaNumero,
+    string? EntregaComplemento,
+    string? EntregaBairro,
+    string? EntregaCidade,
+    string? EntregaEstado,
+    string? EntregaCep,
+    // Comercial
+    string TipoPJ,
+    string? CondicaoComercial,
+    string? PrazoPagamento,
+    int? DiaEntregaPreferencial,
+    string? FrequenciaCompra,
+    string? Observacoes,
+    string? ObservacoesComerciais,
+    bool Ativo,
+    DateTimeOffset? AtualizadoEm);
+
+public sealed record SalvarClientePjRequest(
+    string RazaoSocial,
+    string NomeFantasia,
+    string Cnpj,
+    string? InscricaoEstadual,
+    string? Telefone,
+    string? Whatsapp,
+    string? Email,
+    string? PessoaContato,
+    string? CargoContato,
+    string? Rua,
+    string? Numero,
+    string? Complemento,
+    string? Bairro,
+    string? Cidade,
+    string? Estado,
+    string? Cep,
+    string? EntregaRua,
+    string? EntregaNumero,
+    string? EntregaComplemento,
+    string? EntregaBairro,
+    string? EntregaCidade,
+    string? EntregaEstado,
+    string? EntregaCep,
+    string TipoPJ,
+    string? CondicaoComercial,
+    string? PrazoPagamento,
+    int? DiaEntregaPreferencial,
+    string? FrequenciaCompra,
+    string? Observacoes,
+    string? ObservacoesComerciais);
+
+public sealed record TipoPjOpcaoDto(string Valor, string Rotulo);

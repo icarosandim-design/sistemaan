@@ -23,6 +23,8 @@ export interface EntregaResumo {
   totalGramas: number;
   totalPacotes: number;
   entregadorId: number | null;
+  /** Quando preenchido, a entrega veio de um Pedido PJ. */
+  pedidoId?: number | null;
   pets: string[];
   /**
    * Sinalização visual (preparatória para o Módulo de Rotas).
@@ -148,7 +150,7 @@ export interface EntregaItem {
 
 export interface EntregaPet {
   id: number;
-  petId: number;
+  petId: number | null;
   petNome: string;
   tipoAlimentacao: 'Casa' | 'Personalizada';
   gramasDia: number | null;
@@ -188,6 +190,7 @@ export interface EntregaDetalhe {
   reagendadaDeId: number | null;
   reagendadaParaId: number | null;
   motivoCancelamento: string | null;
+  pedidoId?: number | null;
   pets: EntregaPet[];
   historico: EntregaHistorico[];
 }

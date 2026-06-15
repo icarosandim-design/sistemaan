@@ -21,7 +21,7 @@ public sealed record EntregaItemDto(
 
 public sealed record EntregaPetDto(
     long Id,
-    long PetId,
+    long? PetId,
     string PetNome,
     string TipoAlimentacao,
     int? GramasDia,
@@ -55,6 +55,7 @@ public sealed record EntregaDto(
     long? ReagendadaDeId,
     long? ReagendadaParaId,
     string? MotivoCancelamento,
+    long? PedidoId,
     IReadOnlyList<EntregaPetDto> Pets,
     IReadOnlyList<EntregaHistoricoDto> Historico);
 
@@ -74,6 +75,7 @@ public sealed record EntregaResumoDto(
     int TotalGramas,
     int TotalPacotes,
     long? EntregadorId,
+    long? PedidoId,
     IReadOnlyList<string> Pets);
 
 public sealed record GerarEntregasRequest(int HorizonteDias = 90);

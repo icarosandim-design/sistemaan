@@ -10,7 +10,7 @@ public class EntregaPet : Entity
 
     private EntregaPet() { } // EF Core
 
-    private EntregaPet(long petId, string petNome, TipoReceita tipoAlimentacao, int? gramasDia, int quantidadeTotalGramas)
+    private EntregaPet(long? petId, string petNome, TipoReceita tipoAlimentacao, int? gramasDia, int quantidadeTotalGramas)
     {
         PetId = petId;
         PetNome = petNome;
@@ -20,7 +20,9 @@ public class EntregaPet : Entity
     }
 
     public long EntregaId { get; private set; }
-    public long PetId { get; private set; }
+
+    /// <summary>Pet de origem (PF). Nulo em entregas de Pedido PJ (grupo "container").</summary>
+    public long? PetId { get; private set; }
     public string PetNome { get; private set; } = string.Empty;
     public TipoReceita TipoAlimentacao { get; private set; }
     public int? GramasDia { get; private set; }
@@ -29,7 +31,7 @@ public class EntregaPet : Entity
     public IReadOnlyCollection<EntregaItem> Itens => _itens.AsReadOnly();
 
     public static EntregaPet Criar(
-        long petId, string petNome, TipoReceita tipoAlimentacao, int? gramasDia,
+        long? petId, string petNome, TipoReceita tipoAlimentacao, int? gramasDia,
         int quantidadeTotalGramas, IEnumerable<EntregaItem> itens)
     {
         var pet = new EntregaPet(petId, petNome, tipoAlimentacao, gramasDia, quantidadeTotalGramas);

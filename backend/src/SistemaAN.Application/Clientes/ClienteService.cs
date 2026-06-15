@@ -30,9 +30,14 @@ public sealed class ClienteService : IClienteService
         }
     }
 
-    public async Task<IReadOnlyList<ClienteDto>> ListarAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ClienteDto>> ListarAsync(string? natureza = null, CancellationToken cancellationToken = default)
     {
-        var clientes = await _db.Clientes.OrderBy(c => c.Nome).ToListAsync(cancellationToken);
+        // A tela "Clientes" é de Pessoa Física; PJ tem tela própria. Default = PF.
+        var filtro = Enum.TryParse<NaturezaCliente>(natureza, true, out var n) ? n : NaturezaCliente.PessoaFisica;
+        var clientes = await _db.Clientes
+            .Where(c => c.Natureza == filtro)
+            .OrderBy(c => c.Nome)
+            .ToListAsync(cancellationToken);
 
         var petsPorCliente = await _db.Pets
             .Where(p => p.Ativo)

@@ -6,6 +6,7 @@ using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Identity;
 using SistemaAN.Domain.Pacotes;
+using SistemaAN.Domain.Pedidos;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Producao;
@@ -38,6 +39,8 @@ public interface IApplicationDbContext
 
     DbSet<Cliente> Clientes { get; }
 
+    DbSet<ClientePj> ClientesPj { get; }
+
     DbSet<Pet> Pets { get; }
 
     DbSet<TamanhoPacote> TamanhosPacote { get; }
@@ -67,6 +70,10 @@ public interface IApplicationDbContext
     DbSet<FichaProducao> FichasProducao { get; }
 
     DbSet<ConsumoIngredienteProducao> ConsumosProducao { get; }
+
+    DbSet<Pedido> Pedidos { get; }
+
+    DbSet<PedidoItem> PedidoItens { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

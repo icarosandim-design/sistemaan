@@ -1,0 +1,50 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title"><h1>Clientes PJ</h1></div>
+    <button mat-flat-button class="btn-cta" (click)="novo()"><mat-icon>add_business</mat-icon> Novo Cliente PJ</button>
+  </header>
+
+  <div class="filtros">
+    <mat-form-field appearance="outline" class="f-busca" subscriptSizing="dynamic">
+      <mat-label>Nome, razão social ou CNPJ</mat-label>
+      <input matInput [(ngModel)]="busca" (keyup.enter)="carregar()" />
+      @if (busca) { <button matSuffix mat-icon-button (click)="busca = ''; carregar()"><mat-icon>close</mat-icon></button> }
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f-sel" subscriptSizing="dynamic">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="filtroAtivo" (selectionChange)="carregar()">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="true">Ativos</mat-option>
+        <mat-option value="false">Inativos</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-stroked-button (click)="carregar()"><mat-icon>search</mat-icon> Filtrar</button>
+  </div>
+
+  @if (carregando()) {
+    <div class="carregando"><mat-spinner diameter="32"></mat-spinner></div>
+  } @else {
+    <div class="tabela">
+      <div class="thead"><span>Nome fantasia</span><span>Razão social</span><span>CNPJ</span><span>Tipo</span><span>Cidade</span><span class="t-c">Status</span><span class="t-r">Ações</span></div>
+      @for (c of clientes(); track c.id) {
+        <div class="trow" [class.inativo]="!c.ativo">
+          <span class="nome">{{ c.nomeFantasia }}</span>
+          <span class="rs">{{ c.razaoSocial }}</span>
+          <span>{{ c.cnpj }}</span>
+          <span>{{ rotuloTipo(c.tipoPJ) }}</span>
+          <span>{{ c.cidade || '—' }}</span>
+          <span class="t-c"><span class="status" [class.on]="c.ativo">{{ c.ativo ? 'Ativo' : 'Inativo' }}</span></span>
+          <span class="acoes t-r">
+            <button mat-icon-button matTooltip="Pedidos" (click)="pedidos(c)"><mat-icon>receipt_long</mat-icon></button>
+            <button mat-icon-button matTooltip="Editar" (click)="editar(c)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button [matTooltip]="c.ativo ? 'Inativar' : 'Ativar'" (click)="alternarStatus(c)">
+              <mat-icon>{{ c.ativo ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+            </button>
+          </span>
+        </div>
+      } @empty {
+        <p class="vazio">Nenhum cliente PJ encontrado.</p>
+      }
+    </div>
+  }
+</section>
