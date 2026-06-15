@@ -5,12 +5,25 @@
       <p class="sub">Visão geral da operação · <span class="mock">dados de exemplo</span></p>
     </div>
     <div class="acoes-rapidas">
-      @for (a of acoes; track a.label) {
-        <button mat-flat-button class="btn-cta" matTooltip="Em breve">
-          <mat-icon>{{ a.icone }}</mat-icon>
-          {{ a.label }}
+      <button mat-flat-button class="btn-cta" [matMenuTriggerFor]="menuVenda">
+        <mat-icon>point_of_sale</mat-icon>
+        Nova venda
+        <mat-icon class="seta">arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #menuVenda="matMenu">
+        <a mat-menu-item routerLink="/clientes">
+          <mat-icon>person_add</mat-icon>
+          <span>Nova assinatura PF</span>
+        </a>
+        <button mat-menu-item disabled matTooltip="Em breve">
+          <mat-icon>sell</mat-icon>
+          <span>Venda avulsa PF</span>
         </button>
-      }
+        <a mat-menu-item routerLink="/clientes-pj">
+          <mat-icon>store</mat-icon>
+          <span>Pedido PJ</span>
+        </a>
+      </mat-menu>
     </div>
   </header>
 
@@ -29,9 +42,9 @@
     </div>
   } @else if (resumo()) {
     <!-- KPIs -->
-    @if (kpis.length) {
+    @if (kpisVisiveis.length) {
       <div class="kpis">
-        @for (k of kpis; track k.label) {
+        @for (k of kpisVisiveis; track k.label) {
           <mat-card class="kpi" appearance="outlined">
             <div class="kpi-icone"><mat-icon>{{ k.icone }}</mat-icon></div>
             <div class="kpi-dados">
@@ -48,6 +61,9 @@
       <div class="card-head">
         <mat-icon>event</mat-icon>
         <h2>Calendário de entregas · próximos 7 dias</h2>
+        <a mat-button class="atalho-secao" routerLink="/entregas">
+          Ver entregas <mat-icon>chevron_right</mat-icon>
+        </a>
       </div>
       @if (entregas7.length) {
         <div class="cal-grid">
@@ -75,6 +91,9 @@
         @if (temProducao) {
           <span class="badge">{{ totalPacotes }} pacotes · {{ totalReceitas }} receitas</span>
         }
+        <a mat-button class="atalho-secao" [class.sem-badge]="!temProducao" routerLink="/producao/dia">
+          Ver Produção do Dia <mat-icon>chevron_right</mat-icon>
+        </a>
       </div>
 
       @if (!temProducao) {
@@ -196,6 +215,9 @@
         <div class="card-head">
           <mat-icon>inventory_2</mat-icon>
           <h2>Estoque · receitas da casa</h2>
+          <a mat-button class="atalho-secao" routerLink="/estoque/itens">
+            Ver Estoque <mat-icon>chevron_right</mat-icon>
+          </a>
         </div>
         @if (estoque.length) {
           <div class="lista">

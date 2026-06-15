@@ -1,21 +1,26 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CentralResumo } from './central.model';
+import { CentralResumo, Kpi } from './central.model';
 import { CentralService } from './central.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { PERFIL } from '../../core/auth/perfis';
 
 @Component({
   selector: 'app-central-operacional',
   standalone: true,
-  imports: [MatCardModule, MatIconModule, MatButtonModule, MatTooltipModule, MatProgressSpinnerModule],
+  imports: [RouterLink, MatCardModule, MatIconModule, MatButtonModule, MatMenuModule, MatTooltipModule, MatProgressSpinnerModule],
   templateUrl: './central-operacional.component.html',
   styleUrl: './central-operacional.component.scss',
 })
 export class CentralOperacionalComponent implements OnInit {
   private readonly service = inject(CentralService);
+  private readonly auth = inject(AuthService);
 
   readonly resumo = signal<CentralResumo | null>(null);
   readonly carregando = signal(true);
@@ -24,12 +29,10 @@ export class CentralOperacionalComponent implements OnInit {
   /** Card de produção começa minimizado. */
   readonly producaoExpandida = signal(false);
 
-  /** Ações rápidas (configuração de UI; ligadas às telas quando existirem). */
-  readonly acoes = [
-    { label: 'Novo cliente', icone: 'person_add' },
-    { label: 'Planejar produção', icone: 'factory' },
-    { label: 'Planejar rotas', icone: 'route' },
-  ];
+  /** Só o Administrador enxerga KPIs financeiros (faturamento recorrente). */
+  get isAdmin(): boolean {
+    return this.auth.temPapel(PERFIL.ADMIN);
+  }
 
   ngOnInit(): void {
     this.carregar();
@@ -57,6 +60,14 @@ export class CentralOperacionalComponent implements OnInit {
 
   get kpis() {
     return this.resumo()?.kpis ?? [];
+  }
+
+  /** KPIs visíveis ao perfil atual: o card "Recorrente / mês" é só do Administrador. */
+  get kpisVisiveis(): Kpi[] {
+    if (this.isAdmin) {
+      return this.kpis;
+    }
+    return this.kpis.filter((k) => k.label !== 'Recorrente / mês');
   }
 
   get entregas7() {

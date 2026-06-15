@@ -61,6 +61,11 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+
+  .seta {
+    margin-left: -0.15rem;
+    margin-right: -0.35rem;
+  }
 }
 
 .btn-cta {
@@ -104,6 +109,32 @@
     font-weight: 600;
     padding: 0.2rem 0.6rem;
     border-radius: 999px;
+  }
+
+  /* Atalho discreto para o módulo da seção (à direita do título) */
+  .atalho-secao {
+    margin-left: auto;
+    color: var(--an-cta-hover);
+    font-weight: 600;
+    font-size: 0.85rem;
+    line-height: 1;
+
+    &.sem-badge,
+    .badge + & {
+      margin-left: auto;
+    }
+
+    .mat-icon {
+      color: inherit;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  /* Quando há badge antes do atalho, o badge já empurra; o atalho cola nele. */
+  .badge + .atalho-secao {
+    margin-left: 0.4rem;
   }
 }
 
