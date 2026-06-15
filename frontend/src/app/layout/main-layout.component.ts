@@ -85,6 +85,7 @@ export class MainLayoutComponent {
       ],
     },
     { label: 'Entregas', icone: 'local_shipping', rota: '/entregas', papeis: ADMIN_OPERADOR },
+    { label: 'Planejar Rotas', icone: 'alt_route', rota: '/rotas', papeis: ADMIN_OPERADOR },
     {
       label: 'Cadastros',
       icone: 'tune',

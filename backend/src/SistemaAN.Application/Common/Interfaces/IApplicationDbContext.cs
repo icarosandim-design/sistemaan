@@ -11,6 +11,7 @@ using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Producao;
 using SistemaAN.Domain.Receitas;
+using SistemaAN.Domain.Rotas;
 
 namespace SistemaAN.Application.Common.Interfaces;
 
@@ -74,6 +75,10 @@ public interface IApplicationDbContext
     DbSet<Pedido> Pedidos { get; }
 
     DbSet<PedidoItem> PedidoItens { get; }
+
+    DbSet<Rota> Rotas { get; }
+
+    DbSet<RotaParada> RotaParadas { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

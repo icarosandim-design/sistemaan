@@ -25,11 +25,14 @@ import { ProducaoRendimentosComponent } from './features/producao/rendimentos.co
 import { UsuariosComponent } from './features/usuarios/usuarios.component';
 import { ClientesPjComponent } from './features/clientes-pj/clientes-pj.component';
 import { PetsComponent } from './features/pets/pets.component';
+import { PlanejarRotasComponent } from './features/rotas/planejar-rotas.component';
+import { RotaImpressaoComponent } from './features/rotas/rota-impressao.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   // Pré-visualização de impressão (tela cheia, sem layout) — protótipo
   { path: 'producao/impressao/:tipo', component: ProducaoImpressaoComponent, canActivate: [authGuard, papelGuard], data: { papeis: TODOS_PERFIS } },
+  { path: 'rotas/:id/impressao', component: RotaImpressaoComponent, canActivate: [authGuard, papelGuard], data: { papeis: ADMIN_OPERADOR } },
   {
     path: '',
     component: MainLayoutComponent,
@@ -40,6 +43,7 @@ export const routes: Routes = [
       { path: 'clientes', component: ClientesComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'clientes-pj', component: ClientesPjComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'pets', component: PetsComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'rotas', component: PlanejarRotasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'entregas', component: EntregasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'estoque/itens', component: ItensEstoqueComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'estoque/compras', component: ComprasComponent, data: { papeis: ADMIN_OPERADOR } },

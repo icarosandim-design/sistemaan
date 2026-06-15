@@ -1,0 +1,86 @@
+@if (carregando() || !rota()) {
+  <div class="carregando"><mat-spinner diameter="30"></mat-spinner></div>
+} @else {
+  @let r = rota()!;
+  <h2 mat-dialog-title>
+    {{ r.nome }}
+    <span class="status-chip" [attr.data-s]="r.status">{{ rotuloStatusRota(r.status) }}</span>
+  </h2>
+  <mat-dialog-content>
+    <div class="cab">
+      <span><mat-icon>calendar_today</mat-icon> {{ fmtData(r.data) }}</span>
+      <span><mat-icon>schedule</mat-icon> {{ rotuloPeriodo(r.periodo) }}</span>
+      <span><mat-icon>person</mat-icon> {{ r.entregador || 'Sem entregador' }}</span>
+      <button mat-stroked-button (click)="editar()"><mat-icon>edit</mat-icon> Editar</button>
+      <button mat-stroked-button (click)="copiar()"><mat-icon>content_copy</mat-icon> Copiar</button>
+      <button mat-stroked-button (click)="imprimir()"><mat-icon>print</mat-icon> Imprimir</button>
+    </div>
+
+    <div class="acoes-status">
+      @if (r.status === 'Rascunho') { <button mat-flat-button class="btn-cta" (click)="mudarStatus('Planejada')"><mat-icon>event_available</mat-icon> Planejar</button> }
+      @if (r.status === 'Planejada') { <button mat-flat-button class="btn-cta" (click)="mudarStatus('Despachada')"><mat-icon>local_shipping</mat-icon> Despachar</button> }
+      @if (r.status === 'Despachada') { <button mat-flat-button class="btn-cta" (click)="mudarStatus('Concluida')"><mat-icon>task_alt</mat-icon> Concluir</button> }
+      @if (ativa) { <button mat-stroked-button class="btn-cancel" (click)="mudarStatus('Cancelada')"><mat-icon>cancel</mat-icon> Cancelar saída</button> }
+    </div>
+
+    <!-- Paradas -->
+    <h3 class="secao">Entregas da saída ({{ r.paradas.length }})</h3>
+    @for (p of r.paradas; track p.entregaId; let i = $index) {
+      <div class="parada">
+        <div class="ordem">{{ p.ordem }}</div>
+        <div class="info">
+          <div class="linha1">
+            <span class="cliente">{{ p.clienteNome }}</span>
+            @if (p.ehPj) { <span class="badge pj">Cliente PJ</span> }
+            <span class="badge pref" [class.incompat]="preferenciaIncompativel(r.periodo, p.preferenciaHorario)">
+              <mat-icon>schedule</mat-icon> {{ rotuloPreferencia(p.preferenciaHorario) }}
+            </span>
+            <span class="status-entrega">{{ p.statusEntrega }}</span>
+          </div>
+          <div class="linha2">{{ p.endereco }}{{ p.bairro ? ' — ' + p.bairro : '' }}{{ p.cidade ? ', ' + p.cidade : '' }}@if (p.telefone) { · {{ p.telefone }} }</div>
+          @if (p.itensResumo) { <div class="itens">{{ p.itensResumo }}</div> }
+          <div class="alertas">
+            @if (preferenciaIncompativel(r.periodo, p.preferenciaHorario)) { <span class="al warn"><mat-icon>schedule</mat-icon> Preferência: {{ rotuloPreferencia(p.preferenciaHorario) }}</span> }
+            @if (p.enderecoIncompleto) { <span class="al err"><mat-icon>wrong_location</mat-icon> Endereço incompleto</span> }
+            @if (p.estoqueAlerta === 'falta') { <span class="al warn"><mat-icon>inventory_2</mat-icon> Falta produto acabado</span> }
+            @if (p.estoqueAlerta === 'naocadastrado') { <span class="al err"><mat-icon>inventory_2</mat-icon> Produto acabado não cadastrado</span> }
+            @if (p.prontidaoTexto) { <span class="al" [class.warn]="!p.prontidaoTexto.startsWith('Pronta')"><mat-icon>restaurant</mat-icon> {{ p.prontidaoTexto }}</span> }
+          </div>
+        </div>
+        @if (ativa) {
+          <div class="acoes">
+            <button mat-icon-button [disabled]="i === 0" (click)="mover(i, -1)" matTooltip="Subir"><mat-icon>arrow_upward</mat-icon></button>
+            <button mat-icon-button [disabled]="i === r.paradas.length - 1" (click)="mover(i, 1)" matTooltip="Descer"><mat-icon>arrow_downward</mat-icon></button>
+            <button mat-icon-button class="rem" (click)="remover(p.entregaId)" matTooltip="Remover"><mat-icon>close</mat-icon></button>
+          </div>
+        }
+      </div>
+    } @empty {
+      <p class="vazio">Nenhuma entrega nesta saída ainda.</p>
+    }
+
+    <!-- Disponíveis -->
+    @if (ativa) {
+      <h3 class="secao">Entregas disponíveis do dia ({{ disponiveis().length }})</h3>
+      @for (e of disponiveis(); track e.id) {
+        <div class="disp">
+          <div class="info">
+            <div class="linha1">
+              <span class="cliente">{{ e.clienteNome }}</span>
+              @if (e.ehPj) { <span class="badge pj">PJ</span> }
+              <span class="badge pref" [class.incompat]="preferenciaIncompativel(r.periodo, e.preferenciaHorario)">{{ rotuloPreferencia(e.preferenciaHorario) }}</span>
+              @if (e.enderecoIncompleto) { <span class="al err"><mat-icon>wrong_location</mat-icon> Endereço incompleto</span> }
+            </div>
+            <div class="linha2">{{ e.endereco }}{{ e.bairro ? ' — ' + e.bairro : '' }} · {{ e.itensResumo }}</div>
+          </div>
+          <button mat-flat-button class="btn-add" (click)="adicionar(e)"><mat-icon>add</mat-icon> Adicionar</button>
+        </div>
+      } @empty {
+        <p class="vazio">Sem entregas disponíveis para esta data.</p>
+      }
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-flat-button class="btn-cta" (click)="ref.close(alterou)">Fechar</button>
+  </mat-dialog-actions>
+}

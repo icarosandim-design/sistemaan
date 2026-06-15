@@ -1,0 +1,52 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title"><h1>Planejar Rotas</h1><p class="subtitulo">Monte uma ou mais saídas de entrega para o dia.</p></div>
+    <div class="head-acoes">
+      <label class="data-lbl">Data <input type="date" [(ngModel)]="data" (change)="carregar()" /></label>
+      <button mat-flat-button class="btn-cta" (click)="novaSaida()"><mat-icon>add_road</mat-icon> Nova saída</button>
+    </div>
+  </header>
+
+  @if (carregando()) {
+    <div class="carregando"><mat-spinner diameter="32"></mat-spinner></div>
+  } @else {
+    <!-- Rotas/Saídas do dia -->
+    <section class="bloco">
+      <h2 class="bloco-titulo"><mat-icon>alt_route</mat-icon> Saídas do dia ({{ rotas().length }})</h2>
+      @if (rotas().length) {
+        <div class="rotas">
+          @for (r of rotas(); track r.id) {
+            <article class="rota-card" (click)="abrir(r.id)">
+              <div class="rc-top">
+                <span class="rc-nome">{{ r.nome }}</span>
+                <span class="status-chip" [attr.data-s]="r.status">{{ rotuloStatusRota(r.status) }}</span>
+              </div>
+              <div class="rc-meta"><mat-icon>schedule</mat-icon> {{ rotuloPeriodo(r.periodo) }}</div>
+              <div class="rc-meta"><mat-icon>person</mat-icon> {{ r.entregador || 'Sem entregador' }}</div>
+              <div class="rc-meta"><mat-icon>inventory_2</mat-icon> {{ r.totalEntregas }} entrega(s)</div>
+              <button mat-stroked-button class="rc-abrir"><mat-icon>open_in_new</mat-icon> Abrir</button>
+            </article>
+          }
+        </div>
+      } @else {
+        <p class="vazio">Nenhuma saída criada para {{ fmtData(data) }}. Clique em "Nova saída".</p>
+      }
+    </section>
+
+    <!-- Entregas disponíveis -->
+    <section class="bloco">
+      <h2 class="bloco-titulo"><mat-icon>local_shipping</mat-icon> Entregas disponíveis do dia ({{ disponiveis().length }})</h2>
+      <p class="dica">Entregas do dia ainda não vinculadas a uma saída ativa. Adicione-as ao abrir uma saída.</p>
+      @for (e of disponiveis(); track e.id) {
+        <div class="disp">
+          <span class="cliente">{{ e.clienteNome }}@if (e.ehPj) { <span class="badge pj">PJ</span> }</span>
+          <span class="pref">{{ rotuloPreferencia(e.preferenciaHorario) }}</span>
+          <span class="end">{{ e.endereco }}{{ e.bairro ? ' — ' + e.bairro : '' }}</span>
+          @if (e.enderecoIncompleto) { <span class="al err"><mat-icon>wrong_location</mat-icon> Endereço incompleto</span> }
+        </div>
+      } @empty {
+        <p class="vazio">Todas as entregas do dia já estão em alguma saída (ou não há entregas).</p>
+      }
+    </section>
+  }
+</section>

@@ -13,6 +13,7 @@ using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Producao;
 using SistemaAN.Domain.Receitas;
+using SistemaAN.Domain.Rotas;
 
 namespace SistemaAN.Infrastructure.Persistence;
 
@@ -82,6 +83,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Pedido> Pedidos => Set<Pedido>();
 
     public DbSet<PedidoItem> PedidoItens => Set<PedidoItem>();
+
+    public DbSet<Rota> Rotas => Set<Rota>();
+
+    public DbSet<RotaParada> RotaParadas => Set<RotaParada>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
