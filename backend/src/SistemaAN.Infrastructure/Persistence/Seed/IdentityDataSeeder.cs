@@ -47,18 +47,28 @@ public sealed class IdentityDataSeeder
             .FirstAsync(p => p.Nome == PapeisDoSistema.Administrador, cancellationToken);
 
         var email = Usuario.Normalizar(_configuration["Seed:AdminEmail"] ?? "admin@sistemaan.local");
+        var senha = _configuration["Seed:AdminPassword"] ?? "Admin@123";
+        var resetar = string.Equals(_configuration["Seed:ResetAdminPassword"], "true", StringComparison.OrdinalIgnoreCase);
 
-        if (!await _db.Usuarios.AnyAsync(u => u.Email == email, cancellationToken))
+        var admin = await _db.Usuarios.Include(u => u.Papeis)
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+
+        if (admin is null)
         {
-            var senha = _configuration["Seed:AdminPassword"] ?? "Admin@123";
-
-            var admin = Usuario.Criar("Administrador", email, _passwordHasher.Hash(senha));
+            admin = Usuario.Criar("Administrador", email, _passwordHasher.Hash(senha));
             admin.AtribuirPapel(papelAdmin);
-
             _db.Usuarios.Add(admin);
             await _db.SaveChangesAsync(cancellationToken);
-
             _logger.LogInformation("Usuário administrador inicial criado: {Email}", email);
+        }
+        else if (resetar)
+        {
+            // Recuperação de acesso: redefine a senha, reativa e garante o papel de Administrador.
+            admin.DefinirSenha(_passwordHasher.Hash(senha));
+            admin.Ativar();
+            admin.AtribuirPapel(papelAdmin);
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogWarning("Senha do administrador redefinida via Seed:ResetAdminPassword: {Email}", email);
         }
     }
 }

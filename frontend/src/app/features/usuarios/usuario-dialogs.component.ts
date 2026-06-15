@@ -31,11 +31,19 @@ function msgErro(e: unknown): string {
         <mat-label>E-mail (login)</mat-label>
         <input matInput type="email" [(ngModel)]="email" />
       </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Confirmar e-mail</mat-label>
+        <input matInput type="email" [(ngModel)]="confirmarEmail" (paste)="$event.preventDefault()" />
+      </mat-form-field>
       @if (!edicao) {
         <mat-form-field appearance="outline" class="full">
           <mat-label>Senha</mat-label>
           <input matInput type="password" [(ngModel)]="senha" />
           <mat-hint>Mínimo 6 caracteres</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Confirmar senha</mat-label>
+          <input matInput type="password" [(ngModel)]="confirmarSenha" (paste)="$event.preventDefault()" />
         </mat-form-field>
       }
       <mat-form-field appearance="outline" class="full">
@@ -75,7 +83,9 @@ export class UsuarioDialogComponent {
   readonly edicao: boolean;
   nome: string;
   email: string;
+  confirmarEmail: string;
   senha = '';
+  confirmarSenha = '';
   perfil: string;
   telefone: string;
   observacoes: string;
@@ -91,14 +101,23 @@ export class UsuarioDialogComponent {
     this.edicao = !!u;
     this.nome = u?.nome ?? '';
     this.email = u?.email ?? '';
+    this.confirmarEmail = u?.email ?? '';
     this.perfil = u?.perfil ?? data.perfis[0]?.nome ?? 'Operador';
     this.telefone = u?.telefone ?? '';
     this.observacoes = u?.observacoes ?? '';
   }
 
   salvar(): void {
-    this.salvando.set(true);
     this.erro.set(null);
+    if (this.email.trim().toLowerCase() !== this.confirmarEmail.trim().toLowerCase()) {
+      this.erro.set('Os e-mails não coincidem.');
+      return;
+    }
+    if (!this.edicao && this.senha !== this.confirmarSenha) {
+      this.erro.set('As senhas não coincidem.');
+      return;
+    }
+    this.salvando.set(true);
     const base = {
       nome: this.nome.trim(),
       email: this.email.trim(),
@@ -133,6 +152,10 @@ export class UsuarioDialogComponent {
         <input matInput type="password" [(ngModel)]="senha" />
         <mat-hint>Mínimo 6 caracteres</mat-hint>
       </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Confirmar nova senha</mat-label>
+        <input matInput type="password" [(ngModel)]="confirmarSenha" (paste)="$event.preventDefault()" />
+      </mat-form-field>
       @if (erro()) { <p class="erro"><mat-icon>error</mat-icon> {{ erro() }}</p> }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -153,6 +176,7 @@ export class UsuarioDialogComponent {
 export class RedefinirSenhaDialogComponent {
   private readonly service = inject(UsuariosService);
   senha = '';
+  confirmarSenha = '';
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
 
@@ -162,8 +186,12 @@ export class RedefinirSenhaDialogComponent {
   ) {}
 
   salvar(): void {
-    this.salvando.set(true);
     this.erro.set(null);
+    if (this.senha !== this.confirmarSenha) {
+      this.erro.set('As senhas não coincidem.');
+      return;
+    }
+    this.salvando.set(true);
     this.service.redefinirSenha(this.data.usuario.id, this.senha).subscribe({
       next: () => this.ref.close(true),
       error: (e) => {
