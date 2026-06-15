@@ -42,6 +42,8 @@ public sealed class EntregaConfiguration : IEntityTypeConfiguration<Entrega>
         builder.Property(e => e.PedidoId);
         builder.HasIndex(e => e.PedidoId).HasDatabaseName("ix_entregas_pedido");
 
+        builder.Property(e => e.EstoqueBaixado).IsRequired();
+
         builder.HasIndex(e => new { e.ClienteId, e.DataPrevista }).HasDatabaseName("ix_entregas_cliente_data");
         builder.HasIndex(e => e.DataPrevista).HasDatabaseName("ix_entregas_data");
         builder.HasIndex(e => e.Status).HasDatabaseName("ix_entregas_status");

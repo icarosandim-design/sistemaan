@@ -32,6 +32,23 @@
     <button mat-stroked-button class="add" (click)="adicionarLinha()"><mat-icon>add</mat-icon> Adicionar item</button>
   </div>
 
+  @if (situacao().length) {
+    <h3 class="secao">Disponibilidade de estoque</h3>
+    <div class="sit">
+      <div class="sit-head"><span>Item</span><span class="t-r">Pedido</span><span class="t-r">Físico</span><span class="t-r">Comprometido</span><span class="t-r">Disponível</span><span class="t-r">Falta produzir</span></div>
+      @for (s of situacao(); track $index) {
+        <div class="sit-row" [class.falta]="s.temFalta">
+          <span>{{ s.receitaNome }} {{ s.tamanhoNome }}</span>
+          <span class="t-r">{{ s.necessario }}</span>
+          <span class="t-r">{{ s.semItemEstoque ? '—' : s.fisico }}</span>
+          <span class="t-r">{{ s.comprometido }}</span>
+          <span class="t-r">{{ s.semItemEstoque ? '—' : s.disponivel }}</span>
+          <span class="t-r">@if (s.temFalta) { <strong>{{ s.falta }}</strong> } @else { — }</span>
+        </div>
+      }
+    </div>
+  }
+
   <mat-form-field appearance="outline" class="full"><mat-label>Observações</mat-label><textarea matInput rows="2" [(ngModel)]="observacoes"></textarea></mat-form-field>
 
   @if (erro()) { <p class="erro"><mat-icon>error</mat-icon> {{ erro() }}</p> }

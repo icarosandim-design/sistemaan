@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AlterarAgendaRequest, EntregaDetalhe, EntregaResumo } from './entregas.model';
+import { AlterarAgendaRequest, EntregaDetalhe, EntregaResumo, SituacaoEstoqueItem } from './entregas.model';
 
 @Injectable({ providedIn: 'root' })
 export class EntregasService {
@@ -15,6 +15,10 @@ export class EntregasService {
 
   obter(id: number): Observable<EntregaDetalhe> {
     return this.http.get<EntregaDetalhe>(`${this.base}/${id}`);
+  }
+
+  situacaoEstoque(id: number): Observable<SituacaoEstoqueItem[]> {
+    return this.http.get<SituacaoEstoqueItem[]>(`${this.base}/${id}/estoque`);
   }
 
   gerar(horizonteDias = 45): Observable<{ geradas: number; clientes: number }> {

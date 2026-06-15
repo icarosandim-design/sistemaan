@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { SituacaoEstoqueItem } from '../entregas/entregas.model';
 import {
   ClientePj,
   ClientePjResumo,
@@ -68,5 +69,9 @@ export class ClientesPjService {
 
   cancelarPedido(id: number, motivo?: string): Observable<Pedido> {
     return this.http.post<Pedido>(`${this.api}/pedidos/${id}/cancelar`, { motivo: motivo ?? null });
+  }
+
+  situacaoPedido(id: number): Observable<SituacaoEstoqueItem[]> {
+    return this.http.get<SituacaoEstoqueItem[]>(`${this.api}/pedidos/${id}/estoque`);
   }
 }

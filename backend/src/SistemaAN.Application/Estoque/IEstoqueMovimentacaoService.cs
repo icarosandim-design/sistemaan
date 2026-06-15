@@ -26,4 +26,10 @@ public interface IEstoqueMovimentacaoService
     /// Entrada de produto acabado por produção (custo 0 nesta fase). NÃO chama SaveChanges.
     /// </summary>
     Task EntrarPorProducaoAsync(long itemEstoqueId, decimal quantidade, long ordemProducaoId, string usuario, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Baixa de produto acabado por entrega concluída (FIFO). NÃO chama SaveChanges.
+    /// Retorna false se não houver saldo físico suficiente (não baixa nada).
+    /// </summary>
+    Task<bool> BaixarPorEntregaAsync(long itemEstoqueId, decimal quantidade, long entregaId, string usuario, CancellationToken cancellationToken = default);
 }

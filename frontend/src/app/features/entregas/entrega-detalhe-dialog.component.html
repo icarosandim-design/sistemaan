@@ -75,6 +75,24 @@
       <div class="campo full obs-int"><span class="rot">Observações internas</span><span class="val">{{ e.observacoesInternas }}</span></div>
     }
 
+    @if (situacao().length) {
+      <h3 class="secao"><mat-icon>inventory_2</mat-icon> Estoque de Produto Acabado (Casa)</h3>
+      <div class="sit-tabela">
+        <div class="sit-head"><span>Receita</span><span class="t-r">Necessário</span><span class="t-r">Físico</span><span class="t-r">Comprometido</span><span class="t-r">Disponível</span><span class="t-r">Falta</span></div>
+        @for (s of situacao(); track $index) {
+          <div class="sit-row" [class.falta]="s.temFalta">
+            <span>{{ s.receitaNome }} {{ s.tamanhoNome }}</span>
+            <span class="t-r">{{ s.necessario }}</span>
+            <span class="t-r">{{ s.semItemEstoque ? '—' : s.fisico }}</span>
+            <span class="t-r">{{ s.comprometido }}</span>
+            <span class="t-r">{{ s.semItemEstoque ? '—' : s.disponivel }}</span>
+            <span class="t-r">@if (s.temFalta) { <strong class="falta-num">{{ s.falta }}</strong> } @else { — }</span>
+          </div>
+        }
+      </div>
+      <p class="sit-nota">Comprometido = entregas Programadas/Confirmadas até esta data (exceto esta). A baixa física ocorre ao marcar como Entregue.</p>
+    }
+
     <!-- 4. Histórico (recolhível) -->
     <div class="bloco">
       <button type="button" class="hist-toggle" (click)="alternarHistorico()">

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SistemaAN.Application.Estoque;
 using SistemaAN.Application.Pedidos;
 
 namespace SistemaAN.Api.Controllers;
@@ -10,10 +11,20 @@ namespace SistemaAN.Api.Controllers;
 public sealed class PedidosController : ControllerBase
 {
     private readonly IPedidoService _service;
+    private readonly IProdutoAcabadoService _produtoAcabado;
 
-    public PedidosController(IPedidoService service) => _service = service;
+    public PedidosController(IPedidoService service, IProdutoAcabadoService produtoAcabado)
+    {
+        _service = service;
+        _produtoAcabado = produtoAcabado;
+    }
 
     private string Usuario => User.Identity?.Name ?? "sistema";
+
+    /// <summary>Situação de estoque (físico/comprometido/disponível/falta) dos itens do pedido.</summary>
+    [HttpGet("{id:long}/estoque")]
+    public async Task<ActionResult<IReadOnlyList<SituacaoEstoqueItemDto>>> Estoque(long id, CancellationToken ct)
+        => Ok(await _produtoAcabado.SituacaoPedidoAsync(id, ct));
 
     /// <summary>Lista os pedidos de um cliente PJ.</summary>
     [HttpGet]

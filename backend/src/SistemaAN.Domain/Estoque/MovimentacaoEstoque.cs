@@ -121,4 +121,6 @@ public class MovimentacaoEstoque : AuditableEntity
     public void Vincular(AjusteEstoque ajuste) => Ajuste = ajuste;
 
     public void VincularOrdemProducao(long ordemProducaoId) => OrdemProducaoId = ordemProducaoId;
+
+    public void VincularEntrega(long entregaId) => EntregaId = entregaId;
 }

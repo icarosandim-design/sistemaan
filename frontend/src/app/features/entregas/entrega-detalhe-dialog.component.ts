@@ -16,6 +16,7 @@ import {
   operacionalDeDetalhe,
   ProntidaoEntrega,
   prontidaoEntrega,
+  SituacaoEstoqueItem,
 } from './entregas.model';
 import { forkJoin } from 'rxjs';
 import { EntregasService } from './entregas.service';
@@ -54,6 +55,7 @@ export class EntregaDetalheDialogComponent {
   readonly fmtPeso = fmtPeso;
 
   readonly detalhe = signal<EntregaDetalhe | null>(null);
+  readonly situacao = signal<SituacaoEstoqueItem[]>([]);
   readonly carregando = signal(true);
   readonly salvando = signal(false);
   readonly mostrarHistorico = signal(false);
@@ -69,6 +71,7 @@ export class EntregaDetalheDialogComponent {
   ) {
     this.recarregar();
     this.carregarEstoque();
+    this.service.situacaoEstoque(data.id).subscribe({ next: (s) => this.situacao.set(s), error: () => {} });
   }
 
   private carregarEstoque(): void {

@@ -120,6 +120,21 @@ export function enderecoResumo(e: { rua: string | null; numero: string | null; c
   return texto || '—';
 }
 
+/** Situação de estoque de Produto Acabado da Casa (físico/comprometido/disponível/falta). */
+export interface SituacaoEstoqueItem {
+  receitaId: number;
+  receitaNome: string;
+  pesoGramas: number;
+  tamanhoNome: string;
+  necessario: number;
+  fisico: number;
+  comprometido: number;
+  disponivel: number;
+  falta: number;
+  temFalta: boolean;
+  semItemEstoque: boolean;
+}
+
 export interface EntregaItemPacote {
   tamanhoLabel: string;
   pesoGramas: number;

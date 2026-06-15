@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Application.Estoque;
 using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Entregas;
+using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Receitas;
@@ -15,8 +17,13 @@ public sealed class EntregaService : IEntregaService
     private const int HorizontePadrao = 45;
 
     private readonly IApplicationDbContext _db;
+    private readonly IEstoqueMovimentacaoService _estoque;
 
-    public EntregaService(IApplicationDbContext db) => _db = db;
+    public EntregaService(IApplicationDbContext db, IEstoqueMovimentacaoService estoque)
+    {
+        _db = db;
+        _estoque = estoque;
+    }
 
     // ===================== Geração =====================
     public async Task<GerarEntregasResultado> GerarAsync(int horizonteDias, string usuario, CancellationToken ct = default)
@@ -221,17 +228,19 @@ public sealed class EntregaService : IEntregaService
             throw new ValidationException(Erro("status", $"Transição inválida de {entrega.Status} para {novo}."));
         }
 
-        entrega.MudarStatus(novo, usuario, evento);
-
-        // Ao concluir a entrega, baixa o produto finalizado/reservado das personalizadas.
-        if (novo == EntregaStatus.Entregue)
+        // Ao concluir a entrega: baixa o produto acabado da Casa (com validação de saldo físico)
+        // e baixa o produto finalizado/reservado das personalizadas. Idempotente.
+        if (novo == EntregaStatus.Entregue && !entrega.EstoqueBaixado)
         {
+            await BaixarProdutoAcabadoCasaAsync(entrega, usuario, ct);
             foreach (var item in entrega.Pets.SelectMany(p => p.Itens))
             {
                 item.BaixarReservaEntregue();
             }
+            entrega.MarcarEstoqueBaixado();
         }
 
+        entrega.MudarStatus(novo, usuario, evento);
         await _db.SaveChangesAsync(ct);
         return Map(entrega);
     }
@@ -465,6 +474,58 @@ public sealed class EntregaService : IEntregaService
     }
 
     // ===================== Mapeamentos =====================
+    /// <summary>Baixa o produto acabado da Casa ao concluir a entrega (valida saldo físico; bloqueia se faltar).</summary>
+    private async Task BaixarProdutoAcabadoCasaAsync(Entrega entrega, string usuario, CancellationToken ct)
+    {
+        var necessidade = new Dictionary<(long ReceitaId, int Peso), int>();
+        foreach (var item in entrega.Pets.SelectMany(p => p.Itens).Where(i => i.Tipo == TipoReceita.Casa))
+        {
+            foreach (var pac in item.Pacotes)
+            {
+                var chave = (item.ReceitaId, pac.PesoGramas);
+                necessidade[chave] = (necessidade.TryGetValue(chave, out var v) ? v : 0) + pac.Quantidade;
+            }
+        }
+        if (necessidade.Count == 0)
+        {
+            return;
+        }
+
+        var pesoPorTamanho = await _db.TamanhosPacote.AsNoTracking()
+            .Select(t => new { t.Id, t.PesoGramas })
+            .ToDictionaryAsync(t => t.Id, t => t.PesoGramas, ct);
+        var produtoAcabado = await _db.ItensEstoque
+            .Where(x => x.Tipo == TipoItemEstoque.ProdutoAcabadoCasa && x.ReceitaId != null && x.TamanhoPacoteId != null)
+            .Select(x => new { x.Id, ReceitaId = x.ReceitaId!.Value, TamanhoPacoteId = x.TamanhoPacoteId!.Value, x.QuantidadeAtual })
+            .ToListAsync(ct);
+
+        var porChave = new Dictionary<(long, int), (long ItemId, decimal Saldo)>();
+        foreach (var pa in produtoAcabado)
+        {
+            if (pesoPorTamanho.TryGetValue(pa.TamanhoPacoteId, out var peso))
+            {
+                porChave[(pa.ReceitaId, peso)] = (pa.Id, pa.QuantidadeAtual);
+            }
+        }
+
+        // Bloqueia se algum item rastreado não tiver saldo físico suficiente.
+        var faltou = necessidade.Any(n => porChave.TryGetValue(n.Key, out var pa) && pa.Saldo < n.Value);
+        if (faltou)
+        {
+            throw new ValidationException(Erro("estoque",
+                "Não há estoque físico suficiente para concluir esta entrega. Verifique o estoque antes de marcar como Entregue."));
+        }
+
+        // Baixa (FIFO) apenas dos itens com produto acabado rastreado.
+        foreach (var (chave, qtd) in necessidade)
+        {
+            if (porChave.TryGetValue(chave, out var pa))
+            {
+                await _estoque.BaixarPorEntregaAsync(pa.ItemId, qtd, entrega.Id, usuario, ct);
+            }
+        }
+    }
+
     private static Dictionary<string, string[]> Erro(string campo, string msg) => new() { [campo] = [msg] };
 
     private static EntregaResumoDto MapResumo(Entrega e)

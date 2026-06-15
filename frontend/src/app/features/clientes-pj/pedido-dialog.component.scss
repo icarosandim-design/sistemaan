@@ -14,3 +14,11 @@
 .btn-cta { background: var(--an-cta); color: #fff; }
 mat-dialog-content { min-width: 720px; max-width: 92vw; }
 @media (max-width: 760px) { mat-dialog-content { min-width: auto; } .ihead { display: none; } .irow { grid-template-columns: 1fr 1fr; } }
+
+/* Disponibilidade de estoque */
+.sit { display: flex; flex-direction: column; border: 1px solid var(--an-fundo-secundario); border-radius: 8px; overflow: hidden; margin-bottom: 0.5rem; }
+.sit-head, .sit-row { display: grid; grid-template-columns: 1.6fr 0.7fr 0.7fr 1.1fr 0.9fr 1fr; gap: 0.3rem; padding: 0.35rem 0.6rem; align-items: center; }
+.sit-head { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; color: var(--an-texto-secundario); background: var(--an-fundo); }
+.sit-row { font-size: 0.82rem; border-top: 1px solid var(--an-fundo); }
+.sit-row.falta { background: #fff8f7; strong { color: #b3261e; } }
+.sit .t-r { text-align: right; font-variant-numeric: tabular-nums; }

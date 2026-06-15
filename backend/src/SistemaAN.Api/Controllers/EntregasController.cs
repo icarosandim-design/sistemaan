@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SistemaAN.Application.Entregas;
+using SistemaAN.Application.Estoque;
 
 namespace SistemaAN.Api.Controllers;
 
@@ -10,10 +11,20 @@ namespace SistemaAN.Api.Controllers;
 public sealed class EntregasController : ControllerBase
 {
     private readonly IEntregaService _service;
+    private readonly IProdutoAcabadoService _produtoAcabado;
 
-    public EntregasController(IEntregaService service) => _service = service;
+    public EntregasController(IEntregaService service, IProdutoAcabadoService produtoAcabado)
+    {
+        _service = service;
+        _produtoAcabado = produtoAcabado;
+    }
 
     private string Usuario => User.Identity?.Name ?? "sistema";
+
+    /// <summary>Situação de estoque (físico/comprometido/disponível/falta) dos itens de Casa da entrega.</summary>
+    [HttpGet("entregas/{id:long}/estoque")]
+    public async Task<ActionResult<IReadOnlyList<SituacaoEstoqueItemDto>>> EstoqueEntrega(long id, CancellationToken ct)
+        => Ok(await _produtoAcabado.SituacaoEntregaAsync(id, ct));
 
     /// <summary>Gera as entregas futuras (idempotente) para o horizonte informado.</summary>
     [HttpPost("entregas/gerar")]

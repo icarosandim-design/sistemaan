@@ -65,6 +65,9 @@ public class Entrega : AuditableEntity
     /// <summary>Pedido PJ que originou esta entrega (nulo para entregas PF recorrentes).</summary>
     public long? PedidoId { get; private set; }
 
+    /// <summary>Indica que o produto acabado já foi baixado do estoque (idempotência da entrega concluída).</summary>
+    public bool EstoqueBaixado { get; private set; }
+
     public IReadOnlyCollection<EntregaPet> Pets => _pets.AsReadOnly();
     public IReadOnlyCollection<EntregaHistorico> Historico => _historico.AsReadOnly();
 
@@ -79,6 +82,8 @@ public class Entrega : AuditableEntity
 
     /// <summary>Ajusta a data prevista (usado ao editar um Pedido PJ confirmado ainda Programado).</summary>
     public void AlterarDataPrevista(DateOnly data) => DataPrevista = data;
+
+    public void MarcarEstoqueBaixado() => EstoqueBaixado = true;
 
     public void RegistrarHistorico(string usuario, string evento, EntregaStatus? de = null, EntregaStatus? para = null)
         => _historico.Add(EntregaHistorico.Criar(usuario, evento, de, para));

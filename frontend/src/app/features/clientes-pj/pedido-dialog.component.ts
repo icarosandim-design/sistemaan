@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EstoqueService } from '../estoque/estoque.service';
 import { OpcaoSimples } from '../estoque/estoque.model';
+import { SituacaoEstoqueItem } from '../entregas/entregas.model';
 import { Pedido, SalvarPedidoRequest } from './clientes-pj.model';
 import { ClientesPjService } from './clientes-pj.service';
 
@@ -40,6 +41,7 @@ export class PedidoDialogComponent implements OnInit {
   readonly tamanhos = signal<OpcaoSimples[]>([]);
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
+  readonly situacao = signal<SituacaoEstoqueItem[]>([]);
 
   dataPedido = '';
   dataEntrega = '';
@@ -68,6 +70,9 @@ export class PedidoDialogComponent implements OnInit {
   ngOnInit(): void {
     this.estoque.listarReceitasCasa().subscribe((r) => this.receitas.set(r));
     this.estoque.listarTamanhos().subscribe((t) => this.tamanhos.set(t));
+    if (this.data.pedido) {
+      this.service.situacaoPedido(this.data.pedido.id).subscribe({ next: (s) => this.situacao.set(s), error: () => {} });
+    }
   }
 
   adicionarLinha(): void {

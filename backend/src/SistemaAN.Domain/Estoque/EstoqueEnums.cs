@@ -70,6 +70,7 @@ public enum SentidoMovimentacao
 public enum MotivoSaida
 {
     Producao,
+    Venda,
     Descarte,
     Perda,
     Vencimento,
