@@ -222,6 +222,16 @@ public sealed class EntregaService : IEntregaService
         }
 
         entrega.MudarStatus(novo, usuario, evento);
+
+        // Ao concluir a entrega, baixa o produto finalizado/reservado das personalizadas.
+        if (novo == EntregaStatus.Entregue)
+        {
+            foreach (var item in entrega.Pets.SelectMany(p => p.Itens))
+            {
+                item.BaixarReservaEntregue();
+            }
+        }
+
         await _db.SaveChangesAsync(ct);
         return Map(entrega);
     }

@@ -17,6 +17,18 @@ import { FichaMaxComponent, FichasMaxComponent, FULLSCREEN, IngredientesMaxCompo
 
 const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos', 'Suplementos', 'Outros'];
 
+interface ConsumoLinha {
+  cruKg: number | null;
+  cozidoKg: number | null;
+  sobraKg: number | null;
+  perdaKg: number | null;
+  motivo: string | null;
+}
+
+function gParaKg(gramas: number | null): number | null {
+  return gramas != null ? gramas / 1000 : null;
+}
+
 @Component({
   selector: 'app-producao-dia',
   standalone: true,
@@ -36,15 +48,32 @@ export class ProducaoDiaComponent implements OnInit {
   readonly rotuloStatusFicha = rotuloStatusFicha;
   readonly rotuloStatusOrdem = rotuloStatusOrdem;
 
-  // Pesagem real (cru, em kg) e motivo por ingrediente — alimenta a baixa na finalização.
-  readonly consumo = signal<Map<number, { cruKg: number | null; motivo: string | null }>>(new Map());
+  // Pesagem real por ingrediente (kg/observação) — alimenta a baixa na finalização.
+  readonly consumo = signal<Map<number, ConsumoLinha>>(new Map());
 
-  ngOnInit(): void {
-    this.store.garantirOrdemDia();
+  async ngOnInit(): Promise<void> {
+    await this.store.garantirOrdemDia();
+    this.seed();
   }
 
-  trocarDia(data: string): void {
-    this.store.selecionarDia(data);
+  async trocarDia(data: string): Promise<void> {
+    await this.store.selecionarDia(data);
+    this.seed();
+  }
+
+  /** Reidrata os campos reais a partir do que já está salvo na ordem carregada. */
+  private seed(): void {
+    const mapa = new Map<number, ConsumoLinha>();
+    for (const c of this.ordem()?.consolidado ?? []) {
+      mapa.set(c.ingredienteId, {
+        cruKg: gParaKg(c.realCruGramas),
+        cozidoKg: gParaKg(c.realCozidoGramas),
+        sobraKg: gParaKg(c.sobraGramas),
+        perdaKg: gParaKg(c.perdaGramas),
+        motivo: c.observacao,
+      });
+    }
+    this.consumo.set(mapa);
   }
 
   fmtData(iso: string): string {
@@ -75,31 +104,42 @@ export class ProducaoDiaComponent implements OnInit {
   });
 
   // ----- Pesagem real -----
-  cruDe(i: ConsumoConsolidado): number | null {
-    return this.consumo().get(i.ingredienteId)?.cruKg ?? null;
+  private linha(id: number): ConsumoLinha {
+    return this.consumo().get(id) ?? { cruKg: null, cozidoKg: null, sobraKg: null, perdaKg: null, motivo: null };
   }
 
-  setCru(i: ConsumoConsolidado, v: number | null): void {
+  private patchLinha(id: number, patch: Partial<ConsumoLinha>): void {
     this.consumo.update((m) => {
       const n = new Map(m);
-      const atual = n.get(i.ingredienteId) ?? { cruKg: null, motivo: null };
-      n.set(i.ingredienteId, { ...atual, cruKg: v === null || isNaN(v as number) ? null : v });
+      n.set(id, { ...this.linha(id), ...patch });
       return n;
     });
   }
 
-  motivoDe(i: ConsumoConsolidado): string | null {
-    return this.consumo().get(i.ingredienteId)?.motivo ?? null;
+  private num(v: number | null): number | null {
+    return v === null || v === undefined || isNaN(v as number) ? null : v;
   }
 
-  setMotivo(i: ConsumoConsolidado, v: string): void {
-    this.consumo.update((m) => {
-      const n = new Map(m);
-      const atual = n.get(i.ingredienteId) ?? { cruKg: null, motivo: null };
-      n.set(i.ingredienteId, { ...atual, motivo: v || null });
-      return n;
-    });
-  }
+  cruDe(i: ConsumoConsolidado) { return this.linha(i.ingredienteId).cruKg; }
+  setCru(i: ConsumoConsolidado, v: number | null) { this.patchLinha(i.ingredienteId, { cruKg: this.num(v) }); }
+  cozidoDe(i: ConsumoConsolidado) { return this.linha(i.ingredienteId).cozidoKg; }
+  setCozido(i: ConsumoConsolidado, v: number | null) { this.patchLinha(i.ingredienteId, { cozidoKg: this.num(v) }); }
+  sobraDe(i: ConsumoConsolidado) { return this.linha(i.ingredienteId).sobraKg; }
+  setSobra(i: ConsumoConsolidado, v: number | null) { this.patchLinha(i.ingredienteId, { sobraKg: this.num(v) }); }
+  perdaDe(i: ConsumoConsolidado) { return this.linha(i.ingredienteId).perdaKg; }
+  setPerda(i: ConsumoConsolidado, v: number | null) { this.patchLinha(i.ingredienteId, { perdaKg: this.num(v) }); }
+  motivoDe(i: ConsumoConsolidado) { return this.linha(i.ingredienteId).motivo; }
+  setMotivo(i: ConsumoConsolidado, v: string) { this.patchLinha(i.ingredienteId, { motivo: v || null }); }
+
+  /** Ingredientes do consolidado ainda sem o cru real informado (bloqueiam finalização). */
+  readonly cruRealFaltando = computed(() =>
+    (this.ordem()?.consolidado ?? []).filter((c) => this.linha(c.ingredienteId).cruKg == null).length,
+  );
+
+  /** Fichas ainda não finalizadas (nem Conferida nem Não feita). */
+  readonly fichasEmAberto = computed(() =>
+    this.fichas().filter((f) => f.status !== 'Conferida' && f.status !== 'NaoFeita').length,
+  );
 
   // ----- Maximizar -----
   maximizarIngredientes(): void {
@@ -127,22 +167,36 @@ export class ProducaoDiaComponent implements OnInit {
   finalizar(): void {
     const o = this.ordem();
     if (!o) return;
+
+    // Guarda 1: todas as fichas precisam estar Conferida ou Não feita.
+    if (this.fichasEmAberto() > 0) {
+      this.snack.open('Existem fichas ainda pendentes. Marque todas como Conferida ou Não feita antes de finalizar a produção.', 'OK', { duration: 5000 });
+      return;
+    }
+    // Guarda 2: cru real obrigatório para todos os ingredientes.
+    if (this.cruRealFaltando() > 0) {
+      this.snack.open('Informe o peso cru real usado para todos os ingredientes antes de finalizar a produção.', 'OK', { duration: 5000 });
+      return;
+    }
+
     const ref = this.dialog.open(ProducaoFinalizarDialogComponent, { width: '560px', maxWidth: '96vw', autoFocus: false });
     ref.afterClosed().subscribe(async (res: FinalizarResult | undefined) => {
       if (!res) return;
-      const itens: ConsumoRealRequest[] = (o.consolidado ?? [])
-        .map((c) => {
-          const loc = this.consumo().get(c.ingredienteId);
-          return {
-            ingredienteId: c.ingredienteId,
-            realCruGramas: loc?.cruKg != null ? Math.round(loc.cruKg * 1000) : null,
-            realCozidoGramas: null,
-            motivo: loc?.motivo ?? null,
-          };
-        })
-        .filter((x) => x.realCruGramas != null || x.motivo);
+      const kg = (v: number | null) => (v != null ? Math.round(v * 1000) : null);
+      const itens: ConsumoRealRequest[] = (o.consolidado ?? []).map((c) => {
+        const loc = this.linha(c.ingredienteId);
+        return {
+          ingredienteId: c.ingredienteId,
+          realCruGramas: kg(loc.cruKg),
+          realCozidoGramas: kg(loc.cozidoKg),
+          sobraGramas: kg(loc.sobraKg),
+          perdaGramas: kg(loc.perdaKg),
+          motivo: loc.motivo ?? null,
+        };
+      });
       try {
         const r = await this.store.finalizarDia(itens, res.tudoProduzido, res.observacoes);
+        this.seed();
         const pend = r.pendenciasEstoque.length
           ? ` Pendências de estoque: ${r.pendenciasEstoque.join(', ')}.`
           : '';

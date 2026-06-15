@@ -50,23 +50,43 @@
       <button mat-stroked-button (click)="maximizarIngredientes()"><mat-icon>open_in_full</mat-icon> Maximizar</button>
     </div>
     <div class="tabela-ing">
-      <div class="thead"><span>Ingrediente</span><span class="t-r">Cozido</span><span class="t-r">Cru estimado</span><span class="t-r">Cru usado</span><span>Motivo</span></div>
+      <div class="thead">
+        <span>Ingrediente</span>
+        <span class="t-r">Cozido nec.</span>
+        <span class="t-r">Cru previsto</span>
+        <span class="t-r">Cru usado (kg)</span>
+        <span class="t-r">Cozido real (kg)</span>
+        <span class="t-r">Sobra (kg)</span>
+        <span class="t-r">Perda (kg)</span>
+        <span>Motivo</span>
+      </div>
       <div class="ing-scroll">
         @for (g of gruposConsolidado(); track g.categoria) {
           <div class="grupo-cat">{{ g.categoria }}</div>
           @for (i of g.itens; track i.ingredienteId) {
-            <div class="trow">
-              <span class="ing">{{ i.ingredienteNome }}</span>
+            <div class="trow" [class.sem-real]="!finalizada() && cruDe(i) === null">
+              <span class="ing">{{ i.ingredienteNome }}@if (i.semItemVinculado) { <mat-icon class="sem-vinc" matTooltip="Ingrediente sem item de estoque vinculado — não baixa estoque">link_off</mat-icon> }</span>
               <span class="t-r">{{ fmtPeso(i.cozidoGramas) }}</span>
               <span class="t-r">{{ fmtPeso(i.cruGramas) }}</span>
-              <span class="t-r"><input class="cru-input" type="number" step="0.1" [ngModel]="cruDe(i)" (ngModelChange)="setCru(i, $event)" [disabled]="finalizada()" placeholder="—" /> kg</span>
+              <span class="t-r"><input class="cru-input" type="number" step="0.1" min="0" [ngModel]="cruDe(i)" (ngModelChange)="setCru(i, $event)" [disabled]="finalizada()" placeholder="—" /></span>
+              <span class="t-r"><input class="cru-input" type="number" step="0.1" min="0" [ngModel]="cozidoDe(i)" (ngModelChange)="setCozido(i, $event)" [disabled]="finalizada()" placeholder="—" /></span>
+              <span class="t-r"><input class="cru-input" type="number" step="0.1" min="0" [ngModel]="sobraDe(i)" (ngModelChange)="setSobra(i, $event)" [disabled]="finalizada()" placeholder="—" /></span>
+              <span class="t-r"><input class="cru-input" type="number" step="0.1" min="0" [ngModel]="perdaDe(i)" (ngModelChange)="setPerda(i, $event)" [disabled]="finalizada()" placeholder="—" /></span>
               <span><input class="motivo-input" [ngModel]="motivoDe(i)" (ngModelChange)="setMotivo(i, $event)" [disabled]="finalizada()" placeholder="motivo (se divergir)" /></span>
             </div>
           }
         }
       </div>
     </div>
-    <p class="nota-baixa">Na finalização, a baixa no estoque usa o <strong>cru usado</strong> informado (ou o estimado, se vazio). Ex.: pediu 1,8 kg e usou 2 kg → baixa 2 kg.</p>
+    <p class="nota-baixa">A baixa do estoque usa <strong>obrigatoriamente o cru usado</strong> informado em cada ingrediente (não o previsto). Ex.: previsto 2,2 kg e usou 2,8 kg → baixa 2,8 kg. Informe o cru usado de todos os ingredientes para conseguir finalizar.</p>
+    @if (!finalizada() && (cruRealFaltando() > 0 || fichasEmAberto() > 0)) {
+      <p class="bloqueio-finalizar">
+        <mat-icon>info</mat-icon>
+        @if (fichasEmAberto() > 0) { {{ fichasEmAberto() }} ficha(s) ainda em aberto. }
+        @if (cruRealFaltando() > 0) { {{ cruRealFaltando() }} ingrediente(s) sem cru usado informado. }
+        Resolva antes de finalizar.
+      </p>
+    }
   </section>
 
   <!-- Fichas técnicas -->

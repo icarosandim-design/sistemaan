@@ -38,6 +38,8 @@ public class ConsumoIngredienteProducao : Entity
 
     public decimal? RealCruGramas { get; private set; }
     public decimal? RealCozidoGramas { get; private set; }
+    public decimal? SobraGramas { get; private set; }
+    public decimal? PerdaGramas { get; private set; }
     public bool BaixaRealizada { get; private set; }
     public string? Observacao { get; private set; }
 
@@ -46,10 +48,12 @@ public class ConsumoIngredienteProducao : Entity
         decimal coeficiente, string? unidadeEstoque, int planejadoCozidoGramas, int planejadoCruGramas)
         => new(ingredienteId, ingredienteNome, itemEstoqueId, itemEstoqueNome, coeficiente, unidadeEstoque, planejadoCozidoGramas, planejadoCruGramas);
 
-    public void RegistrarReal(decimal? realCruGramas, decimal? realCozidoGramas, string? observacao)
+    public void RegistrarReal(decimal? realCruGramas, decimal? realCozidoGramas, decimal? sobraGramas, decimal? perdaGramas, string? observacao)
     {
         RealCruGramas = realCruGramas;
         RealCozidoGramas = realCozidoGramas;
+        SobraGramas = sobraGramas;
+        PerdaGramas = perdaGramas;
         Observacao = observacao;
     }
 

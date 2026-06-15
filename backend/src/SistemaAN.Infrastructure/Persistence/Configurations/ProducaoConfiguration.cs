@@ -128,6 +128,8 @@ public sealed class ConsumoIngredienteProducaoConfiguration : IEntityTypeConfigu
         builder.Property(c => c.PlanejadoCruGramas).IsRequired();
         builder.Property(c => c.RealCruGramas).HasPrecision(18, 3);
         builder.Property(c => c.RealCozidoGramas).HasPrecision(18, 3);
+        builder.Property(c => c.SobraGramas).HasPrecision(18, 3);
+        builder.Property(c => c.PerdaGramas).HasPrecision(18, 3);
         builder.Property(c => c.BaixaRealizada).IsRequired();
         builder.Property(c => c.Observacao).HasMaxLength(1000);
 

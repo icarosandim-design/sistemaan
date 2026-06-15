@@ -78,6 +78,12 @@ export interface ConsumoConsolidado {
   cruGramas: number;
   itemEstoqueId: number | null;
   semItemVinculado: boolean;
+  // Reais persistidos (gramas) — reidratam a tela ao recarregar.
+  realCruGramas: number | null;
+  realCozidoGramas: number | null;
+  sobraGramas: number | null;
+  perdaGramas: number | null;
+  observacao: string | null;
 }
 
 export interface OrdemProducao {
@@ -130,6 +136,8 @@ export interface ConsumoRealRequest {
   ingredienteId: number;
   realCruGramas?: number | null;
   realCozidoGramas?: number | null;
+  sobraGramas?: number | null;
+  perdaGramas?: number | null;
   motivo?: string | null;
 }
 

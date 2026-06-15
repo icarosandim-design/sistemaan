@@ -59,7 +59,12 @@ public sealed record ConsumoConsolidadoDto(
     int CozidoGramas,
     int CruGramas,
     long? ItemEstoqueId,
-    bool SemItemVinculado);
+    bool SemItemVinculado,
+    decimal? RealCruGramas,
+    decimal? RealCozidoGramas,
+    decimal? SobraGramas,
+    decimal? PerdaGramas,
+    string? Observacao);
 
 public sealed record OrdemProducaoDto(
     long Id,
@@ -87,7 +92,13 @@ public sealed record ConcluirFichaRequest(int PacotesReais, int? PesoEnvasadoGra
 
 public sealed record MarcarNaoFeitaRequest(string Motivo);
 
-public sealed record ConsumoRealRequest(long IngredienteId, decimal? RealCruGramas, decimal? RealCozidoGramas, string? Motivo);
+public sealed record ConsumoRealRequest(
+    long IngredienteId,
+    decimal? RealCruGramas,
+    decimal? RealCozidoGramas,
+    decimal? SobraGramas,
+    decimal? PerdaGramas,
+    string? Motivo);
 
 public sealed record RegistrarConsumoRequest(IReadOnlyList<ConsumoRealRequest> Itens);
 
@@ -99,6 +110,8 @@ public sealed record ResumoConsumoDto(
     decimal? RealCruGramas,
     int PlanejadoCozidoGramas,
     decimal? RealCozidoGramas,
+    decimal? SobraGramas,
+    decimal? PerdaGramas,
     bool BaixaRealizada);
 
 public sealed record FinalizacaoResultadoDto(

@@ -117,6 +117,7 @@ public sealed class ProducaoService : IProducaoService
     {
         var ordem = await _db.OrdensProducao
             .Include(o => o.Fichas).ThenInclude(f => f.Ingredientes)
+            .Include(o => o.Consumos)
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken)
             ?? throw new NotFoundException("Ordem de produção", id);
@@ -152,6 +153,22 @@ public sealed class ProducaoService : IProducaoService
         var idsNovos = (request.EntregaItemIds ?? []).Where(id => ordem.Fichas.All(f => f.EntregaItemId != id)).ToList();
         if (idsNovos.Count > 0)
         {
+            // Bloqueio de duplicidade: o mesmo EntregaItem não pode estar em outra ordem em aberto.
+            var jaEmOutraOrdem = await _db.OrdensProducao
+                .Where(o => o.Id != ordemId && o.Status != StatusOrdemProducao.Finalizada)
+                .SelectMany(o => o.Fichas)
+                .Where(f => f.EntregaItemId != null && idsNovos.Contains(f.EntregaItemId.Value))
+                .Select(f => f.EntregaItemId!.Value)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+            if (jaEmOutraOrdem.Count > 0)
+            {
+                throw new ValidationException(new Dictionary<string, string[]>
+                {
+                    ["entregaItemIds"] = ["Esta receita personalizada já está em uma ordem de produção em aberto."],
+                });
+            }
+
             var entregas = await _db.Entregas
                 .Where(e => e.Pets.Any(p => p.Itens.Any(i => idsNovos.Contains(i.Id))))
                 .Include(e => e.Pets).ThenInclude(p => p.Itens).ThenInclude(i => i.Ingredientes)
@@ -286,7 +303,7 @@ public sealed class ProducaoService : IProducaoService
         foreach (var item in request.Itens ?? [])
         {
             var consumo = ordem.Consumos.FirstOrDefault(c => c.IngredienteId == item.IngredienteId);
-            consumo?.RegistrarReal(item.RealCruGramas, item.RealCozidoGramas, item.Motivo);
+            consumo?.RegistrarReal(item.RealCruGramas, item.RealCozidoGramas, item.SobraGramas, item.PerdaGramas, item.Motivo);
         }
         await _db.SaveChangesAsync(cancellationToken);
         return await ObterAsync(ordem.Id, cancellationToken);
@@ -301,12 +318,32 @@ public sealed class ProducaoService : IProducaoService
         }
         await GarantirConsumosAsync(ordem, cancellationToken);
 
+        // Bloqueio 1: todas as fichas devem estar em situação final (Conferida ou NaoFeita).
+        var fichasEmAberto = ordem.Fichas.Count(f => f.Status != StatusFichaProducao.Conferida && f.Status != StatusFichaProducao.NaoFeita);
+        if (fichasEmAberto > 0)
+        {
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["fichas"] = ["Existem fichas ainda pendentes. Marque todas como Conferida ou Não feita antes de finalizar a produção."],
+            });
+        }
+
+        // Bloqueio 2: o cru real deve ser informado para todos os ingredientes da lista consolidada.
+        var semCruReal = ordem.Consumos.Where(c => c.RealCruGramas is null).Select(c => c.IngredienteNome).ToList();
+        if (semCruReal.Count > 0)
+        {
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["consumo"] = ["Informe o peso cru real usado para todos os ingredientes antes de finalizar a produção."],
+            });
+        }
+
         var pendencias = new List<string>();
 
-        // 1. Baixa de insumos (cru real, ou planejado se vazio).
+        // 1. Baixa de insumos — sempre pelo cru REAL informado na lista consolidada.
         foreach (var c in ordem.Consumos.Where(x => x.ItemEstoqueId is not null && !x.BaixaRealizada))
         {
-            var cruGramas = c.RealCruGramas ?? c.PlanejadoCruGramas;
+            var cruGramas = c.RealCruGramas!.Value;
             var qtdUnidade = ConverterGramasParaUnidade(cruGramas, c.UnidadeEstoque);
             var ok = await _estoque.BaixarPorProducaoAsync(c.ItemEstoqueId!.Value, qtdUnidade, ordem.Id, usuario, $"Produção {ordem.Data:dd/MM/yyyy}", cancellationToken);
             if (ok)
@@ -360,7 +397,7 @@ public sealed class ProducaoService : IProducaoService
         await _db.SaveChangesAsync(cancellationToken);
 
         var consumosDto = ordem.Consumos
-            .Select(c => new ResumoConsumoDto(c.IngredienteNome, c.PlanejadoCruGramas, c.RealCruGramas, c.PlanejadoCozidoGramas, c.RealCozidoGramas, c.BaixaRealizada))
+            .Select(c => new ResumoConsumoDto(c.IngredienteNome, c.PlanejadoCruGramas, c.RealCruGramas, c.PlanejadoCozidoGramas, c.RealCozidoGramas, c.SobraGramas, c.PerdaGramas, c.BaixaRealizada))
             .OrderBy(c => c.IngredienteNome).ToList();
 
         return new FinalizacaoResultadoDto(
@@ -453,12 +490,18 @@ public sealed class ProducaoService : IProducaoService
             .ToListAsync(cancellationToken);
         var vinculoPorIngrediente = vinculos.ToDictionary(v => v.IngredienteId, v => v.Id);
 
+        // Valores reais já registrados (persistidos na ordem) para reidratar a tela.
+        var realPorIngrediente = ordem.Consumos.ToDictionary(c => c.IngredienteId);
+
         var consolidado = agrupado
             .Select(a =>
             {
                 var temVinculo = vinculoPorIngrediente.TryGetValue(a.IngredienteId, out var itemId);
                 var cru = a.Coeficiente > 0 ? (int)Math.Round(a.Cozido / a.Coeficiente, MidpointRounding.AwayFromZero) : a.Cozido;
-                return new ConsumoConsolidadoDto(a.IngredienteId, a.Nome, a.Categoria, a.Cozido, cru, temVinculo ? itemId : null, !temVinculo);
+                realPorIngrediente.TryGetValue(a.IngredienteId, out var real);
+                return new ConsumoConsolidadoDto(
+                    a.IngredienteId, a.Nome, a.Categoria, a.Cozido, cru, temVinculo ? itemId : null, !temVinculo,
+                    real?.RealCruGramas, real?.RealCozidoGramas, real?.SobraGramas, real?.PerdaGramas, real?.Observacao);
             })
             .OrderBy(c => c.Categoria).ThenBy(c => c.IngredienteNome)
             .ToList();

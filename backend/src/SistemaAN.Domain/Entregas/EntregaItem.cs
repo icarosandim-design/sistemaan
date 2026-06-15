@@ -59,6 +59,18 @@ public class EntregaItem : Entity
         PreparadoPor = usuario;
     }
 
+    /// <summary>
+    /// Baixa o produto finalizado/reservado da Personalizada quando a entrega é concluída.
+    /// A reserva (pacotes prontos) é zerada — não fica disponível após a entrega.
+    /// </summary>
+    public void BaixarReservaEntregue()
+    {
+        if (Tipo == TipoReceita.Personalizada)
+        {
+            PacotesProntos = 0;
+        }
+    }
+
     public static EntregaItem CriarCasa(
         long receitaId, string codigo, string nome, int quantidadeCicloGramas,
         IEnumerable<EntregaItemPacote> pacotes)
