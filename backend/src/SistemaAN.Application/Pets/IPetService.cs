@@ -4,6 +4,8 @@ public interface IPetService
 {
     Task<IReadOnlyList<PetDto>> ListarPorClienteAsync(long clienteId, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<PetResumoDto>> ListarTodosAsync(string? busca, bool? ativo, string? tipo, CancellationToken cancellationToken = default);
+
     Task<PetDto> ObterAsync(long id, CancellationToken cancellationToken = default);
 
     Task<PetDto> CriarAsync(long clienteId, SalvarPetRequest request, CancellationToken cancellationToken = default);

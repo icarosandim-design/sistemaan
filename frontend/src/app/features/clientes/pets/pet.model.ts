@@ -17,6 +17,21 @@ export interface Pet {
   gramasDiaSugeridas: number | null; // calculado pela Tabela de Consumo (backend)
 }
 
+/** Linha da visão geral de Pets (PetResumoDto no backend). */
+export interface PetResumo {
+  id: number;
+  clienteId: number;
+  nome: string;
+  tutorNome: string;
+  raca: string | null;
+  pesoKg: number;
+  sexo: Sexo | null;
+  ativo: boolean;
+  tipoAlimentacao: string | null;
+  receitaAtual: string | null;
+  proximaEntrega: string | null;
+}
+
 /** Payload de criação/edição (SalvarPetRequest no backend). */
 export interface SalvarPetRequest {
   nome: string;

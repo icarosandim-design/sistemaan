@@ -1,0 +1,60 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title"><h1>Pets</h1><p class="subtitulo">Visão geral dos pets dos clientes Pessoa Física.</p></div>
+    <button mat-flat-button class="btn-cta" (click)="novo()"><mat-icon>add</mat-icon> Novo pet</button>
+  </header>
+
+  <div class="filtros">
+    <mat-form-field appearance="outline" class="f-busca" subscriptSizing="dynamic">
+      <mat-label>Pet ou tutor</mat-label>
+      <input matInput [(ngModel)]="busca" (keyup.enter)="carregar()" />
+      @if (busca) { <button matSuffix mat-icon-button (click)="busca = ''; carregar()"><mat-icon>close</mat-icon></button> }
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f-sel" subscriptSizing="dynamic">
+      <mat-label>Alimentação</mat-label>
+      <mat-select [(ngModel)]="filtroTipo" (selectionChange)="carregar()">
+        <mat-option value="">Todas</mat-option>
+        <mat-option value="Casa">Casa</mat-option>
+        <mat-option value="Personalizada">Personalizada</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f-sel" subscriptSizing="dynamic">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="filtroAtivo" (selectionChange)="carregar()">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="true">Ativos</mat-option>
+        <mat-option value="false">Inativos</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-stroked-button (click)="carregar()"><mat-icon>search</mat-icon> Filtrar</button>
+  </div>
+
+  @if (carregando()) {
+    <div class="carregando"><mat-spinner diameter="32"></mat-spinner></div>
+  } @else {
+    <div class="tabela">
+      <div class="thead">
+        <span>Pet</span><span>Tutor</span><span class="t-r">Peso</span><span>Alimentação</span><span>Receita</span><span>Próx. entrega</span><span class="t-c">Status</span><span class="t-r">Ações</span>
+      </div>
+      @for (p of pets(); track p.id) {
+        <div class="trow" [class.inativo]="!p.ativo">
+          <span class="nome">{{ p.nome }}<small class="raca">{{ p.raca ? ' · ' + p.raca : '' }}</small></span>
+          <span class="tutor">{{ p.tutorNome }}</span>
+          <span class="t-r">{{ p.pesoKg }} kg</span>
+          <span>{{ p.tipoAlimentacao || '—' }}</span>
+          <span>{{ p.receitaAtual || '—' }}</span>
+          <span>{{ fmtData(p.proximaEntrega) }}</span>
+          <span class="t-c"><span class="status" [class.on]="p.ativo">{{ p.ativo ? 'Ativo' : 'Inativo' }}</span></span>
+          <span class="acoes t-r">
+            <button mat-icon-button matTooltip="Ver / editar" (click)="editar(p)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button [matTooltip]="p.ativo ? 'Inativar' : 'Ativar'" (click)="alternarStatus(p)">
+              <mat-icon>{{ p.ativo ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+            </button>
+          </span>
+        </div>
+      } @empty {
+        <p class="vazio">Nenhum pet encontrado.</p>
+      }
+    </div>
+  }
+</section>

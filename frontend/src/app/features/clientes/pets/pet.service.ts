@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Pet, SalvarPetRequest } from './pet.model';
+import { Pet, PetResumo, SalvarPetRequest } from './pet.model';
 
 interface FaixaConsumo {
   gramasPorDia: number;
@@ -15,6 +15,19 @@ export class PetService {
 
   listarPorCliente(clienteId: number): Observable<Pet[]> {
     return this.http.get<Pet[]>(`${this.api}/clientes/${clienteId}/pets`);
+  }
+
+  /** Visão geral de todos os pets (com tutor, plano/receita e próxima entrega). */
+  listarTodos(busca?: string, ativo?: boolean | null, tipo?: string): Observable<PetResumo[]> {
+    let params = new HttpParams();
+    if (busca) params = params.set('busca', busca);
+    if (ativo !== null && ativo !== undefined) params = params.set('ativo', String(ativo));
+    if (tipo) params = params.set('tipo', tipo);
+    return this.http.get<PetResumo[]>(`${this.api}/pets`, { params });
+  }
+
+  obter(id: number): Observable<Pet> {
+    return this.http.get<Pet>(`${this.api}/pets/${id}`);
   }
 
   criar(clienteId: number, req: SalvarPetRequest): Observable<Pet> {

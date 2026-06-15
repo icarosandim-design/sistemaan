@@ -13,6 +13,12 @@ public sealed class PetsController : ControllerBase
 
     public PetsController(IPetService service) => _service = service;
 
+    /// <summary>Lista todos os pets (visão geral: tutor, plano/receita, próxima entrega).</summary>
+    [HttpGet("pets")]
+    public async Task<ActionResult<IReadOnlyList<PetResumoDto>>> Listar(
+        [FromQuery] string? busca, [FromQuery] bool? ativo, [FromQuery] string? tipo, CancellationToken ct)
+        => Ok(await _service.ListarTodosAsync(busca, ativo, tipo, ct));
+
     /// <summary>Lista os pets de um cliente.</summary>
     [HttpGet("clientes/{clienteId:long}/pets")]
     public async Task<ActionResult<IReadOnlyList<PetDto>>> ListarPorCliente(long clienteId, CancellationToken ct)

@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
 using SistemaAN.Application.Entregas;
+using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
+using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Pets;
 
 namespace SistemaAN.Application.Pets;
@@ -46,6 +48,72 @@ public sealed class PetService : IPetService
 
         var faixas = await FaixasAtivasAsync(cancellationToken);
         return pets.Select(p => Map(p, Sugerir(faixas, p.PesoKg))).ToList();
+    }
+
+    public async Task<IReadOnlyList<PetResumoDto>> ListarTodosAsync(string? busca, bool? ativo, string? tipo, CancellationToken cancellationToken = default)
+    {
+        // Pets pertencem a Clientes Pessoa Física.
+        var q = from p in _db.Pets
+                join c in _db.Clientes on p.ClienteId equals c.Id
+                where c.Natureza == NaturezaCliente.PessoaFisica
+                select new { Pet = p, Tutor = c.Nome };
+
+        if (!string.IsNullOrWhiteSpace(busca))
+        {
+            var t = busca.Trim();
+            q = q.Where(x => x.Pet.Nome.Contains(t) || x.Tutor.Contains(t));
+        }
+        if (ativo.HasValue)
+        {
+            q = q.Where(x => x.Pet.Ativo == ativo.Value);
+        }
+
+        var rows = await q.OrderByDescending(x => x.Pet.Ativo).ThenBy(x => x.Pet.Nome).ToListAsync(cancellationToken);
+        var petIds = rows.Select(x => x.Pet.Id).ToList();
+        var clienteIds = rows.Select(x => x.Pet.ClienteId).Distinct().ToList();
+
+        var planos = await _db.PlanosAlimentares
+            .Where(pl => pl.Ativo && petIds.Contains(pl.PetId))
+            .Include(pl => pl.Itens)
+            .ToListAsync(cancellationToken);
+        var planoPorPet = planos.ToDictionary(pl => pl.PetId);
+
+        var receitaIds = planos.SelectMany(pl => pl.Itens).Select(i => i.ReceitaId).Distinct().ToList();
+        var receitas = await _db.Receitas.Where(r => receitaIds.Contains(r.Id))
+            .Select(r => new { r.Id, r.Codigo })
+            .ToDictionaryAsync(r => r.Id, r => r.Codigo, cancellationToken);
+
+        var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
+        var ativos = new[] { EntregaStatus.Programada, EntregaStatus.ConfirmadaCliente, EntregaStatus.SaiuParaEntrega };
+        var proximas = await _db.Entregas
+            .Where(e => ativos.Contains(e.Status) && e.DataPrevista >= hoje && clienteIds.Contains(e.ClienteId))
+            .GroupBy(e => e.ClienteId)
+            .Select(g => new { ClienteId = g.Key, Data = g.Min(x => x.DataPrevista) })
+            .ToListAsync(cancellationToken);
+        var proximaPorCliente = proximas.ToDictionary(x => x.ClienteId, x => x.Data);
+
+        var lista = rows.Select(x =>
+        {
+            planoPorPet.TryGetValue(x.Pet.Id, out var plano);
+            string? tipoAlim = plano?.Tipo.ToString();
+            string? receitaAtual = null;
+            if (plano is not null)
+            {
+                var cods = plano.Itens.Select(i => receitas.TryGetValue(i.ReceitaId, out var cod) ? cod : null)
+                    .Where(c => c is not null).Distinct().ToList();
+                receitaAtual = cods.Count > 0 ? string.Join(", ", cods) : null;
+            }
+            DateOnly? proxima = proximaPorCliente.TryGetValue(x.Pet.ClienteId, out var d) ? d : null;
+            return new PetResumoDto(
+                x.Pet.Id, x.Pet.ClienteId, x.Pet.Nome, x.Tutor, x.Pet.Raca, x.Pet.PesoKg,
+                x.Pet.Sexo?.ToString(), x.Pet.Ativo, tipoAlim, receitaAtual, proxima);
+        }).ToList();
+
+        if (!string.IsNullOrWhiteSpace(tipo))
+        {
+            lista = lista.Where(x => string.Equals(x.TipoAlimentacao, tipo, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        return lista;
     }
 
     public async Task<PetDto> ObterAsync(long id, CancellationToken cancellationToken = default)
