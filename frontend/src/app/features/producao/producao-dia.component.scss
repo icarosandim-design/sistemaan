@@ -85,3 +85,7 @@
 .ing .sem-vinc { font-size: 0.95rem; width: 0.95rem; height: 0.95rem; color: #b3261e; vertical-align: middle; }
 .bloqueio-finalizar { display: flex; align-items: center; gap: 0.4rem; margin: 0.4rem 0 0; font-size: 0.8rem; color: #8a6d1f;
   .mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; } }
+
+/* ----- Operador: somente visualização ----- */
+.so-visualizacao { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; color: var(--an-texto-secundario); font-weight: 600;
+  .mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; } }

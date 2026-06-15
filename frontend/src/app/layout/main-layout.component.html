@@ -13,7 +13,7 @@
     </div>
 
     <mat-nav-list>
-      @for (item of menu; track item.label) {
+      @for (item of menuVisivel(); track item.label) {
         @if (item.filhos) {
           <a mat-list-item class="grupo" (click)="alternarGrupo(item.label)">
             <mat-icon matListItemIcon>{{ item.icone }}</mat-icon>

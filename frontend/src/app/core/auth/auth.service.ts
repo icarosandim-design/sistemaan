@@ -22,6 +22,15 @@ export class AuthService {
   /** Estado reativo de autenticação. */
   readonly autenticado = computed(() => this.usuarioSignal() !== null);
 
+  /** Papéis (perfis) do usuário atual. */
+  readonly papeis = computed(() => this.usuarioSignal()?.papeis ?? []);
+
+  /** Verifica se o usuário possui algum dos papéis informados. */
+  temPapel(...nomes: string[]): boolean {
+    const meus = this.papeis();
+    return nomes.some((n) => meus.includes(n));
+  }
+
   login(credenciais: LoginRequest): Observable<AuthResult> {
     return this.http.post<AuthResult>(`${this.baseUrl}/login`, credenciais).pipe(
       tap((auth) => {

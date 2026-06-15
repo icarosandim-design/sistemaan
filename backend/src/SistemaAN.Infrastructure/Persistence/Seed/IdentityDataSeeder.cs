@@ -32,16 +32,19 @@ public sealed class IdentityDataSeeder
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        var papelAdmin = await _db.Papeis
-            .FirstOrDefaultAsync(p => p.Nome == PapeisDoSistema.Administrador, cancellationToken);
-
-        if (papelAdmin is null)
+        // Garante os perfis fixos do sistema (Administrador, Operador, Cozinha).
+        foreach (var (nome, descricao) in PapeisDoSistema.Todos)
         {
-            papelAdmin = Papel.Criar(PapeisDoSistema.Administrador, "Acesso total ao sistema.");
-            _db.Papeis.Add(papelAdmin);
-            await _db.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Papel '{Papel}' criado.", PapeisDoSistema.Administrador);
+            if (!await _db.Papeis.AnyAsync(p => p.Nome == nome, cancellationToken))
+            {
+                _db.Papeis.Add(Papel.Criar(nome, descricao));
+                _logger.LogInformation("Papel '{Papel}' criado.", nome);
+            }
         }
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var papelAdmin = await _db.Papeis
+            .FirstAsync(p => p.Nome == PapeisDoSistema.Administrador, cancellationToken);
 
         var email = Usuario.Normalizar(_configuration["Seed:AdminEmail"] ?? "admin@sistemaan.local");
 

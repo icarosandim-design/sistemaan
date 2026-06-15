@@ -14,6 +14,8 @@ public sealed class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.Nome).HasMaxLength(120).IsRequired();
         builder.Property(u => u.Email).HasMaxLength(160).IsRequired();
         builder.Property(u => u.SenhaHash).HasMaxLength(255).IsRequired();
+        builder.Property(u => u.Telefone).HasMaxLength(30);
+        builder.Property(u => u.Observacoes).HasMaxLength(1000);
         builder.Property(u => u.Ativo).IsRequired();
 
         builder.HasIndex(u => u.Email).IsUnique();

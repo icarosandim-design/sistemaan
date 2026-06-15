@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { papelGuard } from './core/auth/papel.guard';
+import { ADMIN_OPERADOR, SO_ADMIN, TODOS_PERFIS } from './core/auth/perfis';
 import { LoginComponent } from './features/login/login.component';
 import { MainLayoutComponent } from './layout/main-layout.component';
 import { CentralOperacionalComponent } from './features/central/central-operacional.component';
@@ -20,33 +22,36 @@ import { ProducaoDiaComponent } from './features/producao/producao-dia.component
 import { ProducaoCozinhaComponent } from './features/producao/cozinha.component';
 import { ProducaoImpressaoComponent } from './features/producao/impressao.component';
 import { ProducaoRendimentosComponent } from './features/producao/rendimentos.component';
+import { UsuariosComponent } from './features/usuarios/usuarios.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   // Pré-visualização de impressão (tela cheia, sem layout) — protótipo
-  { path: 'producao/impressao/:tipo', component: ProducaoImpressaoComponent, canActivate: [authGuard] },
+  { path: 'producao/impressao/:tipo', component: ProducaoImpressaoComponent, canActivate: [authGuard, papelGuard], data: { papeis: TODOS_PERFIS } },
   {
     path: '',
     component: MainLayoutComponent,
     canActivate: [authGuard],
+    canActivateChild: [papelGuard],
     children: [
-      { path: 'central', component: CentralOperacionalComponent },
-      { path: 'clientes', component: ClientesComponent },
-      { path: 'entregas', component: EntregasComponent },
-      { path: 'estoque/itens', component: ItensEstoqueComponent },
-      { path: 'estoque/compras', component: ComprasComponent },
-      { path: 'estoque/movimentacoes', component: MovimentacoesComponent },
-      { path: 'estoque/fornecedores', component: FornecedoresComponent },
-      { path: 'cadastros/categorias', component: CategoriasComponent },
-      { path: 'producao/planejar', component: ProducaoPlanejarComponent },
-      { path: 'producao/dia', component: ProducaoDiaComponent },
-      { path: 'producao/cozinha', component: ProducaoCozinhaComponent },
-      { path: 'producao/rendimentos', component: ProducaoRendimentosComponent },
-      { path: 'ingredientes', component: IngredientesComponent },
-      { path: 'tabela-consumo', component: ConsumoComponent },
-      { path: 'receitas', component: ReceitasComponent },
-      { path: 'tamanhos-pacote', component: TamanhosPacoteComponent },
-      { path: 'frequencias-entrega', component: FrequenciasComponent },
+      { path: 'central', component: CentralOperacionalComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'clientes', component: ClientesComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'entregas', component: EntregasComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'estoque/itens', component: ItensEstoqueComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'estoque/compras', component: ComprasComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'estoque/movimentacoes', component: MovimentacoesComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'estoque/fornecedores', component: FornecedoresComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'cadastros/categorias', component: CategoriasComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'cadastros/usuarios', component: UsuariosComponent, data: { papeis: SO_ADMIN } },
+      { path: 'producao/planejar', component: ProducaoPlanejarComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'producao/dia', component: ProducaoDiaComponent, data: { papeis: TODOS_PERFIS } },
+      { path: 'producao/cozinha', component: ProducaoCozinhaComponent, data: { papeis: TODOS_PERFIS } },
+      { path: 'producao/rendimentos', component: ProducaoRendimentosComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'ingredientes', component: IngredientesComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'tabela-consumo', component: ConsumoComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'receitas', component: ReceitasComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'tamanhos-pacote', component: TamanhosPacoteComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'frequencias-entrega', component: FrequenciasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: '', pathMatch: 'full', redirectTo: 'central' },
     ],
   },

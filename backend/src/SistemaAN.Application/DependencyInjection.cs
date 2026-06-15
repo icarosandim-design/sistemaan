@@ -22,6 +22,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUsuarioService, UsuarioService>();
         services.AddScoped<IIngredienteService, IngredienteService>();
         services.AddScoped<ICategoriaIngredienteService, CategoriaIngredienteService>();
         services.AddScoped<IFaixaConsumoService, FaixaConsumoService>();

@@ -28,13 +28,15 @@
               </div>
               <div class="card-meta">{{ f.quantidadePacotes }} pacotes de {{ fmtPeso(f.pesoPacoteGramas) }}</div>
               @if (f.observacoes) { <div class="card-obs"><mat-icon>info</mat-icon> {{ f.observacoes }}</div> }
-              <div class="card-acoes">
-                <button mat-flat-button class="btn-av" (click)="ehEnvasada(f) ? concluir(f) : avancar(f)">
-                  <mat-icon>{{ ehEnvasada(f) ? 'task_alt' : 'check' }}</mat-icon>
-                  {{ ehEnvasada(f) ? 'Concluir' : 'Avançar' }}
-                </button>
-                <button mat-icon-button class="btn-no" (click)="naoFeita(f)" matTooltip="Não feita"><mat-icon>close</mat-icon></button>
-              </div>
+              @if (podeOperar()) {
+                <div class="card-acoes">
+                  <button mat-flat-button class="btn-av" (click)="ehEnvasada(f) ? concluir(f) : avancar(f)">
+                    <mat-icon>{{ ehEnvasada(f) ? 'task_alt' : 'check' }}</mat-icon>
+                    {{ ehEnvasada(f) ? 'Concluir' : 'Avançar' }}
+                  </button>
+                  <button mat-icon-button class="btn-no" (click)="naoFeita(f)" matTooltip="Não feita"><mat-icon>close</mat-icon></button>
+                </div>
+              }
             </article>
           } @empty {
             <p class="vazio">—</p>
@@ -56,7 +58,7 @@
           <span class="pill ok"><mat-icon>check_circle</mat-icon> {{ f.petNome || f.receitaNome }} ({{ f.quantidadePacotesReal ?? f.quantidadePacotes }} pac.)</span>
         }
         @for (f of naoFeitas(); track f.id) {
-          <span class="pill no" (click)="reabrir(f)" matTooltip="Reabrir"><mat-icon>cancel</mat-icon> {{ f.petNome || f.receitaNome }}</span>
+          <span class="pill no" [class.clic]="podeOperar()" (click)="podeOperar() && reabrir(f)" [matTooltip]="podeOperar() ? 'Reabrir' : ''"><mat-icon>cancel</mat-icon> {{ f.petNome || f.receitaNome }}</span>
         }
         @if (!concluidas().length && !naoFeitas().length) { <span class="vazio">Nada conferido ainda.</span> }
       </div>

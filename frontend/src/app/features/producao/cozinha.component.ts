@@ -9,6 +9,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FichaProducao, StatusFicha, fmtPeso } from './producao.model';
 import { ProducaoStore } from './producao.store';
 import { ConcluirFichaDialogComponent, ConcluirFichaResult } from './concluir-ficha-dialog.component';
+import { AuthService } from '../../core/auth/auth.service';
+import { PERFIL } from '../../core/auth/perfis';
 
 interface Coluna {
   key: string;
@@ -29,7 +31,11 @@ export class ProducaoCozinhaComponent implements OnInit {
   readonly store = inject(ProducaoStore);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  private readonly auth = inject(AuthService);
   readonly fmtPeso = fmtPeso;
+
+  /** Operador apenas visualiza; Administrador e Cozinha operam. */
+  readonly podeOperar = computed(() => this.auth.temPapel(PERFIL.ADMIN, PERFIL.COZINHA));
 
   readonly mostrarConcluidas = signal(false);
 

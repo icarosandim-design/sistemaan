@@ -1,0 +1,58 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title"><h1>Usuários</h1></div>
+    <button mat-flat-button class="btn-cta" (click)="novo()"><mat-icon>person_add</mat-icon> Novo usuário</button>
+  </header>
+
+  <div class="filtros">
+    <mat-form-field appearance="outline" class="f-busca" subscriptSizing="dynamic">
+      <mat-label>Nome ou e-mail</mat-label>
+      <input matInput [(ngModel)]="busca" (keyup.enter)="carregar()" />
+      @if (busca) { <button matSuffix mat-icon-button (click)="busca = ''; carregar()"><mat-icon>close</mat-icon></button> }
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f-sel" subscriptSizing="dynamic">
+      <mat-label>Perfil</mat-label>
+      <mat-select [(ngModel)]="filtroPerfil" (selectionChange)="carregar()">
+        <mat-option value="">Todos</mat-option>
+        @for (p of perfis(); track p.nome) { <mat-option [value]="p.nome">{{ p.nome }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="f-sel" subscriptSizing="dynamic">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="filtroAtivo" (selectionChange)="carregar()">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="true">Ativos</mat-option>
+        <mat-option value="false">Inativos</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-stroked-button (click)="carregar()"><mat-icon>search</mat-icon> Filtrar</button>
+  </div>
+
+  @if (carregando()) {
+    <div class="carregando"><mat-spinner diameter="32"></mat-spinner></div>
+  } @else {
+    <div class="tabela">
+      <div class="thead"><span>Nome</span><span>E-mail</span><span>Perfil</span><span class="t-c">Status</span><span>Atualizado</span><span class="t-r">Ações</span></div>
+      @for (u of usuarios(); track u.id) {
+        <div class="trow" [class.inativo]="!u.ativo">
+          <span class="nome">{{ u.nome }}</span>
+          <span class="email">{{ u.email }}</span>
+          <span><span class="perfil" [attr.data-p]="u.perfil">{{ u.perfil || '—' }}</span></span>
+          <span class="t-c">
+            <span class="status" [class.on]="u.ativo">{{ u.ativo ? 'Ativo' : 'Inativo' }}</span>
+          </span>
+          <span class="atualizado">{{ fmtData(u.atualizadoEm) }}</span>
+          <span class="acoes t-r">
+            <button mat-icon-button matTooltip="Editar" (click)="editar(u)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button matTooltip="Redefinir senha" (click)="redefinirSenha(u)"><mat-icon>key</mat-icon></button>
+            <button mat-icon-button [matTooltip]="u.ativo ? 'Inativar' : 'Ativar'" (click)="alternarStatus(u)">
+              <mat-icon>{{ u.ativo ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+            </button>
+          </span>
+        </div>
+      } @empty {
+        <p class="vazio">Nenhum usuário encontrado.</p>
+      }
+    </div>
+  }
+</section>

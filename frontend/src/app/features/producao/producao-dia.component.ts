@@ -14,6 +14,8 @@ import { ConsumoConsolidado, ConsumoRealRequest, FichaProducao, fmtPeso, rotuloS
 import { ProducaoStore } from './producao.store';
 import { ProducaoFinalizarDialogComponent, FinalizarResult } from './finalizar-dialog.component';
 import { FichaMaxComponent, FichasMaxComponent, FULLSCREEN, IngredientesMaxComponent } from './producao-max-dialogs.component';
+import { AuthService } from '../../core/auth/auth.service';
+import { PERFIL } from '../../core/auth/perfis';
 
 const ORDEM_CATS = ['Proteínas', 'Carboidratos', 'Legumes', 'Temperos', 'Óleos', 'Suplementos', 'Outros'];
 
@@ -43,6 +45,10 @@ export class ProducaoDiaComponent implements OnInit {
   readonly store = inject(ProducaoStore);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  private readonly auth = inject(AuthService);
+
+  /** Operador apenas visualiza; Administrador e Cozinha operam. */
+  readonly podeOperar = computed(() => this.auth.temPapel(PERFIL.ADMIN, PERFIL.COZINHA));
 
   readonly fmtPeso = fmtPeso;
   readonly rotuloStatusFicha = rotuloStatusFicha;

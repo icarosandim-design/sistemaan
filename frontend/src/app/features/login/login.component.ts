@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../core/auth/auth.service';
+import { rotaInicial } from '../../core/auth/perfis';
 import { TokenStorageService } from '../../core/auth/token-storage.service';
 
 @Component({
@@ -47,7 +48,7 @@ export class LoginComponent {
 
   constructor() {
     if (this.auth.estaAutenticado()) {
-      this.router.navigateByUrl('/central');
+      this.router.navigateByUrl(rotaInicial(this.auth.papeis()));
       return;
     }
 
@@ -80,7 +81,7 @@ export class LoginComponent {
           this.storage.esquecerEmail();
         }
 
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/central';
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? rotaInicial(this.auth.papeis());
         this.router.navigateByUrl(returnUrl);
       },
       error: (e: HttpErrorResponse) => {

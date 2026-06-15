@@ -27,6 +27,10 @@ public class Usuario : AggregateRoot
 
     public string SenhaHash { get; private set; } = string.Empty;
 
+    public string? Telefone { get; private set; }
+
+    public string? Observacoes { get; private set; }
+
     public bool Ativo { get; private set; }
 
     public IReadOnlyCollection<Papel> Papeis => _papeis.AsReadOnly();
@@ -37,6 +41,16 @@ public class Usuario : AggregateRoot
         => new(nome.Trim(), Normalizar(email), senhaHash);
 
     public void DefinirSenha(string senhaHash) => SenhaHash = senhaHash;
+
+    /// <summary>Atualiza os dados de cadastro (não mexe na senha nem no status).</summary>
+    public void AtualizarCadastro(string nome, string? telefone, string? observacoes)
+    {
+        Nome = nome.Trim();
+        Telefone = string.IsNullOrWhiteSpace(telefone) ? null : telefone.Trim();
+        Observacoes = string.IsNullOrWhiteSpace(observacoes) ? null : observacoes.Trim();
+    }
+
+    public void AlterarEmail(string email) => Email = Normalizar(email);
 
     public void Ativar() => Ativo = true;
 
@@ -49,6 +63,13 @@ public class Usuario : AggregateRoot
             return;
         }
 
+        _papeis.Add(papel);
+    }
+
+    /// <summary>Define um único papel (perfil), removendo os demais.</summary>
+    public void DefinirPapelUnico(Papel papel)
+    {
+        _papeis.Clear();
         _papeis.Add(papel);
     }
 
