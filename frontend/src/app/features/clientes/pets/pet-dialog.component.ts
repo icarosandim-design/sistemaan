@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
-import { Pet, SalvarPetRequest, Sexo, SEXOS } from './pet.model';
+import { Pet, PetReceitaPronta, SalvarPetRequest, Sexo, SEXOS } from './pet.model';
 import { PetService } from './pet.service';
 
 export interface PetDialogData {
@@ -37,6 +37,7 @@ export class PetDialogComponent {
   readonly sexos = SEXOS;
   readonly edicao: boolean;
   readonly sugestao = signal<number | null>(null);
+  readonly prontos = signal<PetReceitaPronta[]>([]);
 
   readonly form = this.fb.nonNullable.group({
     nome: ['', [Validators.required]],
@@ -69,6 +70,7 @@ export class PetDialogComponent {
         gramasDiaAjustadas: p.gramasDiaAjustadas,
       });
       this.sugestao.set(p.gramasDiaSugeridas);
+      this.petService.prontos(p.id).subscribe({ next: (r) => this.prontos.set(r), error: () => {} });
     }
 
     // Sugestão ao vivo a partir da Tabela de Consumo (backend).

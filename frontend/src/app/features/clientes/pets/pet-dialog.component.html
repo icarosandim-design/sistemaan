@@ -70,6 +70,19 @@
       <textarea matInput rows="2" formControlName="observacoesAlimentares"></textarea>
     </mat-form-field>
   </form>
+
+  @if (edicao && prontos().length) {
+    <div class="prontos">
+      <div class="prontos-titulo"><mat-icon>inventory_2</mat-icon> Comida pronta por receita</div>
+      @for (r of prontos(); track $index) {
+        <div class="prontos-linha">
+          <span class="pr-receita">{{ r.receitaNome }} <small>{{ r.tamanho }}</small> <span class="pr-tipo" [attr.data-t]="r.tipo">{{ r.tipo }}</span></span>
+          <span class="pr-qtd">{{ r.prontos }} pacote(s)</span>
+        </div>
+      }
+      <p class="prontos-nota">Personalizada = reservada para este pet. Casa = estoque geral do produto acabado.</p>
+    </div>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

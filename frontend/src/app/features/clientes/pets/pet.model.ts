@@ -17,6 +17,14 @@ export interface Pet {
   gramasDiaSugeridas: number | null; // calculado pela Tabela de Consumo (backend)
 }
 
+/** Comida pronta por receita do pet. */
+export interface PetReceitaPronta {
+  tipo: string;
+  receitaNome: string;
+  tamanho: string;
+  prontos: number;
+}
+
 /** Linha da visão geral de Pets (PetResumoDto no backend). */
 export interface PetResumo {
   id: number;

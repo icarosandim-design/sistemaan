@@ -29,6 +29,11 @@ public sealed class PetsController : ControllerBase
     public async Task<ActionResult<PetDto>> Obter(long id, CancellationToken ct)
         => Ok(await _service.ObterAsync(id, ct));
 
+    /// <summary>Comida pronta por receita do pet (personalizada reservada + Casa em estoque).</summary>
+    [HttpGet("pets/{id:long}/prontos")]
+    public async Task<ActionResult<IReadOnlyList<PetReceitaProntaDto>>> Prontos(long id, CancellationToken ct)
+        => Ok(await _service.ProntosPorReceitaAsync(id, ct));
+
     /// <summary>Cadastra um pet para um cliente.</summary>
     [HttpPost("clientes/{clienteId:long}/pets")]
     public async Task<ActionResult<PetDto>> Criar(long clienteId, SalvarPetRequest request, CancellationToken ct)

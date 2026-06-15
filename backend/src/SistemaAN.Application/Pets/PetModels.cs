@@ -28,6 +28,13 @@ public sealed record PetResumoDto(
     string? ReceitaAtual,
     DateOnly? ProximaEntrega);
 
+/// <summary>Comida pronta por receita do pet (Personalizada = reservada; Casa = estoque geral).</summary>
+public sealed record PetReceitaProntaDto(
+    string Tipo,
+    string ReceitaNome,
+    string Tamanho,
+    int Prontos);
+
 public sealed record SalvarPetRequest(
     string Nome,
     string? Raca,

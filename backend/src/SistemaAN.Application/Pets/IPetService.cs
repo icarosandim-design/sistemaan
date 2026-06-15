@@ -8,6 +8,8 @@ public interface IPetService
 
     Task<PetDto> ObterAsync(long id, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<PetReceitaProntaDto>> ProntosPorReceitaAsync(long petId, CancellationToken cancellationToken = default);
+
     Task<PetDto> CriarAsync(long clienteId, SalvarPetRequest request, CancellationToken cancellationToken = default);
 
     Task<PetDto> AtualizarAsync(long id, SalvarPetRequest request, CancellationToken cancellationToken = default);

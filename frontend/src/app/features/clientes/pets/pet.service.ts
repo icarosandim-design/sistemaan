@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Pet, PetResumo, SalvarPetRequest } from './pet.model';
+import { Pet, PetReceitaPronta, PetResumo, SalvarPetRequest } from './pet.model';
 
 interface FaixaConsumo {
   gramasPorDia: number;
@@ -28,6 +28,10 @@ export class PetService {
 
   obter(id: number): Observable<Pet> {
     return this.http.get<Pet>(`${this.api}/pets/${id}`);
+  }
+
+  prontos(id: number): Observable<PetReceitaPronta[]> {
+    return this.http.get<PetReceitaPronta[]>(`${this.api}/pets/${id}/prontos`);
   }
 
   criar(clienteId: number, req: SalvarPetRequest): Observable<Pet> {

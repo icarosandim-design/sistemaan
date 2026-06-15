@@ -5,7 +5,9 @@ using SistemaAN.Application.Entregas;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Consumo;
 using SistemaAN.Domain.Entregas;
+using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Pets;
+using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Application.Pets;
 
@@ -123,6 +125,84 @@ public sealed class PetService : IPetService
         var faixas = await FaixasAtivasAsync(cancellationToken);
         return Map(pet, Sugerir(faixas, pet.PesoKg));
     }
+
+    public async Task<IReadOnlyList<PetReceitaProntaDto>> ProntosPorReceitaAsync(long petId, CancellationToken cancellationToken = default)
+    {
+        var existe = await _db.Pets.AnyAsync(p => p.Id == petId, cancellationToken);
+        if (!existe)
+        {
+            throw new NotFoundException("Pet", petId);
+        }
+
+        // Considera entregas ativas (não entregues/canceladas/reagendadas) que incluem o pet.
+        var ativos = new[] { EntregaStatus.Programada, EntregaStatus.ConfirmadaCliente, EntregaStatus.SaiuParaEntrega, EntregaStatus.NaoEntregue };
+        var entregas = await _db.Entregas
+            .Where(e => ativos.Contains(e.Status) && e.Pets.Any(p => p.PetId == petId))
+            .Include(e => e.Pets).ThenInclude(p => p.Itens).ThenInclude(i => i.Pacotes)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        // Personalizada: pacotes reservados/produzidos para o pet (PacotesProntos).
+        var personalizada = new Dictionary<(string Nome, int Peso), int>();
+        // Casa: receitas do pet (estoque é geral; computamos o físico).
+        var casa = new Dictionary<(long ReceitaId, int Peso), string>();
+
+        foreach (var pet in entregas.SelectMany(e => e.Pets).Where(p => p.PetId == petId))
+        {
+            foreach (var item in pet.Itens)
+            {
+                if (item.Tipo == TipoReceita.Personalizada)
+                {
+                    var peso = item.TamanhoPacoteGramas ?? 0;
+                    var prontos = item.StatusPreparo != StatusPreparoPersonalizada.NaoPronta ? item.PacotesProntos ?? 0 : 0;
+                    var chave = (item.ReceitaNome, peso);
+                    personalizada[chave] = (personalizada.TryGetValue(chave, out var v) ? v : 0) + prontos;
+                }
+                else
+                {
+                    foreach (var pac in item.Pacotes)
+                    {
+                        casa[(item.ReceitaId, pac.PesoGramas)] = item.ReceitaNome;
+                    }
+                }
+            }
+        }
+
+        var resultado = new List<PetReceitaProntaDto>();
+        foreach (var (chave, prontos) in personalizada)
+        {
+            resultado.Add(new PetReceitaProntaDto("Personalizada", chave.Nome, FormatarPeso(chave.Peso), prontos));
+        }
+
+        if (casa.Count > 0)
+        {
+            var pesoPorTamanho = await _db.TamanhosPacote.AsNoTracking()
+                .Select(t => new { t.Id, t.PesoGramas })
+                .ToDictionaryAsync(t => t.Id, t => t.PesoGramas, cancellationToken);
+            var produtoAcabado = await _db.ItensEstoque.AsNoTracking()
+                .Where(x => x.Tipo == TipoItemEstoque.ProdutoAcabadoCasa && x.ReceitaId != null && x.TamanhoPacoteId != null)
+                .Select(x => new { ReceitaId = x.ReceitaId!.Value, TamanhoPacoteId = x.TamanhoPacoteId!.Value, x.QuantidadeAtual })
+                .ToListAsync(cancellationToken);
+            var fisicoPorChave = new Dictionary<(long, int), int>();
+            foreach (var pa in produtoAcabado)
+            {
+                if (pesoPorTamanho.TryGetValue(pa.TamanhoPacoteId, out var peso))
+                {
+                    fisicoPorChave[(pa.ReceitaId, peso)] = (int)Math.Floor(pa.QuantidadeAtual);
+                }
+            }
+            foreach (var (chave, nome) in casa)
+            {
+                var fisico = fisicoPorChave.TryGetValue(chave, out var f) ? f : 0;
+                resultado.Add(new PetReceitaProntaDto("Casa", nome, FormatarPeso(chave.Item2), fisico));
+            }
+        }
+
+        return resultado.OrderBy(r => r.Tipo).ThenBy(r => r.ReceitaNome).ToList();
+    }
+
+    private static string FormatarPeso(int gramas)
+        => gramas >= 1000 ? $"{gramas / 1000m:0.##} kg" : $"{gramas} g";
 
     public async Task<PetDto> CriarAsync(long clienteId, SalvarPetRequest request, CancellationToken cancellationToken = default)
     {

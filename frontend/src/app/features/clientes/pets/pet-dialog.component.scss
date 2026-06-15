@@ -63,3 +63,15 @@
     gap: 0.25rem;
   }
 }
+
+/* Comida pronta por receita */
+.prontos { margin-top: 0.75rem; border-top: 1px solid var(--an-fundo-secundario); padding-top: 0.6rem; }
+.prontos-titulo { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--an-texto-secundario); margin-bottom: 0.4rem;
+  .mat-icon { font-size: 1.05rem; width: 1.05rem; height: 1.05rem; color: var(--an-cta); } }
+.prontos-linha { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.25rem 0; border-bottom: 1px dashed var(--an-fundo-secundario); font-size: 0.86rem; }
+.pr-receita { color: var(--an-texto-titulo); small { color: var(--an-texto-secundario); } }
+.pr-tipo { font-size: 0.66rem; font-weight: 700; padding: 0.05rem 0.4rem; border-radius: 999px; background: var(--an-fundo-secundario); color: var(--an-texto-secundario); margin-left: 0.3rem; }
+.pr-tipo[data-t='Personalizada'] { background: #e8eef7; color: #2a5599; }
+.pr-tipo[data-t='Casa'] { background: rgba(140,107,63,0.14); color: #8c6b3f; }
+.pr-qtd { font-weight: 700; color: var(--an-primaria); font-variant-numeric: tabular-nums; }
+.prontos-nota { margin: 0.4rem 0 0; font-size: 0.72rem; color: var(--an-texto-secundario); font-style: italic; }
