@@ -28,6 +28,11 @@ services:
       Jwt__SecretKey: ${JWT_SECRET_KEY:?defina JWT_SECRET_KEY no .env}
       Jwt__Issuer: ${JWT_ISSUER:-SistemaAN}
       Jwt__Audience: ${JWT_AUDIENCE:-SistemaAN.Client}
+      # Admin inicial / recuperação de acesso. Com SEED_RESET_ADMIN=true, ao subir a API
+      # a senha do admin abaixo é redefinida e o usuário é reativado (depois volte a false).
+      Seed__AdminEmail: ${SEED_ADMIN_EMAIL:-admin@sistemaan.local}
+      Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:-Admin@123}
+      Seed__ResetAdminPassword: ${SEED_RESET_ADMIN:-false}
     ports:
       - "${API_PORT:-8080}:8080"
     depends_on:
