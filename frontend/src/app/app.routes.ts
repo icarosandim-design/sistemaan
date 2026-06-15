@@ -19,6 +19,7 @@ import { ProducaoPlanejarComponent } from './features/producao/planejar.componen
 import { ProducaoDiaComponent } from './features/producao/producao-dia.component';
 import { ProducaoCozinhaComponent } from './features/producao/cozinha.component';
 import { ProducaoImpressaoComponent } from './features/producao/impressao.component';
+import { ProducaoRendimentosComponent } from './features/producao/rendimentos.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -40,6 +41,7 @@ export const routes: Routes = [
       { path: 'producao/planejar', component: ProducaoPlanejarComponent },
       { path: 'producao/dia', component: ProducaoDiaComponent },
       { path: 'producao/cozinha', component: ProducaoCozinhaComponent },
+      { path: 'producao/rendimentos', component: ProducaoRendimentosComponent },
       { path: 'ingredientes', component: IngredientesComponent },
       { path: 'tabela-consumo', component: ConsumoComponent },
       { path: 'receitas', component: ReceitasComponent },

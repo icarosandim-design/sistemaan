@@ -407,6 +407,81 @@ public sealed class ProducaoService : IProducaoService
             produtoAcabado, prontas, pendencias, consumosDto);
     }
 
+    // ===================== Rendimentos e Perdas =====================
+    public async Task<RendimentoDto> ObterRendimentosAsync(DateOnly inicio, DateOnly fim, CancellationToken cancellationToken = default)
+    {
+        var dados = await (from c in _db.ConsumosProducao
+                           join o in _db.OrdensProducao on c.OrdemProducaoId equals o.Id
+                           where o.Status == StatusOrdemProducao.Finalizada && o.Data >= inicio && o.Data <= fim
+                           select new
+                           {
+                               o.Id,
+                               o.Data,
+                               c.IngredienteId,
+                               c.IngredienteNome,
+                               c.PlanejadoCruGramas,
+                               c.PlanejadoCozidoGramas,
+                               c.RealCruGramas,
+                               c.RealCozidoGramas,
+                               c.SobraGramas,
+                               c.PerdaGramas,
+                               c.Observacao,
+                           })
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var ingIds = dados.Select(d => d.IngredienteId).Distinct().ToList();
+        var coefCadastro = await _db.Ingredientes.AsNoTracking()
+            .Where(i => ingIds.Contains(i.Id))
+            .Select(i => new { i.Id, i.CoeficienteConversao })
+            .ToDictionaryAsync(i => i.Id, i => i.CoeficienteConversao, cancellationToken);
+
+        var porIngrediente = dados
+            .GroupBy(d => new { d.IngredienteId, d.IngredienteNome })
+            .Select(g =>
+            {
+                var planCru = g.Sum(x => x.PlanejadoCruGramas);
+                var realCru = g.Sum(x => x.RealCruGramas ?? 0m);
+                var planCoz = g.Sum(x => x.PlanejadoCozidoGramas);
+                var realCoz = g.Sum(x => x.RealCozidoGramas ?? 0m);
+                var sobra = g.Sum(x => x.SobraGramas ?? 0m);
+                var perda = g.Sum(x => x.PerdaGramas ?? 0m);
+                var dif = realCru - planCru;
+                var difPct = planCru > 0 ? Math.Round(dif / planCru * 100m, 1) : 0m;
+                decimal? coefReal = realCru > 0m ? Math.Round(realCoz / realCru, 4) : null;
+                decimal? coefCad = coefCadastro.TryGetValue(g.Key.IngredienteId, out var cc) ? cc : null;
+                var revisar = coefReal.HasValue && coefCad is > 0m
+                    && Math.Abs(coefReal.Value - coefCad.Value) / coefCad.Value > 0.10m;
+                return new RendimentoIngredienteDto(
+                    g.Key.IngredienteId, g.Key.IngredienteNome, g.Select(x => x.Id).Distinct().Count(),
+                    planCru, realCru, dif, difPct, planCoz, realCoz, sobra, perda, coefCad, coefReal, revisar);
+            })
+            .OrderByDescending(x => Math.Abs(x.DiferencaCruGramas))
+            .ThenBy(x => x.IngredienteNome)
+            .ToList();
+
+        var porProducao = dados
+            .GroupBy(d => new { d.Id, d.Data })
+            .Select(g =>
+            {
+                var div = g.Sum(x => Math.Abs((x.RealCruGramas ?? 0m) - x.PlanejadoCruGramas));
+                var maior = g.OrderByDescending(x => Math.Abs((x.RealCruGramas ?? 0m) - x.PlanejadoCruGramas)).First();
+                return new RendimentoProducaoDto(g.Key.Id, g.Key.Data, g.Select(x => x.IngredienteId).Distinct().Count(), div, maior.IngredienteNome);
+            })
+            .OrderByDescending(x => x.DivergenciaCruGramas)
+            .ToList();
+
+        var linhas = dados
+            .Select(d => new RendimentoLinhaDto(
+                d.Id, d.Data, d.IngredienteNome, d.PlanejadoCruGramas, d.RealCruGramas,
+                d.PlanejadoCozidoGramas, d.RealCozidoGramas, d.SobraGramas, d.PerdaGramas,
+                (d.RealCruGramas ?? 0m) - d.PlanejadoCruGramas, d.Observacao))
+            .OrderByDescending(x => x.Data).ThenBy(x => x.IngredienteNome)
+            .ToList();
+
+        return new RendimentoDto(inicio, fim, porIngrediente, porProducao, linhas);
+    }
+
     private async Task<FichaProducao> CarregarFichaAsync(long fichaId, CancellationToken cancellationToken)
     {
         var ordem = await _db.OrdensProducao.Include(o => o.Fichas)

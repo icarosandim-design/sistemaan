@@ -64,6 +64,7 @@ export class MainLayoutComponent {
         { label: 'Planejar produção', icone: 'event_note', rota: '/producao/planejar' },
         { label: 'Produção do dia', icone: 'soup_kitchen', rota: '/producao/dia' },
         { label: 'Cozinha', icone: 'tv', rota: '/producao/cozinha' },
+        { label: 'Rendimentos e perdas', icone: 'insights', rota: '/producao/rendimentos' },
       ],
     },
     {

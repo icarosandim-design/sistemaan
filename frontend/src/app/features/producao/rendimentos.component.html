@@ -1,0 +1,107 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Rendimentos e Perdas</h1>
+      <p class="subtitulo">Planejado × real por ingrediente, com base nas produções finalizadas.</p>
+    </div>
+    <div class="filtros">
+      <label>De <input type="date" [(ngModel)]="inicio" /></label>
+      <label>até <input type="date" [(ngModel)]="fim" /></label>
+      <button mat-flat-button class="btn-cta" (click)="carregar()"><mat-icon>search</mat-icon> Aplicar</button>
+    </div>
+  </header>
+
+  @if (carregando()) {
+    <div class="carregando"><mat-spinner diameter="32"></mat-spinner></div>
+  } @else if (!dados() || !dados()!.porIngrediente.length) {
+    <div class="vazio-estado">
+      <mat-icon>insights</mat-icon>
+      <p>Sem produções finalizadas com pesagem real no período.</p>
+    </div>
+  } @else {
+    @if (revisarCount() > 0) {
+      <div class="aviso-revisar">
+        <mat-icon>tune</mat-icon>
+        {{ revisarCount() }} ingrediente(s) com rendimento real distante do fator de correção cadastrado — considere revisar o coeficiente.
+      </div>
+    }
+
+    <!-- Por ingrediente -->
+    <section class="bloco">
+      <h2 class="bloco-titulo"><mat-icon>eco</mat-icon> Por ingrediente</h2>
+      <div class="tabela ing">
+        <div class="thead">
+          <span>Ingrediente</span>
+          <span class="t-c">Produções</span>
+          <span class="t-r">Cru previsto</span>
+          <span class="t-r">Cru real</span>
+          <span class="t-r">Diferença</span>
+          <span class="t-r">Cozido prev.</span>
+          <span class="t-r">Cozido real</span>
+          <span class="t-r">Sobra</span>
+          <span class="t-r">Perda</span>
+          <span class="t-r">Fator cad. / real</span>
+        </div>
+        @for (i of dados()!.porIngrediente; track i.ingredienteId) {
+          <div class="trow" [class.revisar]="i.revisarCoeficiente">
+            <span class="ing">{{ i.ingredienteNome }}@if (i.revisarCoeficiente) { <mat-icon class="flag" matTooltip="Rendimento real distante do cadastro — revisar coeficiente">tune</mat-icon> }</span>
+            <span class="t-c">{{ i.producoes }}</span>
+            <span class="t-r">{{ fmtPeso(i.planejadoCruGramas) }}</span>
+            <span class="t-r">{{ fmtPeso(i.realCruGramas) }}</span>
+            <span class="t-r dif" [class.pos]="tendencia(i) === 'acima'" [class.neg]="tendencia(i) === 'abaixo'">
+              {{ i.diferencaCruGramas > 0 ? '+' : '' }}{{ fmtPeso(i.diferencaCruGramas) }}
+              <small>({{ i.diferencaPercentual > 0 ? '+' : '' }}{{ i.diferencaPercentual }}%)</small>
+            </span>
+            <span class="t-r">{{ fmtPeso(i.planejadoCozidoGramas) }}</span>
+            <span class="t-r">{{ fmtPeso(i.realCozidoGramas) }}</span>
+            <span class="t-r">{{ i.sobraGramas ? fmtPeso(i.sobraGramas) : '—' }}</span>
+            <span class="t-r">{{ i.perdaGramas ? fmtPeso(i.perdaGramas) : '—' }}</span>
+            <span class="t-r fator">{{ fator(i.coeficienteCadastro) }} / <strong>{{ fator(i.coeficienteReal) }}</strong></span>
+          </div>
+        }
+      </div>
+      <p class="legenda">“Fator” = quanto de cru por 1 de cozido (cad. = cadastro do ingrediente, real = obtido na produção). Diferença positiva = usou mais cru que o previsto.</p>
+    </section>
+
+    <!-- Por produção -->
+    <section class="bloco">
+      <h2 class="bloco-titulo"><mat-icon>event</mat-icon> Produções com maior divergência</h2>
+      <div class="tabela prod">
+        <div class="thead"><span>Data</span><span class="t-c">Ingredientes</span><span class="t-r">Divergência (cru)</span><span>Maior divergência</span></div>
+        @for (p of dados()!.porProducao; track p.ordemId) {
+          <div class="trow">
+            <span>{{ fmtData(p.data) }}</span>
+            <span class="t-c">{{ p.ingredientes }}</span>
+            <span class="t-r">{{ fmtPeso(p.divergenciaCruGramas) }}</span>
+            <span>{{ p.maiorDivergenciaIngrediente || '—' }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Detalhe -->
+    <section class="bloco">
+      <button class="toggle" (click)="mostrarDetalhe.set(!mostrarDetalhe())">
+        <mat-icon>{{ mostrarDetalhe() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        Detalhe por linha ({{ dados()!.linhas.length }})
+      </button>
+      @if (mostrarDetalhe()) {
+        <div class="tabela detalhe">
+          <div class="thead"><span>Data</span><span>Ingrediente</span><span class="t-r">Cru prev.</span><span class="t-r">Cru real</span><span class="t-r">Cozido real</span><span class="t-r">Sobra</span><span class="t-r">Perda</span><span>Motivo</span></div>
+          @for (l of dados()!.linhas; track $index) {
+            <div class="trow">
+              <span>{{ fmtData(l.data) }}</span>
+              <span class="ing">{{ l.ingredienteNome }}</span>
+              <span class="t-r">{{ fmtPeso(l.planejadoCruGramas) }}</span>
+              <span class="t-r">{{ l.realCruGramas != null ? fmtPeso(l.realCruGramas) : '—' }}</span>
+              <span class="t-r">{{ l.realCozidoGramas != null ? fmtPeso(l.realCozidoGramas) : '—' }}</span>
+              <span class="t-r">{{ l.sobraGramas ? fmtPeso(l.sobraGramas) : '—' }}</span>
+              <span class="t-r">{{ l.perdaGramas ? fmtPeso(l.perdaGramas) : '—' }}</span>
+              <span class="motivo">{{ l.observacao || '—' }}</span>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</section>

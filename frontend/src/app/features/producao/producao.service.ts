@@ -13,6 +13,7 @@ import {
   OrdemProducao,
   OrdemProducaoResumo,
   RegistrarConsumoRequest,
+  Rendimento,
   StatusFicha,
 } from './producao.model';
 
@@ -72,5 +73,11 @@ export class ProducaoService {
 
   finalizar(ordemId: number, req: FinalizarProducaoRequest): Observable<FinalizacaoResultado> {
     return this.http.post<FinalizacaoResultado>(`${this.api}/${ordemId}/finalizar`, req);
+  }
+
+  /** Rendimentos e perdas do período (datas em yyyy-MM-dd). */
+  obterRendimentos(inicio: string, fim: string): Observable<Rendimento> {
+    const params = new HttpParams().set('inicio', inicio).set('fim', fim);
+    return this.http.get<Rendimento>(`${this.api}/rendimentos`, { params });
   }
 }

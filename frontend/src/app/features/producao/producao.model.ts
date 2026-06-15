@@ -170,6 +170,54 @@ export interface FinalizacaoResultado {
   consumos: ResumoConsumo[];
 }
 
+// ----- Rendimentos e Perdas -----
+export interface RendimentoIngrediente {
+  ingredienteId: number;
+  ingredienteNome: string;
+  producoes: number;
+  planejadoCruGramas: number;
+  realCruGramas: number;
+  diferencaCruGramas: number;
+  diferencaPercentual: number;
+  planejadoCozidoGramas: number;
+  realCozidoGramas: number;
+  sobraGramas: number;
+  perdaGramas: number;
+  coeficienteCadastro: number | null;
+  coeficienteReal: number | null;
+  revisarCoeficiente: boolean;
+}
+
+export interface RendimentoProducao {
+  ordemId: number;
+  data: string;
+  ingredientes: number;
+  divergenciaCruGramas: number;
+  maiorDivergenciaIngrediente: string | null;
+}
+
+export interface RendimentoLinha {
+  ordemId: number;
+  data: string;
+  ingredienteNome: string;
+  planejadoCruGramas: number;
+  realCruGramas: number | null;
+  planejadoCozidoGramas: number;
+  realCozidoGramas: number | null;
+  sobraGramas: number | null;
+  perdaGramas: number | null;
+  diferencaCruGramas: number;
+  observacao: string | null;
+}
+
+export interface Rendimento {
+  inicio: string;
+  fim: string;
+  porIngrediente: RendimentoIngrediente[];
+  porProducao: RendimentoProducao[];
+  linhas: RendimentoLinha[];
+}
+
 // ===== Formatação =====
 export function fmtPeso(gramas: number): string {
   if (Math.abs(gramas) >= 1000) {

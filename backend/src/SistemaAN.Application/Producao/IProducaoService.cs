@@ -25,4 +25,6 @@ public interface IProducaoService
     Task<OrdemProducaoDto> RegistrarConsumoAsync(long ordemId, RegistrarConsumoRequest request, CancellationToken cancellationToken = default);
 
     Task<FinalizacaoResultadoDto> FinalizarAsync(long ordemId, FinalizarProducaoRequest request, string usuario, CancellationToken cancellationToken = default);
+
+    Task<RendimentoDto> ObterRendimentosAsync(DateOnly inicio, DateOnly fim, CancellationToken cancellationToken = default);
 }

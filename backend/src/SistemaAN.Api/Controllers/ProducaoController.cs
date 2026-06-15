@@ -77,4 +77,9 @@ public sealed class ProducaoController : ControllerBase
     [HttpPost("{id:long}/finalizar")]
     public async Task<ActionResult<FinalizacaoResultadoDto>> Finalizar(long id, FinalizarProducaoRequest request, CancellationToken ct)
         => Ok(await _service.FinalizarAsync(id, request, Usuario, ct));
+
+    /// <summary>Análise de rendimentos e perdas (planejado × real) no período.</summary>
+    [HttpGet("rendimentos")]
+    public async Task<ActionResult<RendimentoDto>> Rendimentos([FromQuery] DateOnly inicio, [FromQuery] DateOnly fim, CancellationToken ct)
+        => Ok(await _service.ObterRendimentosAsync(inicio, fim, ct));
 }

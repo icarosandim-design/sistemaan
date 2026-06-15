@@ -123,3 +123,47 @@ public sealed record FinalizacaoResultadoDto(
     int PersonalizadasProntas,
     IReadOnlyList<string> PendenciasEstoque,
     IReadOnlyList<ResumoConsumoDto> Consumos);
+
+// ===================== Rendimentos e Perdas (leitura/análise) =====================
+public sealed record RendimentoIngredienteDto(
+    long IngredienteId,
+    string IngredienteNome,
+    int Producoes,
+    int PlanejadoCruGramas,
+    decimal RealCruGramas,
+    decimal DiferencaCruGramas,
+    decimal DiferencaPercentual,
+    int PlanejadoCozidoGramas,
+    decimal RealCozidoGramas,
+    decimal SobraGramas,
+    decimal PerdaGramas,
+    decimal? CoeficienteCadastro,
+    decimal? CoeficienteReal,
+    bool RevisarCoeficiente);
+
+public sealed record RendimentoProducaoDto(
+    long OrdemId,
+    DateOnly Data,
+    int Ingredientes,
+    decimal DivergenciaCruGramas,
+    string? MaiorDivergenciaIngrediente);
+
+public sealed record RendimentoLinhaDto(
+    long OrdemId,
+    DateOnly Data,
+    string IngredienteNome,
+    int PlanejadoCruGramas,
+    decimal? RealCruGramas,
+    int PlanejadoCozidoGramas,
+    decimal? RealCozidoGramas,
+    decimal? SobraGramas,
+    decimal? PerdaGramas,
+    decimal DiferencaCruGramas,
+    string? Observacao);
+
+public sealed record RendimentoDto(
+    DateOnly Inicio,
+    DateOnly Fim,
+    IReadOnlyList<RendimentoIngredienteDto> PorIngrediente,
+    IReadOnlyList<RendimentoProducaoDto> PorProducao,
+    IReadOnlyList<RendimentoLinhaDto> Linhas);
