@@ -176,6 +176,7 @@
               <span class="ec-meta"><mat-icon>pets</mat-icon>{{ e.pets.length ? e.pets.join(', ') : '—' }}</span>
             }
             <span class="ec-meta"><mat-icon>place</mat-icon>{{ enderecoResumo(e) }}</span>
+            <span class="ec-meta"><mat-icon>schedule</mat-icon>{{ rotuloPreferencia(e.preferenciaHorario) }}</span>
             <span class="ec-meta"><mat-icon>map</mat-icon>{{ e.bairro || '—' }}{{ e.cidade ? ' · ' + e.cidade : '' }}</span>
           </div>
 

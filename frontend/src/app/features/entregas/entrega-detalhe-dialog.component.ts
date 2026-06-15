@@ -20,6 +20,7 @@ import {
 } from './entregas.model';
 import { forkJoin } from 'rxjs';
 import { EntregasService } from './entregas.service';
+import { rotuloPreferenciaHorario } from '../clientes/clientes.model';
 import { EstoqueService } from '../estoque/estoque.service';
 import { MotivoDialogComponent } from './motivo-dialog.component';
 import { ReagendarDialogComponent, ReagendarDialogResult } from './reagendar-dialog.component';
@@ -53,6 +54,7 @@ export class EntregaDetalheDialogComponent {
   readonly labelStatus = labelStatus;
   readonly classeStatus = classeStatus;
   readonly fmtPeso = fmtPeso;
+  readonly rotuloPreferencia = rotuloPreferenciaHorario;
 
   readonly detalhe = signal<EntregaDetalhe | null>(null);
   readonly situacao = signal<SituacaoEstoqueItem[]>([]);

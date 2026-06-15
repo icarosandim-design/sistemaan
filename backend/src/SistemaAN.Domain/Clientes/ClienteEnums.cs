@@ -18,6 +18,14 @@ public enum TipoClientePJ
     Outro,
 }
 
+/// <summary>Preferência de horário de entrega (orienta a logística; sem "sem preferência").</summary>
+public enum PreferenciaHorarioEntrega
+{
+    HorarioComercial,
+    Manha,
+    Tarde,
+}
+
 public enum TipoCliente
 {
     Assinante,

@@ -29,6 +29,7 @@ public sealed class EntregaConfiguration : IEntityTypeConfiguration<Entrega>
         builder.Property(e => e.Estado).HasMaxLength(2);
         builder.Property(e => e.FrequenciaNome).HasMaxLength(60).IsRequired();
         builder.Property(e => e.DiasCiclo).IsRequired();
+        builder.Property(e => e.PreferenciaHorario).HasConversion<string>().HasMaxLength(20).IsRequired();
 
         builder.Property(e => e.ObservacoesInternas).HasMaxLength(1000);
         builder.Property(e => e.ObservacoesEntregador).HasMaxLength(1000);

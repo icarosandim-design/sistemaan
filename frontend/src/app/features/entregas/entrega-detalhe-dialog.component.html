@@ -35,6 +35,7 @@
       <div class="grade">
         <div class="campo"><span class="rot">Telefone / WhatsApp</span><span class="val">{{ e.telefone || '—' }}</span></div>
         <div class="campo"><span class="rot">Bairro / Cidade</span><span class="val">{{ e.bairro || '—' }}{{ e.cidade ? ' · ' + e.cidade : '' }}</span></div>
+        <div class="campo"><span class="rot">Preferência de horário</span><span class="val">{{ rotuloPreferencia(e.preferenciaHorario) }}</span></div>
         <div class="campo full"><span class="rot">Endereço</span><span class="val">{{ e.rua || '—' }}{{ e.numero ? ', ' + e.numero : '' }}{{ e.complemento ? ' — ' + e.complemento : '' }}{{ e.cep ? ' · ' + e.cep : '' }}</span></div>
         @if (e.observacoesEntregador) {
           <div class="campo full"><span class="rot">Observações para entrega</span><span class="val">{{ e.observacoesEntregador }}</span></div>

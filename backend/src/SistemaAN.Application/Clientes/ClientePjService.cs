@@ -143,7 +143,8 @@ public sealed class ClientePjService : IClientePjService
             ValorRecorrenteMensal: 0m,
             StatusFinanceiro: StatusFinanceiro.EmDia,
             ObservacoesFinanceiras: null,
-            Natureza: NaturezaCliente.PessoaJuridica);
+            Natureza: NaturezaCliente.PessoaJuridica,
+            PreferenciaHorario: Enum.TryParse<PreferenciaHorarioEntrega>(r.PreferenciaHorario, true, out var pref) ? pref : PreferenciaHorarioEntrega.HorarioComercial);
 
         var dadosPj = new DadosClientePj(
             r.RazaoSocial, r.NomeFantasia, cnpj, r.InscricaoEstadual, r.Whatsapp, r.PessoaContato, r.CargoContato,
@@ -159,5 +160,5 @@ public sealed class ClientePjService : IClientePjService
         c.Rua, c.Numero, c.Complemento, c.Bairro, c.Cidade, c.Estado, c.Cep,
         pj.EntregaRua, pj.EntregaNumero, pj.EntregaComplemento, pj.EntregaBairro, pj.EntregaCidade, pj.EntregaEstado, pj.EntregaCep,
         pj.TipoPJ.ToString(), pj.CondicaoComercial, pj.PrazoPagamento, pj.DiaEntregaPreferencial, pj.FrequenciaCompra,
-        c.Observacoes, pj.ObservacoesComerciais, c.Ativo, c.UpdatedAt);
+        c.Observacoes, pj.ObservacoesComerciais, c.PreferenciaHorario.ToString(), c.Ativo, c.UpdatedAt);
 }

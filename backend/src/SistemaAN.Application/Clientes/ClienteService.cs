@@ -192,11 +192,14 @@ public sealed class ClienteService : IClienteService
             }
         }
 
+        var preferencia = Enum.TryParse<PreferenciaHorarioEntrega>(r.PreferenciaHorario, true, out var p) ? p : PreferenciaHorarioEntrega.HorarioComercial;
+
         return new DadosCliente(
             r.Nome, cpf, r.Telefone, r.Email, r.OrigemVenda, r.Observacoes,
             r.Rua, r.Numero, r.Complemento, r.Cep, r.Bairro, r.Cidade, r.Estado,
             r.FrequenciaEntregaId, r.PrimeiraEntrega,
-            tipo, forma, r.DiaCobranca, r.ValorRecorrenteMensal, status, r.ObservacoesFinanceiras);
+            tipo, forma, r.DiaCobranca, r.ValorRecorrenteMensal, status, r.ObservacoesFinanceiras,
+            PreferenciaHorario: preferencia);
     }
 
     private static ClienteDto Map(Cliente c, IReadOnlyList<string> pets) => new(
@@ -210,5 +213,6 @@ public sealed class ClienteService : IClienteService
         c.ValorRecorrenteMensal,
         c.StatusFinanceiro.ToString(),
         c.ObservacoesFinanceiras,
+        c.PreferenciaHorario.ToString(),
         pets);
 }

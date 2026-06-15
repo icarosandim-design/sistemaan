@@ -1,3 +1,4 @@
+using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Common;
 
 namespace SistemaAN.Domain.Entregas;
@@ -30,6 +31,7 @@ public class Entrega : AuditableEntity
         Estado = s.Estado;
         FrequenciaNome = s.FrequenciaNome;
         DiasCiclo = s.DiasCiclo;
+        PreferenciaHorario = s.PreferenciaHorario;
     }
 
     public long ClienteId { get; private set; }
@@ -48,6 +50,7 @@ public class Entrega : AuditableEntity
     public string? Estado { get; private set; }
     public string FrequenciaNome { get; private set; } = string.Empty;
     public int DiasCiclo { get; private set; }
+    public PreferenciaHorarioEntrega PreferenciaHorario { get; private set; }
 
     public string? ObservacoesInternas { get; private set; }
     public string? ObservacoesEntregador { get; private set; }
@@ -131,4 +134,5 @@ public sealed record DadosSnapshotEntrega(
     string? Cidade,
     string? Estado,
     string FrequenciaNome,
-    int DiasCiclo);
+    int DiasCiclo,
+    PreferenciaHorarioEntrega PreferenciaHorario = PreferenciaHorarioEntrega.HorarioComercial);

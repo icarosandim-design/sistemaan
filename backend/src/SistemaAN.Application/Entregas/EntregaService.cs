@@ -444,11 +444,11 @@ public sealed class EntregaService : IEntregaService
 
     private static DadosSnapshotEntrega Snapshot(Cliente c, Domain.Entregas.FrequenciaEntrega freq)
         => new(c.Nome, c.Telefone, c.Rua, c.Numero, c.Complemento, c.Cep, c.Bairro, c.Cidade, c.Estado,
-            freq.Nome, freq.DiasCiclo ?? 0);
+            freq.Nome, freq.DiasCiclo ?? 0, c.PreferenciaHorario);
 
     private static DadosSnapshotEntrega SnapshotDe(Entrega e)
         => new(e.ClienteNome, e.Telefone, e.Rua, e.Numero, e.Complemento, e.Cep, e.Bairro, e.Cidade, e.Estado,
-            e.FrequenciaNome, e.DiasCiclo);
+            e.FrequenciaNome, e.DiasCiclo, e.PreferenciaHorario);
 
     // ===================== Datas =====================
     private static DateOnly Hoje() => DateOnly.FromDateTime(DateTime.UtcNow);
@@ -546,12 +546,14 @@ public sealed class EntregaService : IEntregaService
             e.DataPrevista, e.Status.ToString(), e.Bairro, e.Cidade,
             string.Join(", ", tipos), e.Pets.Sum(p => p.QuantidadeTotalGramas), totalPacotes, e.EntregadorId,
             e.PedidoId,
+            e.PreferenciaHorario.ToString(),
             e.Pets.Select(p => p.PetNome).ToList());
     }
 
     private static EntregaDto Map(Entrega e) => new(
         e.Id, e.ClienteId, e.DataPrevista, e.Status.ToString(), e.ClienteNome, e.Telefone,
         e.Rua, e.Numero, e.Complemento, e.Cep, e.Bairro, e.Cidade, e.Estado, e.FrequenciaNome, e.DiasCiclo,
+        e.PreferenciaHorario.ToString(),
         e.ObservacoesInternas, e.ObservacoesEntregador, e.EntregadorId,
         e.MotivoNaoEntrega, e.MotivoReagendamento, e.ReagendadaDeId, e.ReagendadaParaId, e.MotivoCancelamento,
         e.PedidoId,

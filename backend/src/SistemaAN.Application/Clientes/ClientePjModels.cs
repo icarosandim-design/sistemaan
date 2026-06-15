@@ -45,6 +45,7 @@ public sealed record ClientePjDto(
     string? FrequenciaCompra,
     string? Observacoes,
     string? ObservacoesComerciais,
+    string PreferenciaHorario,
     bool Ativo,
     DateTimeOffset? AtualizadoEm);
 
@@ -78,6 +79,7 @@ public sealed record SalvarClientePjRequest(
     int? DiaEntregaPreferencial,
     string? FrequenciaCompra,
     string? Observacoes,
-    string? ObservacoesComerciais);
+    string? ObservacoesComerciais,
+    string? PreferenciaHorario);
 
 public sealed record TipoPjOpcaoDto(string Valor, string Rotulo);

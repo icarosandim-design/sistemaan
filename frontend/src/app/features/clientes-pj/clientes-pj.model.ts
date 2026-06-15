@@ -41,6 +41,7 @@ export interface ClientePj {
   frequenciaCompra: string | null;
   observacoes: string | null;
   observacoesComerciais: string | null;
+  preferenciaHorario: string;
   ativo: boolean;
   atualizadoEm: string | null;
 }

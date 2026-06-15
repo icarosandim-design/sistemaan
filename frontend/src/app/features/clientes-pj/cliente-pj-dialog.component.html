@@ -46,6 +46,11 @@
     <mat-form-field appearance="outline"><mat-label>Prazo de pagamento</mat-label><input matInput [(ngModel)]="f.prazoPagamento" /></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Dia de entrega preferencial</mat-label><input matInput type="number" [(ngModel)]="f.diaEntregaPreferencial" /></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Frequência de compra</mat-label><input matInput [(ngModel)]="f.frequenciaCompra" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Preferência de horário de entrega</mat-label>
+      <mat-select [(ngModel)]="f.preferenciaHorario">
+        @for (p of preferencias; track p.valor) { <mat-option [value]="p.valor">{{ p.rotulo }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
   </div>
   <mat-form-field appearance="outline" class="full"><mat-label>Observações comerciais</mat-label><textarea matInput rows="2" [(ngModel)]="f.observacoesComerciais"></textarea></mat-form-field>
   <mat-form-field appearance="outline" class="full"><mat-label>Observações</mat-label><textarea matInput rows="2" [(ngModel)]="f.observacoes"></textarea></mat-form-field>

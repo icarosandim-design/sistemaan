@@ -2,6 +2,18 @@ export type TipoCliente = 'Assinante' | 'Avulso';
 export type FormaPagamento = 'Cartao' | 'Pix' | 'Dinheiro' | 'Outro';
 export type StatusFinanceiro = 'EmDia' | 'Pendente' | 'Inadimplente';
 
+export type PreferenciaHorario = 'HorarioComercial' | 'Manha' | 'Tarde';
+
+export const PREFERENCIAS_HORARIO: { valor: PreferenciaHorario; rotulo: string }[] = [
+  { valor: 'HorarioComercial', rotulo: 'Horário comercial' },
+  { valor: 'Manha', rotulo: 'Período da manhã' },
+  { valor: 'Tarde', rotulo: 'Período da tarde' },
+];
+
+export function rotuloPreferenciaHorario(p: string | null | undefined): string {
+  return PREFERENCIAS_HORARIO.find((x) => x.valor === p)?.rotulo ?? 'Horário comercial';
+}
+
 export interface Cliente {
   id: number;
   nome: string;
@@ -28,6 +40,7 @@ export interface Cliente {
   valorRecorrenteMensal: number;
   statusFinanceiro: StatusFinanceiro;
   observacoesFinanceiras?: string | null;
+  preferenciaHorario: PreferenciaHorario;
   pets?: string[];
 }
 
@@ -53,6 +66,7 @@ export interface SalvarClienteRequest {
   valorRecorrenteMensal: number;
   statusFinanceiro: StatusFinanceiro;
   observacoesFinanceiras?: string | null;
+  preferenciaHorario?: PreferenciaHorario | null;
 }
 
 export const TIPOS_CLIENTE: { valor: TipoCliente; label: string }[] = [

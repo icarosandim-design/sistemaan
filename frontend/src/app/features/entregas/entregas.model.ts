@@ -25,6 +25,7 @@ export interface EntregaResumo {
   entregadorId: number | null;
   /** Quando preenchido, a entrega veio de um Pedido PJ. */
   pedidoId?: number | null;
+  preferenciaHorario?: string;
   pets: string[];
   /**
    * Sinalização visual (preparatória para o Módulo de Rotas).
@@ -206,6 +207,7 @@ export interface EntregaDetalhe {
   reagendadaParaId: number | null;
   motivoCancelamento: string | null;
   pedidoId?: number | null;
+  preferenciaHorario?: string;
   pets: EntregaPet[];
   historico: EntregaHistorico[];
 }

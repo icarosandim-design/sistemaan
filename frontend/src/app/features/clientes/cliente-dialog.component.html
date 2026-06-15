@@ -100,6 +100,12 @@
               <mat-label>Primeira data de entrega</mat-label>
               <input matInput type="date" formControlName="primeiraEntrega" />
             </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Preferência de horário de entrega</mat-label>
+              <mat-select formControlName="preferenciaHorario">
+                @for (p of preferencias; track p.valor) { <mat-option [value]="p.valor">{{ p.rotulo }}</mat-option> }
+              </mat-select>
+            </mat-form-field>
           </div>
 
           <mat-form-field appearance="outline" class="full">

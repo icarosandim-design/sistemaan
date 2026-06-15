@@ -19,6 +19,7 @@ public sealed class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
 
         builder.Property(c => c.Natureza).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.HasIndex(c => c.Natureza).HasDatabaseName("ix_clientes_natureza");
+        builder.Property(c => c.PreferenciaHorario).HasConversion<string>().HasMaxLength(20).IsRequired();
 
         builder.Property(c => c.Nome).HasMaxLength(160).IsRequired();
         builder.Property(c => c.Cpf).HasMaxLength(11);

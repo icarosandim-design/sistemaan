@@ -35,6 +35,7 @@ public class Cliente : AuditableEntity
     // ----- Entrega (compartilhada por todos os pets do cliente) -----
     public long? FrequenciaEntregaId { get; private set; }
     public DateOnly? PrimeiraEntrega { get; private set; }
+    public PreferenciaHorarioEntrega PreferenciaHorario { get; private set; }
 
     // ----- Financeiro básico -----
     public TipoCliente TipoCliente { get; private set; }
@@ -93,6 +94,7 @@ public class Cliente : AuditableEntity
         Estado = d.Estado?.Trim();
         FrequenciaEntregaId = d.FrequenciaEntregaId;
         PrimeiraEntrega = d.PrimeiraEntrega;
+        PreferenciaHorario = d.PreferenciaHorario;
         TipoCliente = d.TipoCliente;
         FormaPagamento = d.FormaPagamento;
         DiaCobranca = d.DiaCobranca;
@@ -134,4 +136,5 @@ public sealed record DadosCliente(
     decimal ValorRecorrenteMensal,
     StatusFinanceiro StatusFinanceiro,
     string? ObservacoesFinanceiras,
-    NaturezaCliente Natureza = NaturezaCliente.PessoaFisica);
+    NaturezaCliente Natureza = NaturezaCliente.PessoaFisica,
+    PreferenciaHorarioEntrega PreferenciaHorario = PreferenciaHorarioEntrega.HorarioComercial);

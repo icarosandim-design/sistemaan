@@ -47,6 +47,7 @@ public sealed record EntregaDto(
     string? Estado,
     string FrequenciaNome,
     int DiasCiclo,
+    string PreferenciaHorario,
     string? ObservacoesInternas,
     string? ObservacoesEntregador,
     long? EntregadorId,
@@ -76,6 +77,7 @@ public sealed record EntregaResumoDto(
     int TotalPacotes,
     long? EntregadorId,
     long? PedidoId,
+    string PreferenciaHorario,
     IReadOnlyList<string> Pets);
 
 public sealed record GerarEntregasRequest(int HorizonteDias = 90);

@@ -27,6 +27,7 @@ import {
   STATUS_ENTREGA,
 } from './entregas.model';
 import { EntregasService } from './entregas.service';
+import { rotuloPreferenciaHorario } from '../clientes/clientes.model';
 import { EstoqueService } from '../estoque/estoque.service';
 import { EntregaDetalheDialogComponent } from './entrega-detalhe-dialog.component';
 
@@ -71,6 +72,7 @@ export class EntregasComponent implements OnInit {
   readonly enderecoResumo = enderecoResumo;
   readonly fmtPeso = fmtPeso;
   readonly prontidao = (e: EntregaResumo): ProntidaoEntrega => prontidaoEntrega(e.operacional);
+  readonly rotuloPreferencia = rotuloPreferenciaHorario;
   readonly diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   // Cartões expandidos (por id). Por padrão todos minimizados.

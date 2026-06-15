@@ -226,7 +226,8 @@ public sealed class PedidoService : IPedidoService
             pj.EntregaCidade ?? cliente.Cidade,
             pj.EntregaEstado ?? cliente.Estado,
             "Pedido PJ",
-            0);
+            0,
+            cliente.PreferenciaHorario);
 
         var entrega = Entrega.Criar(pedido.ClienteId, pedido.DataEntrega, snapshot);
         entrega.AdicionarPet(ContainerDoPedido(pedido, nome));

@@ -26,6 +26,7 @@ public sealed record ClienteDto(
     decimal ValorRecorrenteMensal,
     string StatusFinanceiro,
     string? ObservacoesFinanceiras,
+    string PreferenciaHorario,
     IReadOnlyList<string> Pets);
 
 public sealed record SalvarClienteRequest(
@@ -49,6 +50,7 @@ public sealed record SalvarClienteRequest(
     int? DiaCobranca,
     decimal ValorRecorrenteMensal,
     string StatusFinanceiro,
-    string? ObservacoesFinanceiras);
+    string? ObservacoesFinanceiras,
+    string? PreferenciaHorario);
 
 public sealed record CancelarClienteRequest(string Motivo);

@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ClientePj, SalvarClientePjRequest, TipoPjOpcao } from './clientes-pj.model';
 import { ClientesPjService } from './clientes-pj.service';
+import { PREFERENCIAS_HORARIO } from '../clientes/clientes.model';
 
 function msgErro(e: unknown): string {
   const err = (e as { error?: { errors?: Record<string, string[]>; detail?: string } })?.error;
@@ -26,6 +27,7 @@ export class ClientePjDialogComponent implements OnInit {
   private readonly service = inject(ClientesPjService);
   readonly edicao: boolean;
   readonly tipos = signal<TipoPjOpcao[]>([]);
+  readonly preferencias = PREFERENCIAS_HORARIO;
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
 
@@ -37,6 +39,7 @@ export class ClientePjDialogComponent implements OnInit {
     entregaCidade: null, entregaEstado: null, entregaCep: null,
     tipoPJ: 'Mercado', condicaoComercial: null, prazoPagamento: null, diaEntregaPreferencial: null,
     frequenciaCompra: null, observacoes: null, observacoesComerciais: null,
+    preferenciaHorario: 'HorarioComercial',
   };
 
   constructor(

@@ -31,6 +31,8 @@ import {
   FormaPagamento,
   FORMAS_PAGAMENTO,
   ORIGENS_VENDA,
+  PreferenciaHorario,
+  PREFERENCIAS_HORARIO,
   SalvarClienteRequest,
   STATUS_FINANCEIRO,
   StatusFinanceiro,
@@ -87,6 +89,7 @@ export class ClienteDialogComponent {
   readonly tamanhos = signal<TamanhoPacote[]>([]);
 
   readonly tipos = TIPOS_CLIENTE;
+  readonly preferencias = PREFERENCIAS_HORARIO;
   readonly formas = FORMAS_PAGAMENTO;
   readonly statusFin = STATUS_FINANCEIRO;
   readonly origens = ORIGENS_VENDA;
@@ -108,6 +111,7 @@ export class ClienteDialogComponent {
     estado: ['' as string | null],
     frequenciaEntregaId: [null as number | null],
     primeiraEntrega: ['' as string | null],
+    preferenciaHorario: ['HorarioComercial' as PreferenciaHorario],
     observacoes: [''],
     tipoCliente: ['Assinante' as TipoCliente],
     formaPagamento: ['Pix' as FormaPagamento | null],
@@ -155,6 +159,7 @@ export class ClienteDialogComponent {
         estado: c.estado ?? null,
         frequenciaEntregaId: c.frequenciaEntregaId ?? null,
         primeiraEntrega: c.primeiraEntrega ?? null,
+        preferenciaHorario: c.preferenciaHorario ?? 'HorarioComercial',
         observacoes: c.observacoes ?? '',
         tipoCliente: c.tipoCliente,
         formaPagamento: c.formaPagamento ?? null,
@@ -189,6 +194,7 @@ export class ClienteDialogComponent {
       estado: v.estado || null,
       frequenciaEntregaId: v.frequenciaEntregaId ?? null,
       primeiraEntrega: v.primeiraEntrega || null,
+      preferenciaHorario: v.preferenciaHorario,
       tipoCliente: v.tipoCliente,
       formaPagamento: v.formaPagamento || null,
       diaCobranca: v.diaCobranca ?? null,
