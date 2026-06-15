@@ -473,17 +473,18 @@ public sealed class EntregaService : IEntregaService
         }
     }
 
-    // ===================== Mapeamentos =====================
-    /// <summary>Baixa o produto acabado da Casa ao concluir a entrega (valida saldo físico; bloqueia se faltar).</summary>
+    /// <summary>Baixa o produto acabado da Casa ao concluir a entrega. Bloqueia se algum item não
+    /// tiver produto acabado cadastrado ou se faltar saldo físico.</summary>
     private async Task BaixarProdutoAcabadoCasaAsync(Entrega entrega, string usuario, CancellationToken ct)
     {
-        var necessidade = new Dictionary<(long ReceitaId, int Peso), int>();
+        var necessidade = new Dictionary<(long ReceitaId, int Peso), (int Qtd, string Nome, string Tam)>();
         foreach (var item in entrega.Pets.SelectMany(p => p.Itens).Where(i => i.Tipo == TipoReceita.Casa))
         {
             foreach (var pac in item.Pacotes)
             {
                 var chave = (item.ReceitaId, pac.PesoGramas);
-                necessidade[chave] = (necessidade.TryGetValue(chave, out var v) ? v : 0) + pac.Quantidade;
+                var atual = necessidade.TryGetValue(chave, out var v) ? v : (Qtd: 0, Nome: item.ReceitaNome, Tam: pac.TamanhoLabel);
+                necessidade[chave] = (atual.Qtd + pac.Quantidade, atual.Nome, atual.Tam);
             }
         }
         if (necessidade.Count == 0)
@@ -508,21 +509,27 @@ public sealed class EntregaService : IEntregaService
             }
         }
 
-        // Bloqueia se algum item rastreado não tiver saldo físico suficiente.
-        var faltou = necessidade.Any(n => porChave.TryGetValue(n.Key, out var pa) && pa.Saldo < n.Value);
+        // Bloqueio 1: todo item de Casa precisa ter produto acabado cadastrado/vinculado.
+        var semCadastro = necessidade.FirstOrDefault(n => !porChave.ContainsKey(n.Key));
+        if (semCadastro.Value.Nome is not null)
+        {
+            throw new ValidationException(Erro("estoque",
+                $"Produto acabado não encontrado no estoque para {semCadastro.Value.Nome} {semCadastro.Value.Tam}. " +
+                "Cadastre ou vincule este produto no estoque antes de concluir a entrega."));
+        }
+
+        // Bloqueio 2: saldo físico suficiente em todos os itens.
+        var faltou = necessidade.Any(n => porChave[n.Key].Saldo < n.Value.Qtd);
         if (faltou)
         {
             throw new ValidationException(Erro("estoque",
                 "Não há estoque físico suficiente para concluir esta entrega. Verifique o estoque antes de marcar como Entregue."));
         }
 
-        // Baixa (FIFO) apenas dos itens com produto acabado rastreado.
-        foreach (var (chave, qtd) in necessidade)
+        // Baixa (FIFO).
+        foreach (var (chave, val) in necessidade)
         {
-            if (porChave.TryGetValue(chave, out var pa))
-            {
-                await _estoque.BaixarPorEntregaAsync(pa.ItemId, qtd, entrega.Id, usuario, ct);
-            }
+            await _estoque.BaixarPorEntregaAsync(porChave[chave].ItemId, val.Qtd, entrega.Id, usuario, ct);
         }
     }
 

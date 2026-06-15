@@ -124,7 +124,9 @@ export class EntregaDetalheDialogComponent {
   }
 
   avancar(status: string): void {
-    if (this.bloqueadoPorPendencia) {
+    // Ao marcar Entregue, a validação/baixa de estoque é feita no backend, com mensagens
+    // específicas (produto acabado não cadastrado / saldo físico insuficiente).
+    if (status !== 'Entregue' && this.bloqueadoPorPendencia) {
       this.snack.open('Resolva as pendências (produção/estoque) antes de avançar o status.', 'OK', { duration: 4000 });
       return;
     }
