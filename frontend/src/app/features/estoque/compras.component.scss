@@ -31,21 +31,20 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.6rem;
-  padding: 0.85rem 1rem 0.25rem;
+  gap: 0.45rem;
+  padding: 0.6rem 0.8rem;
   background: var(--an-superficie);
   border: 1px solid var(--an-fundo-secundario);
   border-radius: var(--an-raio);
 }
 
 .f {
-  flex: 1 1 140px;
-  max-width: 200px;
-  margin-bottom: -1.25em;
+  flex: 0 1 130px;
   font-size: 0.85rem;
 
-  ::ng-deep .mat-mdc-form-field-infix { min-height: 38px; padding-top: 8px; padding-bottom: 8px; }
-  ::ng-deep .mat-mdc-text-field-wrapper { height: 42px; }
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
+  ::ng-deep .mat-mdc-form-field-infix { min-height: 36px; padding-top: 7px; padding-bottom: 7px; }
+  ::ng-deep .mat-mdc-text-field-wrapper { height: 40px; }
 }
 
 .filtro-acoes { display: flex; gap: 0.4rem; align-items: center; margin-left: auto; }
