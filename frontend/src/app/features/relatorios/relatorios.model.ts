@@ -77,15 +77,15 @@ export interface VendaLinha {
   tipo: string;
   cliente: string;
   pet: string | null;
-  receitas: string;
-  kg: number;
-  status: string;
+  valor: number | null;
+  custo: number;
   origem: string | null;
 }
 export interface RelatorioVendasResumo {
   quantidadeVendas: number;
   totalKg: number;
   receitaRecorrenteAtivaMensal: number;
+  custoTotalEstimado: number;
   porTipo: VendasPorTipo[];
   porReceita: ChaveValor[];
   porCidade: ChaveValor[];

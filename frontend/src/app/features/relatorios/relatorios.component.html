@@ -87,10 +87,9 @@
               <div class="kc"><div class="kv">{{ v.resumo.quantidadeVendas }}</div><div class="kl">Vendas no período</div></div>
               <div class="kc"><div class="kv">{{ num(v.resumo.totalKg) }} kg</div><div class="kl">Total vendido (kg)</div></div>
               <div class="kc"><div class="kv">R$ {{ num(v.resumo.receitaRecorrenteAtivaMensal) }}</div><div class="kl">Receita recorrente ativa / mês</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(v.resumo.custoTotalEstimado) }}</div><div class="kl">Custo total estimado</div></div>
             </div>
-            @if (v.resumo.receitaPorVendaIndisponivel) {
-              <div class="aviso"><mat-icon>info</mat-icon> Receita por venda (ticket, preço/kg) depende de valor por venda — ainda não registrado. Métricas em kg são reais.</div>
-            }
+            <div class="aviso"><mat-icon>info</mat-icon> Custo estimado pelo custo médio dos ingredientes. O valor da assinatura é o recorrente mensal; PJ depende do valor do pedido (quando registrado).</div>
             <div class="acoes-tab">
               <span class="total">{{ v.total }} registro(s)</span>
               <button mat-stroked-button (click)="exportarVendas()"><mat-icon>download</mat-icon> Exportar CSV</button>
@@ -100,11 +99,11 @@
             } @else {
               <div class="tab-wrap">
                 <table class="tab">
-                  <thead><tr><th>Data</th><th>Tipo</th><th>Cliente</th><th>Pet</th><th>Receitas</th><th class="r">Kg</th><th>Status</th><th>Origem</th></tr></thead>
+                  <thead><tr><th>Data</th><th>Tipo</th><th>Cliente</th><th>Pet</th><th class="r">Valor da venda</th><th class="r">Custo receitas</th><th>Origem</th></tr></thead>
                   <tbody>
                     @for (l of v.linhas; track $index) {
                       <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.tipo }}</td><td>{{ l.cliente }}</td><td>{{ l.pet || '—' }}</td>
-                      <td>{{ l.receitas || '—' }}</td><td class="r">{{ num(l.kg) }}</td><td>{{ l.status }}</td><td>{{ l.origem || '—' }}</td></tr>
+                      <td class="r">{{ l.valor != null ? 'R$ ' + num(l.valor) : '—' }}</td><td class="r">R$ {{ num(l.custo) }}</td><td>{{ l.origem || '—' }}</td></tr>
                     }
                   </tbody>
                 </table>

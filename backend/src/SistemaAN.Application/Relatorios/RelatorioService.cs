@@ -4,6 +4,7 @@ using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Producao;
+using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Application.Relatorios;
 
@@ -28,7 +29,8 @@ public sealed class RelatorioService : IRelatorioService
     // ----- Modelos internos de carregamento -----
     private sealed record VendaInfo(
         DateOnly Data, string Tipo, string Cliente, long ClienteId, string? Pet,
-        string Receitas, decimal Kg, string Status, string? Origem, string? Cidade, string? Bairro, string? Observacoes);
+        string Receitas, decimal Kg, string Status, string? Origem, string? Cidade, string? Bairro, string? Observacoes,
+        decimal? Valor, decimal Custo);
 
     private sealed record ConsumoInfo(
         DateOnly Data, long IngredienteId, string Ingrediente, decimal Coeficiente,
@@ -62,15 +64,30 @@ public sealed class RelatorioService : IRelatorioService
                 {
                     p.PetNome,
                     p.QuantidadeTotalGramas,
-                    Receitas = p.Itens.Select(i => i.ReceitaNome).ToList(),
+                    Itens = p.Itens.Select(i => new
+                    {
+                        i.Tipo,
+                        i.ReceitaId,
+                        i.ReceitaNome,
+                        i.QuantidadeCicloGramas,
+                        Pacotes = i.Pacotes.Select(pk => new { pk.PesoGramas, pk.Quantidade }).ToList(),
+                        Ingredientes = i.Ingredientes.Select(ig => new { ig.GramasCozidas, ig.CustoKgCru, ig.Coeficiente }).ToList(),
+                    }).ToList(),
                 }).ToList(),
             })
             .ToListAsync(ct);
 
         var clientes = await _db.Clientes
-            .Select(c => new { c.Id, c.TipoCliente, c.OrigemVenda })
+            .Select(c => new { c.Id, c.TipoCliente, c.OrigemVenda, c.ValorRecorrenteMensal })
             .ToListAsync(ct);
         var mapaCli = clientes.ToDictionary(c => c.Id);
+
+        var pedidoValor = await _db.Pedidos
+            .Select(p => new { p.Id, p.ValorTotal })
+            .ToListAsync(ct);
+        var mapaPedido = pedidoValor.ToDictionary(p => p.Id, p => p.ValorTotal);
+
+        var custoPorKgReceita = await CarregarCustoReceitasCasaAsync(ct);
 
         var lista = new List<VendaInfo>(entregas.Count);
         foreach (var e in entregas)
@@ -82,15 +99,78 @@ public sealed class RelatorioService : IRelatorioService
 
             var kg = e.Pets.Sum(p => p.QuantidadeTotalGramas) / 1000m;
             var pets = string.Join(", ", e.Pets.Select(p => p.PetNome).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct());
-            var receitas = string.Join(", ", e.Pets.SelectMany(p => p.Receitas).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct());
+            var receitas = string.Join(", ", e.Pets.SelectMany(p => p.Itens).Select(i => i.ReceitaNome).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct());
+
+            // Custo somado das receitas de todos os cães da entrega (mesma fórmula da Receita da Casa).
+            decimal custo = 0m;
+            foreach (var p in e.Pets)
+            {
+                foreach (var it in p.Itens)
+                {
+                    if (it.Tipo == TipoReceita.Personalizada)
+                    {
+                        custo += it.Ingredientes.Sum(ig => ig.Coeficiente > 0
+                            ? ig.GramasCozidas / 1000m * (ig.CustoKgCru / ig.Coeficiente)
+                            : 0m);
+                    }
+                    else
+                    {
+                        var cozidoG = it.QuantidadeCicloGramas ?? it.Pacotes.Sum(pk => pk.PesoGramas * pk.Quantidade);
+                        if (custoPorKgReceita.TryGetValue(it.ReceitaId, out var custoKg))
+                        {
+                            custo += cozidoG / 1000m * custoKg;
+                        }
+                    }
+                }
+            }
+
+            // Valor da venda (onde há fonte real).
+            decimal? valor = e.PedidoId is { } pid && mapaPedido.TryGetValue(pid, out var vt)
+                ? vt
+                : tipo == TipoAssinatura
+                    ? (cli is { ValorRecorrenteMensal: > 0m } ? cli.ValorRecorrenteMensal : null)
+                    : ParseValorAvulsa(e.ObservacoesInternas);
 
             lista.Add(new VendaInfo(
                 e.DataPrevista, tipo, e.ClienteNome, e.ClienteId,
                 string.IsNullOrWhiteSpace(pets) ? null : pets,
-                receitas, kg, e.Status.ToString(), cli?.OrigemVenda, e.Cidade, e.Bairro, e.ObservacoesInternas));
+                receitas, kg, e.Status.ToString(), cli?.OrigemVenda, e.Cidade, e.Bairro, e.ObservacoesInternas,
+                valor, Round(custo)));
         }
 
         return lista;
+    }
+
+    /// <summary>Custo por kg cozido de cada Receita da Casa (mesma fórmula da tela de Receitas).</summary>
+    private async Task<Dictionary<long, decimal>> CarregarCustoReceitasCasaAsync(CancellationToken ct)
+    {
+        var receitas = await _db.Receitas
+            .Where(r => r.Tipo == TipoReceita.Casa)
+            .Select(r => new { r.Id, Itens = r.Itens.Select(it => new { it.IngredienteId, it.Gramas }).ToList() })
+            .ToListAsync(ct);
+
+        var ingredientes = await _db.Ingredientes
+            .Select(i => new { i.Id, i.CustoAtualKg, i.CoeficienteConversao })
+            .ToListAsync(ct);
+        var ingMap = ingredientes.ToDictionary(i => i.Id);
+
+        var mapa = new Dictionary<long, decimal>();
+        foreach (var r in receitas)
+        {
+            decimal custo = 0m;
+            foreach (var it in r.Itens)
+            {
+                if (ingMap.TryGetValue(it.IngredienteId, out var ing) && ing.CoeficienteConversao > 0)
+                {
+                    custo += it.Gramas / 1000m * (ing.CustoAtualKg / ing.CoeficienteConversao);
+                }
+            }
+
+            var rendimento = r.Itens.Sum(it => it.Gramas);
+            mapa[r.Id] = rendimento > 0 ? custo / (rendimento / 1000m) : custo;
+        }
+
+        return mapa;
     }
 
     private async Task<List<ConsumoInfo>> CarregarConsumosAsync(DateOnly inicio, DateOnly fim, CancellationToken ct)
@@ -331,12 +411,12 @@ public sealed class RelatorioService : IRelatorioService
             .OrderByDescending(x => x.Kg).ToList();
 
         var resumo = new RelatorioVendasResumoDto(
-            vendas.Count, Round(vendas.Sum(v => v.Kg)), Round(receitaRecorrente),
+            vendas.Count, Round(vendas.Sum(v => v.Kg)), Round(receitaRecorrente), Round(vendas.Sum(v => v.Custo)),
             porTipo, porReceita, porCidade, ReceitaPorVendaIndisponivel: true);
 
         var ordenadas = vendas.OrderByDescending(v => v.Data).ToList();
         var (pagina, tam, pagic) = Paginar(ordenadas, f);
-        var linhas = pagic.Select(v => new VendaLinhaDto(v.Data, v.Tipo, v.Cliente, v.Pet, v.Receitas, v.Kg, v.Status, v.Origem)).ToList();
+        var linhas = pagic.Select(v => new VendaLinhaDto(v.Data, v.Tipo, v.Cliente, v.Pet, v.Valor, v.Custo, v.Origem)).ToList();
 
         return new RelatorioVendasDto(new RelatorioPeriodo(inicio, fim), resumo, linhas, ordenadas.Count, pagina, tam);
     }

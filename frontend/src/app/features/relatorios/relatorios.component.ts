@@ -150,8 +150,8 @@ export class RelatoriosComponent implements OnInit {
     const r = this.vendas();
     if (!r) return;
     exportarCsv('relatorio-vendas',
-      ['Data', 'Tipo', 'Cliente', 'Pet', 'Receitas', 'Kg', 'Status', 'Origem'],
-      r.linhas.map((l) => [this.fmtData(l.data), l.tipo, l.cliente, l.pet ?? '', l.receitas, num(l.kg), l.status, l.origem ?? '']));
+      ['Data', 'Tipo', 'Cliente', 'Pet', 'Valor da venda', 'Custo receitas', 'Origem'],
+      r.linhas.map((l) => [this.fmtData(l.data), l.tipo, l.cliente, l.pet ?? '', l.valor != null ? num(l.valor) : '', num(l.custo), l.origem ?? '']));
   }
 
   exportarCancelamentos(): void {

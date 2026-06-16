@@ -61,15 +61,15 @@ public sealed record VendaLinhaDto(
     string Tipo,
     string Cliente,
     string? Pet,
-    string Receitas,
-    decimal Kg,
-    string Status,
+    decimal? Valor,
+    decimal Custo,
     string? Origem);
 
 public sealed record RelatorioVendasResumoDto(
     int QuantidadeVendas,
     decimal TotalKg,
     decimal ReceitaRecorrenteAtivaMensal,
+    decimal CustoTotalEstimado,
     IReadOnlyList<VendasPorTipoDto> PorTipo,
     IReadOnlyList<ChaveValorDto> PorReceita,
     IReadOnlyList<ChaveValorDto> PorCidade,
