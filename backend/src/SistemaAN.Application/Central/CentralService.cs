@@ -56,20 +56,36 @@ public sealed class CentralService : ICentralService
     private async Task<IReadOnlyList<CentralKpiDto>> MontarKpisAsync(DateOnly dia, CancellationToken ct)
     {
         var pfAtivos = await _db.Clientes.CountAsync(c => c.Ativo && c.Natureza == NaturezaCliente.PessoaFisica, ct);
-        var pjAtivos = await _db.Clientes.CountAsync(c => c.Ativo && c.Natureza == NaturezaCliente.PessoaJuridica, ct);
         var petsAtivos = await _db.Pets.CountAsync(p => p.Ativo, ct);
-        var entregasDia = await _db.Entregas.CountAsync(e => e.DataPrevista == dia && e.Status != EntregaStatus.Cancelada, ct);
         var recorrente = await _db.Clientes.Where(c => c.Ativo).SumAsync(c => c.ValorRecorrenteMensal, ct);
+
+        // Janela do mês de referência.
+        var inicioMes = new DateOnly(dia.Year, dia.Month, 1);
+        var fimMes = inicioMes.AddMonths(1).AddDays(-1);
+
+        // Comida cozida no mês: soma do cozido real das ordens de produção do mês.
+        var ordensMes = await _db.OrdensProducao
+            .Where(o => o.Data >= inicioMes && o.Data <= fimMes)
+            .Include(o => o.Consumos)
+            .AsNoTracking()
+            .ToListAsync(ct);
+        var cozidoKg = ordensMes.SelectMany(o => o.Consumos).Sum(c => c.RealCozidoGramas ?? 0m) / 1000m;
+
+        // Custo de produção no mês: valor dos insumos consumidos pela produção (saídas).
+        var inicio = new DateTimeOffset(inicioMes.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var proximoMes = new DateTimeOffset(inicioMes.AddMonths(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var custoProducao = await _db.MovimentacoesEstoque
+            .Where(m => m.Tipo == TipoMovimentacao.SaidaProducao && m.DataHora >= inicio && m.DataHora < proximoMes)
+            .SumAsync(m => m.ValorTotal, ct);
 
         return new List<CentralKpiDto>
         {
             new("Clientes PF ativos", pfAtivos.ToString(PtBr), "group"),
-            new("Clientes PJ ativos", pjAtivos.ToString(PtBr), "store"),
             new("Pets ativos", petsAtivos.ToString(PtBr), "pets"),
-            new("Entregas hoje", entregasDia.ToString(PtBr), "local_shipping"),
-            // Faturamento recorrente é a soma do valor mensal dos clientes ativos
-            // (dado real). Só o Administrador enxerga este cartão.
+            new("Comida cozida / mês", $"{cozidoKg.ToString("#,##0.#", PtBr)} kg", "soup_kitchen"),
+            // Cartões financeiros — só o Administrador enxerga.
             new("Recorrente / mês", recorrente.ToString("C0", PtBr), "payments", SomenteAdmin: true),
+            new("Custo produção / mês", custoProducao.ToString("C0", PtBr), "request_quote", SomenteAdmin: true),
         };
     }
 

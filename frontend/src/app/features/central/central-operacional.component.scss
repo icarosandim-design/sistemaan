@@ -61,10 +61,46 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
 
-  .seta {
-    margin-left: -0.15rem;
-    margin-right: -0.35rem;
+/* Botão Nova venda — destaque, com caret do menu */
+.btn-venda {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 44px;
+  padding: 0 1.1rem 0 1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  background: var(--an-cta);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(176, 141, 87, 0.35);
+  transition: background 0.12s, box-shadow 0.12s, transform 0.06s;
+
+  &:hover {
+    background: var(--an-cta-hover);
+    box-shadow: 0 4px 14px rgba(176, 141, 87, 0.45);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  .ic-venda {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .caret {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    margin-left: 0.1rem;
+    margin-right: -0.4rem;
+    opacity: 0.92;
   }
 }
 
@@ -172,18 +208,21 @@
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--an-superficie));
 }
 
-/* ---- KPIs ---- */
+/* ---- KPIs (sempre em uma linha) ---- */
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(140px, 1fr);
+  gap: 0.8rem;
+  overflow-x: auto;
 }
 
 .kpi {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
-  padding: 1.1rem 1.25rem;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.9rem 1rem;
   border: 1px solid var(--an-fundo-secundario);
   border-radius: var(--an-raio);
 }
@@ -191,8 +230,9 @@
 .kpi-icone {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
   border-radius: 12px;
   background: rgba(168, 177, 126, 0.25);
 
@@ -201,16 +241,21 @@
   }
 }
 
+.kpi-dados {
+  min-width: 0;
+}
+
 .kpi-valor {
   font-family: var(--an-fonte-titulo);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--an-texto-titulo);
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .kpi-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--an-texto-secundario);
 }
 

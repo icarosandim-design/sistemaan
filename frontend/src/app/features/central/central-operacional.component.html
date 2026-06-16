@@ -2,13 +2,13 @@
   <header class="page-head">
     <div class="page-title">
       <h1>Central Operacional</h1>
-      <p class="sub">Visão geral da operação · <span class="mock">dados de exemplo</span></p>
+      <p class="sub">Visão geral da operação</p>
     </div>
     <div class="acoes-rapidas">
-      <button mat-flat-button class="btn-cta" [matMenuTriggerFor]="menuVenda">
-        <mat-icon>point_of_sale</mat-icon>
-        Nova venda
-        <mat-icon class="seta">arrow_drop_down</mat-icon>
+      <button mat-flat-button class="btn-venda" [matMenuTriggerFor]="menuVenda">
+        <mat-icon class="ic-venda">point_of_sale</mat-icon>
+        <span class="txt">Nova venda</span>
+        <mat-icon class="caret">expand_more</mat-icon>
       </button>
       <mat-menu #menuVenda="matMenu">
         <a mat-menu-item routerLink="/clientes">
