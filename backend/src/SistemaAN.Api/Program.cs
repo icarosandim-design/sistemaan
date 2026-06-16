@@ -114,6 +114,9 @@ using (var scope = app.Services.CreateScope())
     var origensSeeder = scope.ServiceProvider.GetRequiredService<OrigensVendaDataSeeder>();
     await origensSeeder.SeedAsync();
 
+    var motivosSeeder = scope.ServiceProvider.GetRequiredService<MotivosCancelamentoDataSeeder>();
+    await motivosSeeder.SeedAsync();
+
     // Massa de dados de demonstração/teste — só quando Seed:DemoData = true
     // (ligado apenas no docker-compose.test.yml; o ambiente original nunca recebe).
     if (app.Configuration.GetValue<bool>("Seed:DemoData"))

@@ -40,7 +40,8 @@ public sealed class ClientesController : ControllerBase
     [HttpPut("{id:long}/cancelar")]
     public async Task<IActionResult> Cancelar(long id, CancelarClienteRequest request, CancellationToken ct)
     {
-        await _service.CancelarAsync(id, request.Motivo, ct);
+        var usuarioId = long.TryParse(User.FindFirst("sub")?.Value, out var uid) ? uid : (long?)null;
+        await _service.CancelarAsync(id, request.Motivo, request.MotivoId, request.Observacao, usuarioId, ct);
         return NoContent();
     }
 

@@ -31,6 +31,11 @@ public class Cliente : AuditableEntity
     public bool Ativo { get; private set; }
     public string? MotivoCancelamento { get; private set; }
     public DateTimeOffset? DataCancelamento { get; private set; }
+    /// <summary>Motivo de cancelamento padronizado (cadastro). Dimensão do relatório.</summary>
+    public long? MotivoCancelamentoId { get; private set; }
+    public string? ObservacaoCancelamento { get; private set; }
+    /// <summary>Usuário que registrou o cancelamento (auditoria do relatório).</summary>
+    public long? UsuarioCancelamentoId { get; private set; }
 
     // ----- Entrega (compartilhada por todos os pets do cliente) -----
     public long? FrequenciaEntregaId { get; private set; }
@@ -62,11 +67,14 @@ public class Cliente : AuditableEntity
     }
 
     /// <summary>Cancela a assinatura/cliente, registrando o motivo e a data.</summary>
-    public void Cancelar(string motivo, DateTimeOffset quando)
+    public void Cancelar(string motivo, DateTimeOffset quando, long? motivoId = null, string? observacao = null, long? usuarioId = null)
     {
         Ativo = false;
         MotivoCancelamento = motivo.Trim();
         DataCancelamento = quando;
+        MotivoCancelamentoId = motivoId;
+        ObservacaoCancelamento = string.IsNullOrWhiteSpace(observacao) ? null : observacao.Trim();
+        UsuarioCancelamentoId = usuarioId;
     }
 
     public void Reativar()
@@ -74,6 +82,9 @@ public class Cliente : AuditableEntity
         Ativo = true;
         MotivoCancelamento = null;
         DataCancelamento = null;
+        MotivoCancelamentoId = null;
+        ObservacaoCancelamento = null;
+        UsuarioCancelamentoId = null;
     }
 
     private void Aplicar(DadosCliente d)

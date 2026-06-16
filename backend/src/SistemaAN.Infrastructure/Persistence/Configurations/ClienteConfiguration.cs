@@ -38,6 +38,10 @@ public sealed class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
 
         builder.Property(c => c.Ativo).IsRequired();
         builder.Property(c => c.MotivoCancelamento).HasMaxLength(500);
+        builder.Property(c => c.MotivoCancelamentoId);
+        builder.Property(c => c.ObservacaoCancelamento).HasMaxLength(500);
+        builder.Property(c => c.UsuarioCancelamentoId);
+        builder.HasIndex(c => c.MotivoCancelamentoId).HasDatabaseName("ix_clientes_motivo_cancelamento");
 
         // Entrega (compartilhada pelos pets do cliente).
         builder.Property(c => c.FrequenciaEntregaId);

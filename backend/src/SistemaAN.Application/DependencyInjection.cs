@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IClienteService, ClienteService>();
         services.AddScoped<IClientePjService, ClientePjService>();
         services.AddScoped<IOrigemVendaService, OrigemVendaService>();
+        services.AddScoped<IMotivoCancelamentoService, MotivoCancelamentoService>();
         services.AddScoped<IPetService, PetService>();
         services.AddScoped<ITamanhoPacoteService, TamanhoPacoteService>();
         services.AddScoped<IReceitaPersonalizadaService, ReceitaPersonalizadaService>();
@@ -45,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<Rotas.IRotaService, Rotas.RotaService>();
         services.AddScoped<Central.ICentralService, Central.CentralService>();
         services.AddScoped<Vendas.IVendaAvulsaService, Vendas.VendaAvulsaService>();
+        services.AddScoped<Relatorios.IRelatorioService, Relatorios.RelatorioService>();
         return services;
     }
 }

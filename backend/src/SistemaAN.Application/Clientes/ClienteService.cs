@@ -97,9 +97,20 @@ public sealed class ClienteService : IClienteService
         return Map(cliente, nomes);
     }
 
-    public async Task CancelarAsync(long id, string motivo, CancellationToken cancellationToken = default)
+    public async Task CancelarAsync(long id, string motivo, long? motivoId = null, string? observacao = null, long? usuarioId = null, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(motivo))
+        var nome = motivo?.Trim() ?? string.Empty;
+        if (motivoId is { } mid)
+        {
+            var motivoCadastro = await _db.MotivosCancelamento.FirstOrDefaultAsync(m => m.Id == mid, cancellationToken)
+                ?? throw new ValidationException(new Dictionary<string, string[]> { ["motivoId"] = ["Motivo de cancelamento inválido."] });
+            if (string.IsNullOrWhiteSpace(nome))
+            {
+                nome = motivoCadastro.Nome;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(nome))
         {
             throw new ValidationException(new Dictionary<string, string[]> { ["motivo"] = ["Informe o motivo do cancelamento."] });
         }
@@ -107,7 +118,7 @@ public sealed class ClienteService : IClienteService
         var cliente = await _db.Clientes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
             ?? throw new NotFoundException("Cliente", id);
 
-        cliente.Cancelar(motivo, DateTimeOffset.UtcNow);
+        cliente.Cancelar(nome, DateTimeOffset.UtcNow, motivoId, observacao, usuarioId);
         await _db.SaveChangesAsync(cancellationToken);
     }
 

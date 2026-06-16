@@ -44,6 +44,8 @@ public interface IApplicationDbContext
 
     DbSet<OrigemVenda> OrigensVenda { get; }
 
+    DbSet<MotivoCancelamento> MotivosCancelamento { get; }
+
     DbSet<Pet> Pets { get; }
 
     DbSet<TamanhoPacote> TamanhosPacote { get; }

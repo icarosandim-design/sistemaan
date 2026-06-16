@@ -52,6 +52,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<OrigemVenda> OrigensVenda => Set<OrigemVenda>();
 
+    public DbSet<MotivoCancelamento> MotivosCancelamento => Set<MotivoCancelamento>();
+
     public DbSet<Pet> Pets => Set<Pet>();
 
     public DbSet<TamanhoPacote> TamanhosPacote => Set<TamanhoPacote>();

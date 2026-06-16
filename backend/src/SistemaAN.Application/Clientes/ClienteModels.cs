@@ -53,4 +53,4 @@ public sealed record SalvarClienteRequest(
     string? ObservacoesFinanceiras,
     string? PreferenciaHorario);
 
-public sealed record CancelarClienteRequest(string Motivo);
+public sealed record CancelarClienteRequest(string Motivo, long? MotivoId = null, string? Observacao = null);
