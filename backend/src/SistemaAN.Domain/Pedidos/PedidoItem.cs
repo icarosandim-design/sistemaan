@@ -10,7 +10,7 @@ public class PedidoItem : Entity
     private PedidoItem(
         long receitaId, string receitaCodigo, string receitaNome,
         long tamanhoPacoteId, string tamanhoNome, int pesoGramas,
-        int quantidade, decimal? precoUnitario, string? observacao, long? itemEstoqueId)
+        int quantidade, decimal? precoUnitario, string? observacao, long? itemEstoqueId, long? produtoId)
     {
         ReceitaId = receitaId;
         ReceitaCodigo = receitaCodigo;
@@ -22,6 +22,7 @@ public class PedidoItem : Entity
         PrecoUnitario = precoUnitario;
         Observacao = observacao;
         ItemEstoqueId = itemEstoqueId;
+        ProdutoId = produtoId;
     }
 
     public long PedidoId { get; private set; }
@@ -38,10 +39,16 @@ public class PedidoItem : Entity
     /// <summary>Produto acabado de estoque correspondente (Receita+tamanho), se existir.</summary>
     public long? ItemEstoqueId { get; private set; }
 
+    /// <summary>Produto comercial vendido (camada nova). Opcional para compatibilidade.</summary>
+    public long? ProdutoId { get; private set; }
+
+    /// <summary>Valor total do item = preço unitário × quantidade (quando há preço).</summary>
+    public decimal? ValorTotalItem => PrecoUnitario.HasValue ? PrecoUnitario.Value * Quantidade : null;
+
     public static PedidoItem Criar(
         long receitaId, string receitaCodigo, string receitaNome,
         long tamanhoPacoteId, string tamanhoNome, int pesoGramas,
-        int quantidade, decimal? precoUnitario, string? observacao, long? itemEstoqueId)
+        int quantidade, decimal? precoUnitario, string? observacao, long? itemEstoqueId, long? produtoId = null)
         => new(receitaId, receitaCodigo, receitaNome, tamanhoPacoteId, tamanhoNome, pesoGramas,
-            quantidade, precoUnitario, observacao, itemEstoqueId);
+            quantidade, precoUnitario, observacao, itemEstoqueId, produtoId);
 }

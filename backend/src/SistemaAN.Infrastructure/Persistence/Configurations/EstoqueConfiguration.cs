@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Pacotes;
+using SistemaAN.Domain.Produtos;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Infrastructure.Persistence.Configurations;
@@ -50,6 +51,7 @@ public sealed class ItemEstoqueConfiguration : IEntityTypeConfiguration<ItemEsto
         builder.Property(i => i.IngredienteId);
         builder.Property(i => i.ReceitaId);
         builder.Property(i => i.TamanhoPacoteId);
+        builder.Property(i => i.ProdutoId);
         builder.Property(i => i.QuantidadeAtual).HasPrecision(18, 3).IsRequired();
         builder.Property(i => i.QuantidadeMinima).HasPrecision(18, 3).IsRequired();
         builder.Property(i => i.CustoMedio).HasPrecision(18, 4).IsRequired();
@@ -67,6 +69,14 @@ public sealed class ItemEstoqueConfiguration : IEntityTypeConfiguration<ItemEsto
         builder.HasIndex(i => i.Tipo).HasDatabaseName("ix_itens_estoque_tipo");
         builder.HasIndex(i => i.FornecedorPrincipalId).HasDatabaseName("ix_itens_estoque_fornecedor_principal_id");
         builder.HasIndex(i => i.TamanhoPacoteId).HasDatabaseName("ix_itens_estoque_tamanho_pacote_id");
+        builder.HasIndex(i => i.ProdutoId).HasDatabaseName("ix_itens_estoque_produto");
+
+        builder
+            .HasOne<Produto>()
+            .WithMany()
+            .HasForeignKey(i => i.ProdutoId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_itens_estoque_produto");
 
         builder
             .HasOne<Ingrediente>()
@@ -210,6 +220,7 @@ public sealed class EntradaEstoqueConfiguration : IEntityTypeConfiguration<Entra
         builder.Property(e => e.ItemEstoqueId).IsRequired();
         builder.Property(e => e.LoteEstoqueId).IsRequired();
         builder.Property(e => e.FornecedorId);
+        builder.Property(e => e.NotaCompraId);
         builder.Property(e => e.Quantidade).HasPrecision(18, 3).IsRequired();
         builder.Property(e => e.UnidadeMedida).HasConversion<string>().HasMaxLength(15).IsRequired();
         builder.Property(e => e.ValorUnitario).HasPrecision(18, 4).IsRequired();
@@ -227,6 +238,14 @@ public sealed class EntradaEstoqueConfiguration : IEntityTypeConfiguration<Entra
         builder.HasIndex(e => e.ItemEstoqueId).HasDatabaseName("ix_entradas_estoque_item");
         builder.HasIndex(e => e.LoteEstoqueId).HasDatabaseName("ix_entradas_estoque_lote_estoque_id");
         builder.HasIndex(e => e.FornecedorId).HasDatabaseName("ix_entradas_estoque_fornecedor_id");
+        builder.HasIndex(e => e.NotaCompraId).HasDatabaseName("ix_entradas_estoque_nota_compra");
+
+        builder
+            .HasOne<NotaCompra>()
+            .WithMany()
+            .HasForeignKey(e => e.NotaCompraId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_entradas_estoque_nota_compra");
 
         builder
             .HasOne(e => e.Item)

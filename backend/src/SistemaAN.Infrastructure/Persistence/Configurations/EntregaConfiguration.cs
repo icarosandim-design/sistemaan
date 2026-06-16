@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SistemaAN.Domain.Catalog;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Entregas;
+using SistemaAN.Domain.Produtos;
 using SistemaAN.Domain.Receitas;
 
 namespace SistemaAN.Infrastructure.Persistence.Configurations;
@@ -116,6 +117,7 @@ public sealed class EntregaItemConfiguration : IEntityTypeConfiguration<EntregaI
         builder.Property(i => i.ReceitaCodigo).HasMaxLength(30).IsRequired();
         builder.Property(i => i.ReceitaNome).HasMaxLength(120).IsRequired();
         builder.Property(i => i.Tipo).HasConversion<string>().HasMaxLength(15).IsRequired();
+        builder.Property(i => i.ProdutoId);
         builder.Property(i => i.QuantidadeCicloGramas);
         builder.Property(i => i.TamanhoPacoteGramas);
         builder.Property(i => i.QuantidadePacotes);
@@ -126,6 +128,14 @@ public sealed class EntregaItemConfiguration : IEntityTypeConfiguration<EntregaI
 
         builder.HasIndex(i => i.EntregaPetId).HasDatabaseName("ix_entrega_itens_pet");
         builder.HasIndex(i => i.ReceitaId).HasDatabaseName("ix_entrega_itens_receita");
+        builder.HasIndex(i => i.ProdutoId).HasDatabaseName("ix_entrega_itens_produto");
+
+        builder
+            .HasOne<Produto>()
+            .WithMany()
+            .HasForeignKey(i => i.ProdutoId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_entrega_itens_produto");
 
         builder
             .HasOne<Receita>()

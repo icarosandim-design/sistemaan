@@ -12,8 +12,10 @@ using SistemaAN.Domain.Pedidos;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Producao;
+using SistemaAN.Domain.Produtos;
 using SistemaAN.Domain.Receitas;
 using SistemaAN.Domain.Rotas;
+using SistemaAN.Domain.Vendas;
 
 namespace SistemaAN.Infrastructure.Persistence;
 
@@ -97,6 +99,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Rota> Rotas => Set<Rota>();
 
     public DbSet<RotaParada> RotaParadas => Set<RotaParada>();
+
+    public DbSet<Produto> Produtos => Set<Produto>();
+
+    public DbSet<VendaAvulsa> VendasAvulsas => Set<VendaAvulsa>();
+
+    public DbSet<VendaAvulsaItem> VendasAvulsasItens => Set<VendaAvulsaItem>();
+
+    public DbSet<NotaCompra> NotasCompra => Set<NotaCompra>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

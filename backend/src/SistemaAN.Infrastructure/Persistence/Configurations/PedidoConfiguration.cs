@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Pedidos;
+using SistemaAN.Domain.Produtos;
 
 namespace SistemaAN.Infrastructure.Persistence.Configurations;
 
@@ -61,7 +62,17 @@ public sealed class PedidoItemConfiguration : IEntityTypeConfiguration<PedidoIte
         builder.Property(i => i.PrecoUnitario).HasPrecision(12, 2);
         builder.Property(i => i.Observacao).HasMaxLength(500);
         builder.Property(i => i.ItemEstoqueId);
+        builder.Property(i => i.ProdutoId);
+        builder.Ignore(i => i.ValorTotalItem);
 
         builder.HasIndex(i => i.PedidoId).HasDatabaseName("ix_pedido_itens_pedido");
+        builder.HasIndex(i => i.ProdutoId).HasDatabaseName("ix_pedido_itens_produto");
+
+        builder
+            .HasOne<Produto>()
+            .WithMany()
+            .HasForeignKey(i => i.ProdutoId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_pedido_itens_produto");
     }
 }

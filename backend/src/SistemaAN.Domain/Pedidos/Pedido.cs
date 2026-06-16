@@ -52,6 +52,13 @@ public class Pedido : AuditableEntity
 
     public void AdicionarItem(PedidoItem item) => _itens.Add(item);
 
+    /// <summary>Recalcula o valor total do pedido pela soma dos itens (preço × quantidade).</summary>
+    public void RecalcularTotal()
+    {
+        var temPreco = _itens.Any(i => i.PrecoUnitario.HasValue);
+        ValorTotal = temPreco ? _itens.Sum(i => (i.PrecoUnitario ?? 0m) * i.Quantidade) : null;
+    }
+
     public void Confirmar() => Status = StatusPedido.Confirmado;
 
     public void Cancelar() => Status = StatusPedido.Cancelado;

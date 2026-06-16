@@ -8,6 +8,9 @@ public enum TipoItemEstoque
 
     /// <summary>Pacote pronto de Receita da Casa (estoque geral por receita+tamanho).</summary>
     ProdutoAcabadoCasa,
+
+    /// <summary>Produto comprado pronto (petisco, revenda) — entra por compra, não por produção.</summary>
+    ProdutoComprado,
 }
 
 /// <summary>Unidade de medida do item/movimentação.</summary>

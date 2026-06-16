@@ -14,7 +14,7 @@ public class EntregaItem : Entity
 
     private EntregaItem(
         long receitaId, string receitaCodigo, string receitaNome, TipoReceita tipo,
-        int? quantidadeCicloGramas, int? tamanhoPacoteGramas, int? quantidadePacotes)
+        int? quantidadeCicloGramas, int? tamanhoPacoteGramas, int? quantidadePacotes, long? produtoId)
     {
         ReceitaId = receitaId;
         ReceitaCodigo = receitaCodigo;
@@ -23,6 +23,7 @@ public class EntregaItem : Entity
         QuantidadeCicloGramas = quantidadeCicloGramas;
         TamanhoPacoteGramas = tamanhoPacoteGramas;
         QuantidadePacotes = quantidadePacotes;
+        ProdutoId = produtoId;
         StatusPreparo = StatusPreparoPersonalizada.NaoPronta;
     }
 
@@ -31,6 +32,9 @@ public class EntregaItem : Entity
     public string ReceitaCodigo { get; private set; } = string.Empty;
     public string ReceitaNome { get; private set; } = string.Empty;
     public TipoReceita Tipo { get; private set; }
+
+    /// <summary>Produto comercial correspondente (camada nova). Opcional para compatibilidade.</summary>
+    public long? ProdutoId { get; private set; }
 
     /// <summary>Casa: gramas necessárias no ciclo.</summary>
     public int? QuantidadeCicloGramas { get; private set; }
@@ -73,18 +77,18 @@ public class EntregaItem : Entity
 
     public static EntregaItem CriarCasa(
         long receitaId, string codigo, string nome, int quantidadeCicloGramas,
-        IEnumerable<EntregaItemPacote> pacotes)
+        IEnumerable<EntregaItemPacote> pacotes, long? produtoId = null)
     {
-        var item = new EntregaItem(receitaId, codigo, nome, TipoReceita.Casa, quantidadeCicloGramas, null, null);
+        var item = new EntregaItem(receitaId, codigo, nome, TipoReceita.Casa, quantidadeCicloGramas, null, null, produtoId);
         item._pacotes.AddRange(pacotes);
         return item;
     }
 
     public static EntregaItem CriarPersonalizada(
         long receitaId, string codigo, string nome, int tamanhoPacoteGramas, int quantidadePacotes,
-        IEnumerable<EntregaItemIngrediente> ingredientes)
+        IEnumerable<EntregaItemIngrediente> ingredientes, long? produtoId = null)
     {
-        var item = new EntregaItem(receitaId, codigo, nome, TipoReceita.Personalizada, null, tamanhoPacoteGramas, quantidadePacotes);
+        var item = new EntregaItem(receitaId, codigo, nome, TipoReceita.Personalizada, null, tamanhoPacoteGramas, quantidadePacotes, produtoId);
         item._ingredientes.AddRange(ingredientes);
         return item;
     }

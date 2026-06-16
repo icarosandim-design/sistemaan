@@ -58,6 +58,9 @@ public class EntradaEstoque : AuditableEntity
 
     public long? FornecedorId { get; private set; }
 
+    /// <summary>Cabeçalho da nota/compra que agrupa esta entrada (opcional, para compatibilidade).</summary>
+    public long? NotaCompraId { get; private set; }
+
     public decimal Quantidade { get; private set; }
 
     public UnidadeMedida UnidadeMedida { get; private set; }
@@ -87,6 +90,9 @@ public class EntradaEstoque : AuditableEntity
     public string Usuario { get; private set; } = string.Empty;
 
     public string? Observacoes { get; private set; }
+
+    /// <summary>Vincula a entrada ao cabeçalho da nota/compra.</summary>
+    public void VincularNotaCompra(long notaCompraId) => NotaCompraId = notaCompraId;
 
     public static EntradaEstoque Criar(
         ItemEstoque item,

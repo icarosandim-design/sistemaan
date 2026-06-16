@@ -10,8 +10,10 @@ using SistemaAN.Domain.Pedidos;
 using SistemaAN.Domain.Pets;
 using SistemaAN.Domain.Planos;
 using SistemaAN.Domain.Producao;
+using SistemaAN.Domain.Produtos;
 using SistemaAN.Domain.Receitas;
 using SistemaAN.Domain.Rotas;
+using SistemaAN.Domain.Vendas;
 
 namespace SistemaAN.Application.Common.Interfaces;
 
@@ -89,6 +91,14 @@ public interface IApplicationDbContext
     DbSet<Rota> Rotas { get; }
 
     DbSet<RotaParada> RotaParadas { get; }
+
+    DbSet<Produto> Produtos { get; }
+
+    DbSet<VendaAvulsa> VendasAvulsas { get; }
+
+    DbSet<VendaAvulsaItem> VendasAvulsasItens { get; }
+
+    DbSet<NotaCompra> NotasCompra { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

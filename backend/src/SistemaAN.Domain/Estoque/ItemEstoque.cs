@@ -49,6 +49,9 @@ public class ItemEstoque : AuditableEntity
     /// <summary>Produto acabado da casa: tamanho do pacote.</summary>
     public long? TamanhoPacoteId { get; private set; }
 
+    /// <summary>Produto comercial vinculado (camada comercial). Opcional para compatibilidade.</summary>
+    public long? ProdutoId { get; private set; }
+
     /// <summary>Saldo físico atual (cache das movimentações).</summary>
     public decimal QuantidadeAtual { get; private set; }
 
@@ -104,6 +107,31 @@ public class ItemEstoque : AuditableEntity
         item.Observacoes = Texto(observacoes);
         return item;
     }
+
+    /// <summary>Item de estoque para um Produto comprado pronto (petisco, revenda) — entra por compra.</summary>
+    public static ItemEstoque CriarProdutoComprado(
+        long produtoId,
+        string nome,
+        UnidadeMedida unidadeMedida,
+        decimal quantidadeMinima,
+        long? fornecedorPrincipalId,
+        string? localArmazenamento,
+        bool controlaValidade,
+        string? observacoes)
+    {
+        var item = new ItemEstoque(TipoItemEstoque.ProdutoComprado, nome.Trim(),
+            "Produto comprado", unidadeMedida, null, null, null);
+        item.ProdutoId = produtoId;
+        item.QuantidadeMinima = quantidadeMinima;
+        item.FornecedorPrincipalId = fornecedorPrincipalId;
+        item.LocalArmazenamento = Texto(localArmazenamento);
+        item.ControlaValidade = controlaValidade;
+        item.Observacoes = Texto(observacoes);
+        return item;
+    }
+
+    /// <summary>Vincula o item de estoque ao Produto comercial (camada nova).</summary>
+    public void DefinirProduto(long? produtoId) => ProdutoId = produtoId;
 
     /// <summary>Atualiza os campos editáveis (tipo e vínculos são imutáveis).</summary>
     public void Atualizar(
