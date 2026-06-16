@@ -6,7 +6,7 @@ using SistemaAN.Application.Estoque;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api")]
 public sealed class EntregasController : ControllerBase
 {

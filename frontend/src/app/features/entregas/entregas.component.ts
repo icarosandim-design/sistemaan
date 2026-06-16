@@ -15,7 +15,6 @@ import {
   enderecoResumo,
   EntregaResumo,
   fmtPeso,
-  gerarEntregasMock,
   labelStatus,
   operacionalDeDetalhe,
   ProntidaoEntrega,
@@ -83,11 +82,8 @@ export class EntregasComponent implements OnInit {
   readonly gerando = signal(false);
   // Carregamento sob demanda do resumo operacional (detalhe) das entregas do dia.
   readonly carregandoOperacional = signal(false);
-  // ⚠️ TEMPORÁRIO: indica que a tela está exibindo dados MOCK (não reais).
-  readonly usandoMock = signal(false);
-
-  // Quantidade mínima de entregas reais para dispensar o mock de validação visual.
-  private static readonly MIN_REAIS = 3;
+  // Indica falha ao carregar (estado de erro, sem dados fictícios).
+  readonly erroCarregar = signal(false);
 
   mesRef = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   diaSelecionado = '';
@@ -106,9 +102,10 @@ export class EntregasComponent implements OnInit {
 
   carregar(inicial = false): void {
     this.carregando.set(true);
+    this.erroCarregar.set(false);
     this.service.listar().subscribe({
       next: (lista) => {
-        this.aplicarDados(lista);
+        this.todas.set(lista);
         this.carregando.set(false);
         if (inicial || !this.diaSelecionado) {
           this.selecionarDiaInicial();
@@ -117,23 +114,12 @@ export class EntregasComponent implements OnInit {
       },
       error: () => {
         this.carregando.set(false);
-        // Sem backend disponível: cai no mock para validação visual.
-        this.aplicarDados([]);
+        this.erroCarregar.set(true);
+        // Sem dados fictícios: em caso de erro, lista vazia + estado de erro.
+        this.todas.set([]);
         this.selecionarDiaInicial();
       },
     });
-  }
-
-  // Usa dados reais quando existirem; o mock só entra como fallback de validação
-  // visual quando ainda não há entregas reais suficientes.
-  private aplicarDados(reais: EntregaResumo[]): void {
-    if (reais.length >= EntregasComponent.MIN_REAIS) {
-      this.usandoMock.set(false);
-      this.todas.set(reais);
-    } else {
-      this.usandoMock.set(true);
-      this.todas.set(gerarEntregasMock());
-    }
   }
 
   gerar(): void {
@@ -279,7 +265,7 @@ export class EntregasComponent implements OnInit {
    * para montar o resumo operacional. Mock já traz o operacional embutido.
    */
   private carregarOperacionalDoDia(): void {
-    if (this.usandoMock() || !this.diaSelecionado) {
+    if (!this.diaSelecionado) {
       return;
     }
     const pendentes = this.todas().filter((e) => e.dataPrevista === this.diaSelecionado && !e.operacional);

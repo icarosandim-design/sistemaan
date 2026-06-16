@@ -6,7 +6,7 @@ using SistemaAN.Application.Entregas;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/frequencias-entrega")]
 public sealed class FrequenciasEntregaController : ControllerBase
 {

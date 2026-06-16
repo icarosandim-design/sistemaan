@@ -5,7 +5,7 @@ using SistemaAN.Application.Clientes;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/clientes-pj")]
 public sealed class ClientesPjController : ControllerBase
 {

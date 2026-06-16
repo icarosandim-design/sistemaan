@@ -5,7 +5,7 @@ using SistemaAN.Application.Pets;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api")]
 public sealed class PetsController : ControllerBase
 {

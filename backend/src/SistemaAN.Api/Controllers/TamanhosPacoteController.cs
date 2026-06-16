@@ -5,7 +5,7 @@ using SistemaAN.Application.Pacotes;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/tamanhos-pacote")]
 public sealed class TamanhosPacoteController : ControllerBase
 {

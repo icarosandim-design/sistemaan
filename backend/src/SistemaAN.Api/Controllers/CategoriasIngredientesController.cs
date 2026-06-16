@@ -5,7 +5,7 @@ using SistemaAN.Application.Catalog;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/categorias-ingredientes")]
 public sealed class CategoriasIngredientesController : ControllerBase
 {

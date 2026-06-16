@@ -6,7 +6,7 @@ using SistemaAN.Application.Pedidos;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/pedidos")]
 public sealed class PedidosController : ControllerBase
 {

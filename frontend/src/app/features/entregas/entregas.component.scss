@@ -124,14 +124,14 @@
   .mini { display: none; }
 }
 
-/* ===== Banner de mock temporário ===== */
-.mock-banner {
+/* ===== Banner de erro ao carregar ===== */
+.erro-banner {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #fdf4e3;
-  color: #8c6b3f;
-  border: 1px solid #e6cfa0;
+  background: #fbeceb;
+  color: #b3261e;
+  border: 1px solid #f3c9c6;
   border-radius: var(--an-raio-sm, 8px);
   padding: 0.5rem 0.8rem;
   font-size: 0.85rem;

@@ -5,7 +5,7 @@ using SistemaAN.Application.Rotas;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/rotas")]
 public sealed class RotasController : ControllerBase
 {

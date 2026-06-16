@@ -5,7 +5,7 @@ using SistemaAN.Application.Consumo;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/faixas-consumo")]
 public sealed class FaixasConsumoController : ControllerBase
 {

@@ -5,7 +5,7 @@ using SistemaAN.Application.Estoque;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api/estoque/itens")]
 public sealed class ItensEstoqueController : ControllerBase
 {

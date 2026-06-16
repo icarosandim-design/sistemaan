@@ -14,10 +14,10 @@
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   }
 
-  @if (usandoMock()) {
-    <div class="mock-banner">
-      <mat-icon>science</mat-icon>
-      Exibindo dados <strong>hipotéticos (mock)</strong> para validação visual — serão substituídos pelas entregas reais assim que existirem.
+  @if (erroCarregar()) {
+    <div class="erro-banner">
+      <mat-icon>cloud_off</mat-icon>
+      Não foi possível carregar as entregas. Verifique a conexão e tente novamente.
     </div>
   }
 
@@ -247,7 +247,7 @@
         </article>
       } @empty {
         <div class="sem-dados-card">
-          {{ diaSelecionado ? 'Nenhuma entrega neste dia (ou filtro).' : 'Selecione um dia no calendário.' }}
+          {{ diaSelecionado ? 'Nenhuma entrega encontrada para o período selecionado.' : 'Selecione um dia no calendário.' }}
         </div>
       }
     </div>
@@ -270,7 +270,6 @@
             </li>
           }
         </ul>
-        <p class="resumo-nota">* estoque simulado — integração com Estoque em breve</p>
       </section>
     }
 
@@ -294,7 +293,6 @@
             </li>
           }
         </ul>
-        <p class="resumo-nota">* prontidão simulada — integração com Produção em breve</p>
       </section>
     }
   </section>

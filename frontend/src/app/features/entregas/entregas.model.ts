@@ -35,8 +35,8 @@ export interface EntregaResumo {
   foraDaRota?: boolean;
   /**
    * Resumo operacional do conteúdo da entrega (receitas da casa + personalizadas).
-   * Para entregas reais é carregado sob demanda a partir do detalhe.
-   * Estoque e prontidão são MOCK por enquanto (ver seção no fim do arquivo).
+   * Carregado sob demanda a partir do detalhe real da entrega; o estoque vem do
+   * módulo de Estoque (produto acabado) e a prontidão do status de preparo real.
    */
   operacional?: ResumoOperacional;
 }
@@ -70,7 +70,7 @@ export interface ResumoCasaDia {
   receitaNome: string;
   tamanhoGramas: number;
   necessario: number;
-  estoque: number; // ⚠️ MOCK
+  estoque: number; // saldo real de produto acabado (módulo de Estoque)
   falta: number;
 }
 
@@ -293,8 +293,8 @@ export interface AlterarAgendaRequest {
 // Resumo operacional (mapeamento a partir do detalhe + agregações do dia)
 // ---------------------------------------------------------------------
 // O breakdown de receitas/pacotes/tamanho é REAL (vem do detalhe da
-// entrega). Estoque e prontidão são MOCK por enquanto (ver funções abaixo),
-// mas a estrutura já está pronta para integrar Estoque/Produção depois.
+// entrega). O estoque vem do módulo de Estoque (produto acabado) e a
+// prontidão das personalizadas vem do status de preparo real.
 // =====================================================================
 
 /**
@@ -371,175 +371,4 @@ export function resumoPersonalizadasDoDia(entregas: EntregaResumo[]): ResumoPers
   const itens = entregas.flatMap((e) => e.operacional?.personalizadas ?? []);
   const prontas = itens.filter((i) => i.pronta).length;
   return { total: itens.length, prontas, naoProntas: itens.length - prontas, itens };
-}
-
-// =====================================================================
-// ⚠️ ESTOQUE / PRONTIDÃO MOCK — substituir pelos módulos de Estoque/Produção
-// ---------------------------------------------------------------------
-// Valores determinísticos (estáveis entre renders) só para validar o
-// layout operacional. Conectar ao backend real quando existir.
-// =====================================================================
-
-const ESTOQUE_MOCK: Record<string, number> = {
-  'Frango|500': 20,
-  'Carne|500': 5,
-  'Porco|250': 8,
-  'Frango|250': 12,
-  'Carne|250': 3,
-  'Peixe|500': 14,
-};
-
-function hash(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (h * 31 + s.charCodeAt(i)) % 1000;
-  }
-  return h;
-}
-
-/** Estoque disponível (em pacotes) MOCK para uma receita+tamanho. */
-export function estoqueMockPacotes(receitaNome: string, tamanhoGramas: number): number {
-  const k = `${receitaNome}|${tamanhoGramas}`;
-  if (k in ESTOQUE_MOCK) {
-    return ESTOQUE_MOCK[k];
-  }
-  return 2 + (hash(k) % 18);
-}
-
-/** Prontidão MOCK de uma receita personalizada (≈ 60% prontas). */
-export function prontaMock(seed: string): boolean {
-  return hash(seed) % 5 < 3;
-}
-
-// =====================================================================
-// ⚠️ DADOS MOCK TEMPORÁRIOS — APENAS PARA VALIDAÇÃO VISUAL DO LAYOUT ⚠️
-// ---------------------------------------------------------------------
-// Estes dados NÃO vêm do backend. São usados somente quando ainda não há
-// entregas reais suficientes para validar a tela (calendário, lista do
-// dia, ações do dia, sinalização "fora da rota").
-// REMOVER quando o fluxo real de geração de entregas estiver populado.
-// =====================================================================
-
-const MOCK_BAIRROS: { bairro: string; cidade: string; rua: string }[] = [
-  { bairro: 'Lagoa da Conceição', cidade: 'Florianópolis', rua: 'Rua das Rendeiras' },
-  { bairro: 'Morro Dois Irmãos', cidade: 'Florianópolis', rua: 'Servidão do Mirante' },
-  { bairro: 'Centro', cidade: 'Florianópolis', rua: 'Rua Felipe Schmidt' },
-  { bairro: 'Trindade', cidade: 'Florianópolis', rua: 'Rua Lauro Linhares' },
-  { bairro: 'Campeche', cidade: 'Florianópolis', rua: 'Av. Pequeno Príncipe' },
-  { bairro: 'Santa Mônica', cidade: 'Florianópolis', rua: 'Rua João Pio Duarte' },
-  { bairro: 'Itacorubi', cidade: 'Florianópolis', rua: 'Rua João Câmara' },
-];
-
-const MOCK_CLIENTES = [
-  'Ana Beatriz Souza', 'Carlos Eduardo Lima', 'Mariana Castro', 'Rafael Antunes',
-  'Juliana Prado', 'Felipe Moraes', 'Patrícia Nogueira', 'Bruno Carvalho',
-  'Larissa Fontes', 'Thiago Ramos', 'Camila Dias', 'Eduardo Bittencourt',
-];
-
-const MOCK_PETS = ['Thor', 'Luna', 'Bidu', 'Mel', 'Nina', 'Bob', 'Cacau', 'Amora', 'Zeus', 'Frida'];
-const MOCK_STATUS: EntregaStatus[] = ['Programada', 'ConfirmadaCliente', 'NaoEntregue', 'Reagendada', 'SaiuParaEntrega'];
-
-function isoSomaDias(base: Date, dias: number): string {
-  const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + dias);
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
-
-/**
- * Gera entregas hipotéticas em 3 dias distintos (6, 9 e 12 entregas)
- * a partir de hoje, para validar o layout. TEMPORÁRIO.
- */
-export function gerarEntregasMock(): EntregaResumo[] {
-  const hoje = new Date();
-  const plano: { offset: number; qtd: number }[] = [
-    { offset: 0, qtd: 6 },
-    { offset: 2, qtd: 9 },
-    { offset: 5, qtd: 12 },
-  ];
-  const lista: EntregaResumo[] = [];
-  let id = 90001; // faixa alta p/ não colidir com ids reais
-  for (const { offset, qtd } of plano) {
-    const data = isoSomaDias(hoje, offset);
-    for (let i = 0; i < qtd; i++) {
-      const loc = MOCK_BAIRROS[(i + offset) % MOCK_BAIRROS.length];
-      const status = MOCK_STATUS[i % MOCK_STATUS.length];
-      const entregaId = id++;
-      // Mix de tipos: a cada 3, uma entrega com Casa + Personalizada (ponto 4).
-      const mista = i % 3 === 2;
-      const soCasa = !mista && i % 2 === 0;
-      const op = mockOperacional(entregaId, i, soCasa, mista);
-      const pets = [
-        ...op.casa.map((_, k) => MOCK_PETS[(i + k) % MOCK_PETS.length]),
-        ...op.personalizadas.map((p) => p.petNome),
-      ];
-      const tipos = [op.casa.length ? 'Casa' : '', op.personalizadas.length ? 'Personalizada' : '']
-        .filter(Boolean)
-        .join(', ');
-      lista.push({
-        id: entregaId,
-        clienteId: 0,
-        clienteNome: MOCK_CLIENTES[(i + offset) % MOCK_CLIENTES.length],
-        telefone: '(48) 99999-0000',
-        rua: loc.rua,
-        numero: String(100 + i * 7),
-        complemento: i % 3 === 0 ? 'casa' : i % 3 === 1 ? `apto ${i + 1}0${i + 1}` : 'fundos',
-        dataPrevista: data,
-        status,
-        bairro: loc.bairro,
-        cidade: loc.cidade,
-        tipos,
-        totalGramas: 1400 + i * 350,
-        totalPacotes: 2 + (i % 4),
-        entregadorId: null,
-        pets: [...new Set(pets)],
-        // Algumas entregas marcadas como "fora da rota" para validar a sinalização.
-        foraDaRota: i === 1,
-        operacional: op,
-      });
-    }
-  }
-  return lista;
-}
-
-const MOCK_RECEITAS_CASA: { nome: string; tamanho: number }[] = [
-  { nome: 'Frango', tamanho: 500 },
-  { nome: 'Carne', tamanho: 500 },
-  { nome: 'Porco', tamanho: 250 },
-  { nome: 'Peixe', tamanho: 500 },
-];
-const MOCK_CODIGOS_PERS = ['VET-001', 'VET-002', 'VET-003'];
-
-/** Monta um resumo operacional MOCK coerente para uma entrega hipotética. */
-function mockOperacional(entregaId: number, i: number, soCasa: boolean, mista: boolean): ResumoOperacional {
-  const casa: ItemCasaOperacional[] = [];
-  const personalizadas: ItemPersonalizadaOperacional[] = [];
-
-  if (soCasa || mista) {
-    const qtdReceitas = (i % 2) + 1;
-    for (let r = 0; r < qtdReceitas; r++) {
-      const rec = MOCK_RECEITAS_CASA[(i + r) % MOCK_RECEITAS_CASA.length];
-      const pacotes = 2 + ((i + r) % 5);
-      casa.push({
-        receitaId: 0,
-        receitaNome: rec.nome,
-        tamanhoGramas: rec.tamanho,
-        pacotes,
-        estoqueDisponivel: estoqueMockPacotes(rec.nome, rec.tamanho),
-      });
-    }
-  }
-
-  if (!soCasa || mista) {
-    const codigo = MOCK_CODIGOS_PERS[i % MOCK_CODIGOS_PERS.length];
-    const pet = MOCK_PETS[i % MOCK_PETS.length];
-    personalizadas.push({
-      petNome: pet,
-      receitaCodigo: codigo,
-      pacotes: 8 + (i % 10),
-      tamanhoGramas: 750 + (i % 3) * 100,
-      pronta: prontaMock(`${entregaId}-${codigo}`),
-    });
-  }
-
-  return { casa, personalizadas };
 }

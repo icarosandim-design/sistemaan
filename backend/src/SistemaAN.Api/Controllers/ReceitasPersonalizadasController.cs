@@ -5,7 +5,7 @@ using SistemaAN.Application.Receitas;
 namespace SistemaAN.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Administrador,Operador")]
 [Route("api")]
 public sealed class ReceitasPersonalizadasController : ControllerBase
 {

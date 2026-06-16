@@ -338,6 +338,49 @@ public sealed class ProducaoService : IProducaoService
             });
         }
 
+        // Bloqueio 3: toda Receita da Casa conferida que gerou pacotes precisa ter Produto
+        // Acabado cadastrado no estoque — senão a finalização não alimentaria o estoque e a
+        // entrega ficaria inconsistente. Resolve pelo vínculo da ficha ou por (receita, tamanho).
+        var produtoAcabadoItens = await _db.ItensEstoque
+            .Where(i => i.Tipo == TipoItemEstoque.ProdutoAcabadoCasa && i.ReceitaId != null && i.TamanhoPacoteId != null)
+            .Select(i => new { i.Id, ReceitaId = i.ReceitaId!.Value, TamanhoPacoteId = i.TamanhoPacoteId!.Value })
+            .ToListAsync(cancellationToken);
+        var itemPorChave = produtoAcabadoItens.ToDictionary(x => (x.ReceitaId, x.TamanhoPacoteId), x => x.Id);
+
+        long? ResolverItemAcabado(FichaProducao f)
+        {
+            if (f.ItemEstoqueId is not null)
+            {
+                return f.ItemEstoqueId;
+            }
+            if (f.ReceitaId is not null && f.TamanhoPacoteId is not null
+                && itemPorChave.TryGetValue((f.ReceitaId.Value, f.TamanhoPacoteId.Value), out var id))
+            {
+                return id;
+            }
+            return null;
+        }
+
+        var fichasCasaProduzidas = ordem.Fichas
+            .Where(f => f.Tipo == TipoReceita.Casa && f.Status == StatusFichaProducao.Conferida && (f.QuantidadePacotesReal ?? 0) > 0)
+            .ToList();
+        var semProdutoAcabado = fichasCasaProduzidas
+            .Where(f => ResolverItemAcabado(f) is null)
+            .Select(f => $"{f.ReceitaNome} {f.PesoPacoteGramas}g")
+            .Distinct()
+            .ToList();
+        if (semProdutoAcabado.Count > 0)
+        {
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["produtoAcabado"] =
+                [
+                    $"Produto acabado não encontrado no estoque para {semProdutoAcabado[0]}. " +
+                    "Cadastre ou vincule este produto no estoque antes de finalizar a produção.",
+                ],
+            });
+        }
+
         var pendencias = new List<string>();
 
         // 1. Baixa de insumos — sempre pelo cru REAL informado na lista consolidada.
@@ -358,9 +401,10 @@ public sealed class ProducaoService : IProducaoService
 
         // 2. Produto acabado da Casa (quantidade real confirmada, custo 0).
         var produtoAcabado = 0;
-        foreach (var f in ordem.Fichas.Where(x => x.Tipo == TipoReceita.Casa && x.Status == StatusFichaProducao.Conferida && x.ItemEstoqueId is not null && (x.QuantidadePacotesReal ?? 0) > 0))
+        foreach (var f in fichasCasaProduzidas)
         {
-            await _estoque.EntrarPorProducaoAsync(f.ItemEstoqueId!.Value, f.QuantidadePacotesReal!.Value, ordem.Id, usuario, cancellationToken);
+            var itemId = ResolverItemAcabado(f)!.Value;
+            await _estoque.EntrarPorProducaoAsync(itemId, f.QuantidadePacotesReal!.Value, ordem.Id, usuario, cancellationToken);
             produtoAcabado += f.QuantidadePacotesReal!.Value;
         }
 
