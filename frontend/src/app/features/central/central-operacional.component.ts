@@ -62,12 +62,17 @@ export class CentralOperacionalComponent implements OnInit {
     return this.resumo()?.kpis ?? [];
   }
 
-  /** KPIs visíveis ao perfil atual: o card "Recorrente / mês" é só do Administrador. */
+  /** KPIs visíveis ao perfil atual: cartões financeiros são só do Administrador. */
   get kpisVisiveis(): Kpi[] {
-    if (this.isAdmin) {
-      return this.kpis;
-    }
-    return this.kpis.filter((k) => k.label !== 'Recorrente / mês');
+    return this.kpis.filter((k) => !k.somenteAdmin || this.isAdmin);
+  }
+
+  get producao() {
+    return this.resumo()?.producao ?? null;
+  }
+
+  get rotas() {
+    return this.resumo()?.rotas ?? null;
   }
 
   get entregas7() {
@@ -161,6 +166,45 @@ export class CentralOperacionalComponent implements OnInit {
 
   private fmtNum(v: number): string {
     return v.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+  }
+
+  // ===== Datas (a API entrega ISO; a tela formata mantendo o visual) =====
+  /** Converte ISO yyyy-MM-dd em Date local (sem deslocamento de fuso). */
+  private toDate(iso: string): Date {
+    const [y, m, d] = (iso || '').split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+
+  /** Formata ISO em dd/MM. */
+  fmtData(iso: string): string {
+    if (!iso) {
+      return '';
+    }
+    const [, m, d] = iso.split('-');
+    return `${d}/${m}`;
+  }
+
+  /** Dia da semana abreviado (ex.: "Qua"). */
+  diaSemana(iso: string): string {
+    const rotulo = this.toDate(iso).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+    return rotulo.charAt(0).toUpperCase() + rotulo.slice(1);
+  }
+
+  get diaSelecionadoFmt(): string {
+    return this.fmtData(this.diaSelecionado);
+  }
+
+  rotuloStatusProducao(s: string): string {
+    switch (s) {
+      case 'Planejada':
+        return 'Planejada';
+      case 'EmAndamento':
+        return 'Em andamento';
+      case 'Finalizada':
+        return 'Finalizada';
+      default:
+        return s;
+    }
   }
 
   private juntar(itens: string[]): string {

@@ -69,12 +69,18 @@
         <div class="cal-grid">
           @for (d of entregas7; track d.data) {
             <div class="cal-dia" [class.hoje]="d.hoje">
-              <div class="cal-sem">{{ d.diaSemana }}</div>
-              <div class="cal-data">{{ d.data }}</div>
+              <div class="cal-sem">{{ diaSemana(d.data) }}</div>
+              <div class="cal-data">{{ fmtData(d.data) }}</div>
               <div class="cal-entregas">
                 <span class="ce-num">{{ d.entregas }}</span>
                 <span class="ce-lbl">entregas</span>
               </div>
+              @if (d.entregas) {
+                <div class="cal-split">PF {{ d.pf }} · PJ {{ d.pj }}</div>
+              }
+              @if (d.alertas) {
+                <div class="cal-alerta"><mat-icon>warning_amber</mat-icon> {{ d.alertas }}</div>
+              }
             </div>
           }
         </div>
@@ -87,13 +93,21 @@
     <mat-card class="card" appearance="outlined">
       <div class="card-head">
         <mat-icon>factory</mat-icon>
-        <h2>Produção planejada · hoje ({{ diaSelecionado }})</h2>
+        <h2>Produção do dia ({{ diaSelecionadoFmt }})</h2>
+        @if (producao) {
+          <span class="chip-status" [attr.data-s]="producao.status">{{ rotuloStatusProducao(producao.status) }}</span>
+        }
         @if (temProducao) {
           <span class="badge">{{ totalPacotes }} pacotes · {{ totalReceitas }} receitas</span>
         }
-        <a mat-button class="atalho-secao" [class.sem-badge]="!temProducao" routerLink="/producao/dia">
+        <a mat-button class="atalho-secao" [class.sem-badge]="!temProducao && !producao" routerLink="/producao/dia">
           Ver Produção do Dia <mat-icon>chevron_right</mat-icon>
         </a>
+      </div>
+
+      <div class="atalhos-linha">
+        <a mat-button routerLink="/producao/planejar"><mat-icon>event_note</mat-icon> Planejar Produção</a>
+        <a mat-button routerLink="/producao/cozinha"><mat-icon>tv</mat-icon> Cozinha</a>
       </div>
 
       @if (!temProducao) {
@@ -209,6 +223,28 @@
       }
     </mat-card>
 
+    <!-- Rotas / saídas do dia (aparece apenas quando o módulo tem dados) -->
+    @if (rotas) {
+      <mat-card class="card" appearance="outlined">
+        <div class="card-head">
+          <mat-icon>alt_route</mat-icon>
+          <h2>Rotas do dia</h2>
+          <a mat-button class="atalho-secao" routerLink="/rotas">
+            Planejar Rotas <mat-icon>chevron_right</mat-icon>
+          </a>
+        </div>
+        <div class="rotas-resumo">
+          <div class="rr-item"><span class="rr-num">{{ rotas.total }}</span><span class="rr-lbl">saídas</span></div>
+          <div class="rr-item"><span class="rr-num">{{ rotas.planejadas }}</span><span class="rr-lbl">planejadas</span></div>
+          <div class="rr-item"><span class="rr-num">{{ rotas.despachadas }}</span><span class="rr-lbl">despachadas</span></div>
+          <div class="rr-item"><span class="rr-num">{{ rotas.concluidas }}</span><span class="rr-lbl">concluídas</span></div>
+          <div class="rr-item" [class.alerta]="rotas.entregasSemRota">
+            <span class="rr-num">{{ rotas.entregasSemRota }}</span><span class="rr-lbl">sem rota</span>
+          </div>
+        </div>
+      </mat-card>
+    }
+
     <div class="grid-2">
       <!-- Estoque receitas da casa -->
       <mat-card class="card" appearance="outlined">
@@ -250,10 +286,18 @@
         @if (alertas.length) {
           <div class="alertas">
             @for (al of alertas; track al.texto) {
-              <div class="alerta" [class]="'sev-' + al.tipo">
-                <mat-icon>{{ al.icone }}</mat-icon>
-                <span>{{ al.texto }}</span>
-              </div>
+              @if (al.rota) {
+                <a class="alerta alerta-link" [class]="'sev-' + al.tipo" [routerLink]="al.rota">
+                  <mat-icon>{{ al.icone }}</mat-icon>
+                  <span>{{ al.texto }}</span>
+                  <mat-icon class="al-seta">chevron_right</mat-icon>
+                </a>
+              } @else {
+                <div class="alerta" [class]="'sev-' + al.tipo">
+                  <mat-icon>{{ al.icone }}</mat-icon>
+                  <span>{{ al.texto }}</span>
+                </div>
+              }
             }
           </div>
         } @else {

@@ -266,6 +266,111 @@
   color: var(--an-texto-secundario);
 }
 
+.cal-split {
+  margin-top: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--an-texto-secundario);
+}
+
+.cal-alerta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  color: #b3261e;
+
+  .mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* Chip de status da produção no cabeçalho do card */
+.chip-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.12rem 0.55rem;
+  border-radius: 999px;
+  background: var(--an-fundo-secundario);
+  color: var(--an-texto-secundario);
+}
+
+.chip-status[data-s='Planejada'] {
+  background: #e8eef7;
+  color: #2a5599;
+}
+
+.chip-status[data-s='EmAndamento'] {
+  background: #fff3e0;
+  color: #b45309;
+}
+
+.chip-status[data-s='Finalizada'] {
+  background: rgba(63, 79, 45, 0.16);
+  color: var(--an-primaria);
+}
+
+/* Linha de atalhos secundários (ex.: Planejar Produção / Cozinha) */
+.atalhos-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: -0.4rem 0 0.6rem;
+
+  a {
+    color: var(--an-cta-hover);
+    font-weight: 600;
+    font-size: 0.82rem;
+
+    .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+/* Resumo de rotas do dia */
+.rotas-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 0.6rem;
+}
+
+.rr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio-sm);
+  background: var(--an-fundo);
+  padding: 0.6rem 0.4rem;
+}
+
+.rr-item.alerta {
+  border-color: #f3c9c6;
+  background: #fbeceb;
+}
+
+.rr-num {
+  font-family: var(--an-fonte-titulo);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--an-texto-titulo);
+  line-height: 1.1;
+}
+
+.rr-item.alerta .rr-num {
+  color: #b3261e;
+}
+
+.rr-lbl {
+  font-size: 0.72rem;
+  color: var(--an-texto-secundario);
+}
+
 /* ---- Produção do dia (2 blocos) ---- */
 .prod-grid {
   display: grid;
@@ -676,6 +781,25 @@
     font-size: 20px;
     width: 20px;
     height: 20px;
+  }
+}
+
+.alerta-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: filter 0.12s;
+
+  span {
+    flex: 1;
+  }
+
+  .al-seta {
+    opacity: 0.6;
+  }
+
+  &:hover {
+    filter: brightness(0.97);
   }
 }
 

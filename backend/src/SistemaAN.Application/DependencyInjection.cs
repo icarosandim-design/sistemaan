@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IProducaoService, ProducaoService>();
         services.AddScoped<Pedidos.IPedidoService, Pedidos.PedidoService>();
         services.AddScoped<Rotas.IRotaService, Rotas.RotaService>();
+        services.AddScoped<Central.ICentralService, Central.CentralService>();
         return services;
     }
 }
