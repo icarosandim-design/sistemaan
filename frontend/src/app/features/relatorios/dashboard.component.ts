@@ -114,9 +114,9 @@ import { BarChartComponent, HBarChartComponent, DonutChartComponent, LineChartCo
     .c-label { font-size: 0.82rem; color: var(--an-texto-secundario); margin-top: 0.15rem; }
     .c-det { font-size: 0.72rem; color: var(--an-detalhe-suave); margin-top: 0.1rem; }
     .badge { font-size: 1rem; width: 1rem; height: 1rem; color: var(--an-detalhe-suave); }
-    .grafs { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 1rem; }
-    .bloco { background: var(--an-superficie); border: 1px solid var(--an-fundo-secundario); border-radius: var(--an-raio); padding: 0.9rem 1rem; }
-    .bt { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.7rem; font-size: 1rem; font-weight: 700; color: var(--an-texto-titulo); }
+    .grafs { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1rem; }
+    .bloco { background: var(--an-superficie); border: 1px solid var(--an-fundo-secundario); border-radius: var(--an-raio); padding: 1rem 1.1rem; }
+    .bt { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.8rem; font-size: 1.05rem; font-weight: 700; color: var(--an-texto-titulo); }
     .bt .mat-icon { color: var(--an-cta); }
     .leg { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--an-texto-secundario); margin-bottom: 0.3rem; }
     .leg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
