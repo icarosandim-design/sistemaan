@@ -102,6 +102,7 @@ export class MainLayoutComponent {
         { label: 'Tamanhos de Pacote', icone: 'inventory_2', rota: '/tamanhos-pacote', papeis: ADMIN_OPERADOR },
         { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes', papeis: ADMIN_OPERADOR },
         { label: 'Categorias', icone: 'category', rota: '/cadastros/categorias', papeis: ADMIN_OPERADOR },
+        { label: 'Origens de Venda', icone: 'sell', rota: '/cadastros/origens-venda', papeis: ADMIN_OPERADOR },
         { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo', papeis: ADMIN_OPERADOR },
         { label: 'Frequências de Entrega', icone: 'event_repeat', rota: '/frequencias-entrega', papeis: ADMIN_OPERADOR },
         { label: 'Usuários', icone: 'manage_accounts', rota: '/cadastros/usuarios', papeis: SO_ADMIN },

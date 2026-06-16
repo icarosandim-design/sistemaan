@@ -36,8 +36,8 @@
               <mat-label>Origem da venda</mat-label>
               <mat-select formControlName="origemVenda">
                 <mat-option [value]="null">—</mat-option>
-                @for (o of origens; track o) {
-                  <mat-option [value]="o">{{ o }}</mat-option>
+                @for (o of origens(); track o.id) {
+                  <mat-option [value]="o.nome">{{ o.nome }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>

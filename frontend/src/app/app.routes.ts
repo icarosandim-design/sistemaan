@@ -17,6 +17,7 @@ import { FornecedoresComponent } from './features/estoque/fornecedores.component
 import { MovimentacoesComponent } from './features/estoque/movimentacoes.component';
 import { ComprasComponent } from './features/estoque/compras.component';
 import { CategoriasComponent } from './features/categorias/categorias.component';
+import { OrigensVendaComponent } from './features/origens-venda/origens-venda.component';
 import { ProducaoPlanejarComponent } from './features/producao/planejar.component';
 import { ProducaoDiaComponent } from './features/producao/producao-dia.component';
 import { ProducaoCozinhaComponent } from './features/producao/cozinha.component';
@@ -50,6 +51,7 @@ export const routes: Routes = [
       { path: 'estoque/movimentacoes', component: MovimentacoesComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'estoque/fornecedores', component: FornecedoresComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/categorias', component: CategoriasComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'cadastros/origens-venda', component: OrigensVendaComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/usuarios', component: UsuariosComponent, data: { papeis: SO_ADMIN } },
       { path: 'producao/planejar', component: ProducaoPlanejarComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'producao/dia', component: ProducaoDiaComponent, data: { papeis: TODOS_PERFIS } },

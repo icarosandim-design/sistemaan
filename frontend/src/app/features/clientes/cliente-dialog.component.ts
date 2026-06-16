@@ -30,7 +30,6 @@ import {
   Cliente,
   FormaPagamento,
   FORMAS_PAGAMENTO,
-  ORIGENS_VENDA,
   PreferenciaHorario,
   PREFERENCIAS_HORARIO,
   SalvarClienteRequest,
@@ -40,6 +39,8 @@ import {
   TIPOS_CLIENTE,
   UFS,
 } from './clientes.model';
+import { OrigemVenda } from '../origens-venda/origens-venda.model';
+import { OrigensVendaService } from '../origens-venda/origens-venda.service';
 
 export interface ClienteDialogData {
   cliente: Cliente | null;
@@ -73,6 +74,7 @@ export class ClienteDialogComponent {
   private readonly receitasService = inject(ReceitasService);
   private readonly tamanhosService = inject(TamanhosPacoteService);
   private readonly receitaPersService = inject(ReceitaPersonalizadaService);
+  private readonly origensService = inject(OrigensVendaService);
   private readonly snack = inject(MatSnackBar);
 
   // Pets (persistidos via API — apenas para clientes já salvos)
@@ -92,7 +94,7 @@ export class ClienteDialogComponent {
   readonly preferencias = PREFERENCIAS_HORARIO;
   readonly formas = FORMAS_PAGAMENTO;
   readonly statusFin = STATUS_FINANCEIRO;
-  readonly origens = ORIGENS_VENDA;
+  readonly origens = signal<OrigemVenda[]>([]);
   readonly ufs = UFS;
   readonly edicao: boolean;
 
@@ -132,11 +134,13 @@ export class ClienteDialogComponent {
       freq: this.frequenciasService.listar(),
       rec: this.receitasService.listar(),
       tam: this.tamanhosService.listar(),
+      orig: this.origensService.listar(),
     }).subscribe({
-      next: ({ freq, rec, tam }) => {
+      next: ({ freq, rec, tam, orig }) => {
         this.frequencias.set(freq.filter((f) => f.ativo));
         this.receitasCasa.set(rec);
         this.tamanhos.set(tam);
+        this.origens.set(orig);
       },
       error: () => undefined,
     });

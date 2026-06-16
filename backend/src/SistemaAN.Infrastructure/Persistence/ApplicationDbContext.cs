@@ -50,6 +50,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<ClientePj> ClientesPj => Set<ClientePj>();
 
+    public DbSet<OrigemVenda> OrigensVenda => Set<OrigemVenda>();
+
     public DbSet<Pet> Pets => Set<Pet>();
 
     public DbSet<TamanhoPacote> TamanhosPacote => Set<TamanhoPacote>();

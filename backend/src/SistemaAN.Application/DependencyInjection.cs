@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IFrequenciaEntregaService, FrequenciaEntregaService>();
         services.AddScoped<IClienteService, ClienteService>();
         services.AddScoped<IClientePjService, ClientePjService>();
+        services.AddScoped<IOrigemVendaService, OrigemVendaService>();
         services.AddScoped<IPetService, PetService>();
         services.AddScoped<ITamanhoPacoteService, TamanhoPacoteService>();
         services.AddScoped<IReceitaPersonalizadaService, ReceitaPersonalizadaService>();
