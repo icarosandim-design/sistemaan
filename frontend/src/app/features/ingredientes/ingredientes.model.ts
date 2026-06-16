@@ -3,6 +3,7 @@ export type TipoConversao = 'perda' | 'ganho' | 'sem_conversao';
 export interface Categoria {
   id: number;
   nome: string;
+  escopo?: string;
 }
 
 export interface Ingrediente {

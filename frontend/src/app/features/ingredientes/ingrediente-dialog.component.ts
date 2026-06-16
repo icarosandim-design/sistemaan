@@ -63,7 +63,8 @@ export class IngredienteDialogComponent {
     private readonly ref: MatDialogRef<IngredienteDialogComponent, SalvarIngredienteRequest>,
     @Inject(MAT_DIALOG_DATA) readonly data: IngredienteDialogData,
   ) {
-    this.categorias = data.categorias;
+    // Lista única com escopo: o cadastro de ingrediente mostra só categorias de Alimento (ou Ambos).
+    this.categorias = data.categorias.filter((c) => c.escopo !== 'Material');
     this.edicao = !!data.ingrediente;
 
     if (data.ingrediente) {

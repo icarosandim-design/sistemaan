@@ -9,8 +9,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CATEGORIAS_ESTOQUE, CATEGORIAS_FORNECEDOR, rotulo } from '../estoque/estoque.model';
-import { CategoriaIngrediente, SalvarCategoriaIngredienteRequest } from './categorias.model';
+import { CATEGORIAS_FORNECEDOR, rotulo } from '../estoque/estoque.model';
+import { CategoriaIngrediente, rotuloEscopo, SalvarCategoriaIngredienteRequest } from './categorias.model';
 import { CategoriasIngredientesService } from './categorias-ingredientes.service';
 import { CategoriaIngredienteDialogComponent } from './categoria-ingrediente-dialog.component';
 
@@ -35,8 +35,8 @@ export class CategoriasComponent implements OnInit {
   private readonly snack = inject(MatSnackBar);
 
   readonly rotulo = rotulo;
-  readonly displayedColumns = ['ordem', 'nome', 'descricao', 'ativo', 'acoes'];
-  readonly categoriasEstoque = CATEGORIAS_ESTOQUE;
+  readonly rotuloEscopo = rotuloEscopo;
+  readonly displayedColumns = ['ordem', 'nome', 'escopo', 'descricao', 'ativo', 'acoes'];
   readonly categoriasFornecedor = CATEGORIAS_FORNECEDOR;
 
   ingredientes: CategoriaIngrediente[] = [];

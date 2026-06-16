@@ -85,7 +85,10 @@ public sealed class ItemEstoqueService : IItemEstoqueService
             erros["nome"] = ["Informe o nome do item."];
         }
 
-        var categoria = ParseCategoria(request.Categoria, erros);
+        if (string.IsNullOrWhiteSpace(request.Categoria))
+        {
+            erros["categoria"] = ["Informe a categoria."];
+        }
         var unidade = ParseUnidade(request.UnidadeMedida, erros);
 
         if (request.QuantidadeMinima < 0m)
@@ -117,7 +120,7 @@ public sealed class ItemEstoqueService : IItemEstoqueService
         }
 
         var item = ItemEstoque.CriarInsumo(
-            request.Nome, categoria!.Value, unidade!.Value, request.IngredienteId, request.QuantidadeMinima,
+            request.Nome, request.Categoria.Trim(), unidade!.Value, request.IngredienteId, request.QuantidadeMinima,
             request.FornecedorPrincipalId, request.LocalArmazenamento, request.ControlaValidade, request.Observacoes);
         item.DefinirAtivo(request.Ativo);
 
@@ -186,7 +189,10 @@ public sealed class ItemEstoqueService : IItemEstoqueService
             erros["nome"] = ["Informe o nome do item."];
         }
 
-        var categoria = ParseCategoria(request.Categoria, erros);
+        if (string.IsNullOrWhiteSpace(request.Categoria))
+        {
+            erros["categoria"] = ["Informe a categoria."];
+        }
         var unidade = ParseUnidade(request.UnidadeMedida, erros);
 
         if (request.QuantidadeMinima < 0m)
@@ -205,7 +211,7 @@ public sealed class ItemEstoqueService : IItemEstoqueService
         }
 
         item.Atualizar(
-            request.Nome, categoria!.Value, unidade!.Value, request.QuantidadeMinima, request.FornecedorPrincipalId,
+            request.Nome, request.Categoria.Trim(), unidade!.Value, request.QuantidadeMinima, request.FornecedorPrincipalId,
             request.LocalArmazenamento, request.ControlaValidade, request.Observacoes, request.Ativo);
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -219,17 +225,6 @@ public sealed class ItemEstoqueService : IItemEstoqueService
 
         item.DefinirAtivo(ativo);
         await _db.SaveChangesAsync(cancellationToken);
-    }
-
-    private static CategoriaEstoque? ParseCategoria(string? valor, Dictionary<string, string[]> erros)
-    {
-        if (!string.IsNullOrWhiteSpace(valor) && Enum.TryParse<CategoriaEstoque>(valor, out var c))
-        {
-            return c;
-        }
-
-        erros["categoria"] = ["Categoria de estoque inválida."];
-        return null;
     }
 
     private static UnidadeMedida? ParseUnidade(string? valor, Dictionary<string, string[]> erros)
@@ -248,7 +243,7 @@ public sealed class ItemEstoqueService : IItemEstoqueService
             i.Id,
             i.Tipo.ToString(),
             i.Nome,
-            i.Categoria.ToString(),
+            i.Categoria,
             i.UnidadeMedida.ToString(),
             i.IngredienteId,
             _db.Ingredientes.Where(x => x.Id == i.IngredienteId).Select(x => x.Nome).FirstOrDefault(),

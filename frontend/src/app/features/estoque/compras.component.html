@@ -42,7 +42,7 @@
       <mat-label>Categoria</mat-label>
       <mat-select [(ngModel)]="categoria">
         <mat-option value="">Todas</mat-option>
-        @for (c of categorias; track c) { <mat-option [value]="c">{{ rotulo(c) }}</mat-option> }
+        @for (c of categorias(); track c.id) { <mat-option [value]="c.nome">{{ c.nome }}</mat-option> }
       </mat-select>
     </mat-form-field>
     <mat-form-field appearance="outline" class="f">

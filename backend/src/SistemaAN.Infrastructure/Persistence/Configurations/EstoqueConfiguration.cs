@@ -45,7 +45,7 @@ public sealed class ItemEstoqueConfiguration : IEntityTypeConfiguration<ItemEsto
 
         builder.Property(i => i.Tipo).HasConversion<string>().HasMaxLength(25).IsRequired();
         builder.Property(i => i.Nome).HasMaxLength(160).IsRequired();
-        builder.Property(i => i.Categoria).HasConversion<string>().HasMaxLength(30).IsRequired();
+        builder.Property(i => i.Categoria).HasMaxLength(60).IsRequired();
         builder.Property(i => i.UnidadeMedida).HasConversion<string>().HasMaxLength(15).IsRequired();
         builder.Property(i => i.IngredienteId);
         builder.Property(i => i.ReceitaId);

@@ -10,8 +10,23 @@ namespace SistemaAN.Infrastructure.Persistence.Seed;
 /// </summary>
 public sealed class CatalogDataSeeder
 {
-    private static readonly string[] CategoriasIniciais =
-        ["Proteína", "Carboidrato", "Vegetal", "Óleo", "Suplemento", "Tempero"];
+    // Lista única compartilhada por Ingredientes e Estoque (com escopo).
+    private static readonly (string Nome, EscopoCategoria Escopo)[] CategoriasIniciais =
+    [
+        ("Proteína", EscopoCategoria.Alimento),
+        ("Carboidrato", EscopoCategoria.Alimento),
+        ("Vegetal", EscopoCategoria.Alimento),
+        ("Óleo", EscopoCategoria.Alimento),
+        ("Suplemento", EscopoCategoria.Alimento),
+        ("Tempero", EscopoCategoria.Alimento),
+        ("Vísceras", EscopoCategoria.Alimento),
+        ("Embalagens", EscopoCategoria.Material),
+        ("Etiquetas", EscopoCategoria.Material),
+        ("Materiais de limpeza", EscopoCategoria.Material),
+        ("Materiais auxiliares", EscopoCategoria.Material),
+        ("Produto acabado", EscopoCategoria.Material),
+        ("Outros", EscopoCategoria.Ambos),
+    ];
 
     private readonly ApplicationDbContext _db;
     private readonly ILogger<CatalogDataSeeder> _logger;
@@ -29,8 +44,8 @@ public sealed class CatalogDataSeeder
             .ToListAsync(cancellationToken);
 
         var novas = CategoriasIniciais
-            .Where(nome => !existentes.Contains(nome))
-            .Select(nome => CategoriaIngrediente.Criar(nome))
+            .Where(c => !existentes.Contains(c.Nome))
+            .Select(c => CategoriaIngrediente.Criar(c.Nome, null, 0, c.Escopo))
             .ToList();
 
         if (novas.Count > 0)

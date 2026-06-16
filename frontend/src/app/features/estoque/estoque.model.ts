@@ -1,11 +1,6 @@
 // ===== Tipos e enums (espelham o backend) =====
 export type TipoItemEstoque = 'Insumo' | 'ProdutoAcabadoCasa';
 
-export const CATEGORIAS_ESTOQUE = [
-  'Proteinas', 'Carboidratos', 'Legumes', 'Visceras', 'Suplementos',
-  'Embalagens', 'Etiquetas', 'MateriaisLimpeza', 'MateriaisAuxiliares', 'ProdutoAcabado', 'Outros',
-] as const;
-
 export const UNIDADES_MEDIDA = ['Kg', 'G', 'Unidade', 'Pacote', 'Caixa', 'Litro', 'Ml', 'Outro'] as const;
 
 export const CATEGORIAS_FORNECEDOR = ['Ingredientes', 'Embalagens', 'Etiquetas', 'MaterialLimpeza', 'Servicos', 'Outros'] as const;

@@ -10,22 +10,6 @@ public enum TipoItemEstoque
     ProdutoAcabadoCasa,
 }
 
-/// <summary>Categoria do item de estoque (lista fixa nesta fase).</summary>
-public enum CategoriaEstoque
-{
-    Proteinas,
-    Carboidratos,
-    Legumes,
-    Visceras,
-    Suplementos,
-    Embalagens,
-    Etiquetas,
-    MateriaisLimpeza,
-    MateriaisAuxiliares,
-    ProdutoAcabado,
-    Outros,
-}
-
 /// <summary>Unidade de medida do item/movimentação.</summary>
 public enum UnidadeMedida
 {

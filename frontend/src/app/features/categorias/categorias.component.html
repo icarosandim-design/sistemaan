@@ -2,13 +2,13 @@
   <header class="page-head">
     <div class="page-title">
       <h1>Categorias</h1>
-      <p class="subtitulo">Gestão centralizada das categorias do sistema.</p>
+      <p class="subtitulo">Lista única de categorias usada por Ingredientes e Estoque. O escopo define onde cada uma aparece.</p>
     </div>
   </header>
 
   <mat-tab-group>
-    <!-- Ingredientes (CRUD) -->
-    <mat-tab label="Ingredientes">
+    <!-- Categorias (CRUD) — lista única (Ingredientes + Estoque) -->
+    <mat-tab label="Categorias">
       <div class="tab-conteudo">
         <div class="tab-acoes">
           <button mat-flat-button class="btn-cta" (click)="nova()"><mat-icon>add</mat-icon> Nova categoria</button>
@@ -23,6 +23,10 @@
             <ng-container matColumnDef="nome">
               <th mat-header-cell *matHeaderCellDef>Nome</th>
               <td mat-cell *matCellDef="let c" class="cel-nome">{{ c.nome }}</td>
+            </ng-container>
+            <ng-container matColumnDef="escopo">
+              <th mat-header-cell *matHeaderCellDef>Escopo</th>
+              <td mat-cell *matCellDef="let c" class="cel-sec">{{ rotuloEscopo(c.escopo) }}</td>
             </ng-container>
             <ng-container matColumnDef="descricao">
               <th mat-header-cell *matHeaderCellDef>Descrição</th>
@@ -49,16 +53,6 @@
               <td [attr.colspan]="displayedColumns.length">Nenhuma categoria cadastrada.</td>
             </tr>
           </table>
-        </div>
-      </div>
-    </mat-tab>
-
-    <!-- Estoque (somente leitura) -->
-    <mat-tab label="Estoque">
-      <div class="tab-conteudo">
-        <p class="nota">Categorias de estoque são uma lista fixa nesta fase (somente leitura).</p>
-        <div class="chips">
-          @for (c of categoriasEstoque; track c) { <span class="chip-ref">{{ rotulo(c) }}</span> }
         </div>
       </div>
     </mat-tab>

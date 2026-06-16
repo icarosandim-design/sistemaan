@@ -419,9 +419,9 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
         {
             q = q.Where(x => x.m.ItemEstoqueId == iid);
         }
-        if (!string.IsNullOrWhiteSpace(filtro.Categoria) && Enum.TryParse<CategoriaEstoque>(filtro.Categoria, out var cat))
+        if (!string.IsNullOrWhiteSpace(filtro.Categoria))
         {
-            q = q.Where(x => x.i.Categoria == cat);
+            q = q.Where(x => x.i.Categoria == filtro.Categoria);
         }
         if (!string.IsNullOrWhiteSpace(filtro.Tipo) && Enum.TryParse<TipoMovimentacao>(filtro.Tipo, out var tp))
         {
@@ -527,9 +527,9 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
         {
             q = q.Where(x => x.e.ItemEstoqueId == iid);
         }
-        if (!string.IsNullOrWhiteSpace(filtro.Categoria) && Enum.TryParse<CategoriaEstoque>(filtro.Categoria, out var cat))
+        if (!string.IsNullOrWhiteSpace(filtro.Categoria))
         {
-            q = q.Where(x => x.i.Categoria == cat);
+            q = q.Where(x => x.i.Categoria == filtro.Categoria);
         }
         if (filtro.LoteEstoqueId is long lid)
         {

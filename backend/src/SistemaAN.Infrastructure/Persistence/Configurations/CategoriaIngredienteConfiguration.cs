@@ -14,6 +14,7 @@ public sealed class CategoriaIngredienteConfiguration : IEntityTypeConfiguration
         builder.Property(c => c.Nome).HasMaxLength(60).IsRequired();
         builder.Property(c => c.Descricao).HasMaxLength(255);
         builder.Property(c => c.Ordem).IsRequired();
+        builder.Property(c => c.Escopo).HasConversion<string>().HasMaxLength(15).IsRequired();
         builder.Property(c => c.Ativo).IsRequired();
 
         builder.HasIndex(c => c.Nome).IsUnique();

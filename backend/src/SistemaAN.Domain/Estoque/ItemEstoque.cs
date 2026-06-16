@@ -14,7 +14,7 @@ public class ItemEstoque : AuditableEntity
     private ItemEstoque(
         TipoItemEstoque tipo,
         string nome,
-        CategoriaEstoque categoria,
+        string categoria,
         UnidadeMedida unidadeMedida,
         long? ingredienteId,
         long? receitaId,
@@ -36,7 +36,7 @@ public class ItemEstoque : AuditableEntity
 
     public string Nome { get; private set; } = string.Empty;
 
-    public CategoriaEstoque Categoria { get; private set; }
+    public string Categoria { get; private set; } = string.Empty;
 
     public UnidadeMedida UnidadeMedida { get; private set; }
 
@@ -69,7 +69,7 @@ public class ItemEstoque : AuditableEntity
 
     public static ItemEstoque CriarInsumo(
         string nome,
-        CategoriaEstoque categoria,
+        string categoria,
         UnidadeMedida unidadeMedida,
         long? ingredienteId,
         decimal quantidadeMinima,
@@ -97,7 +97,7 @@ public class ItemEstoque : AuditableEntity
         string? observacoes)
     {
         var item = new ItemEstoque(TipoItemEstoque.ProdutoAcabadoCasa, nome.Trim(),
-            CategoriaEstoque.ProdutoAcabado, UnidadeMedida.Pacote, null, receitaId, tamanhoPacoteId);
+            "Produto acabado", UnidadeMedida.Pacote, null, receitaId, tamanhoPacoteId);
         item.QuantidadeMinima = quantidadeMinima;
         item.LocalArmazenamento = Texto(localArmazenamento);
         item.ControlaValidade = controlaValidade;
@@ -108,7 +108,7 @@ public class ItemEstoque : AuditableEntity
     /// <summary>Atualiza os campos editáveis (tipo e vínculos são imutáveis).</summary>
     public void Atualizar(
         string nome,
-        CategoriaEstoque categoria,
+        string categoria,
         UnidadeMedida unidadeMedida,
         decimal quantidadeMinima,
         long? fornecedorPrincipalId,

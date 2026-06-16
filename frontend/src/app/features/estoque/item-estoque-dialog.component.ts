@@ -10,7 +10,6 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
-  CATEGORIAS_ESTOQUE,
   ItemEstoque,
   OpcaoSimples,
   rotulo,
@@ -18,32 +17,13 @@ import {
   UNIDADES_MEDIDA,
 } from './estoque.model';
 import { EstoqueService } from './estoque.service';
+import { CategoriasIngredientesService } from '../categorias/categorias-ingredientes.service';
+import { CategoriaIngrediente } from '../categorias/categorias.model';
 
 export interface ItemEstoqueDialogData {
   item: ItemEstoque | null;
 }
 
-/**
- * Mapeia a categoria do ingrediente (cadastro livre: Proteína, Vegetal, Óleo…)
- * para a categoria de estoque (enum fixo). Sem correspondência clara → "Outros".
- * É só um pré-preenchimento; o usuário pode ajustar.
- */
-function mapearCategoriaEstoque(categoriaIngrediente: string): string {
-  const n = (categoriaIngrediente ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-  if (n.includes('proteina')) return 'Proteinas';
-  if (n.includes('carboidrato')) return 'Carboidratos';
-  if (n.includes('viscera')) return 'Visceras';
-  if (n.includes('vegeta') || n.includes('legume') || n.includes('verdura')) return 'Legumes';
-  if (n.includes('suplemento')) return 'Suplementos';
-  if (n.includes('embalag')) return 'Embalagens';
-  if (n.includes('etiqueta')) return 'Etiquetas';
-  if (n.includes('limpeza')) return 'MateriaisLimpeza';
-  return 'Outros';
-}
 
 @Component({
   selector: 'app-item-estoque-dialog',
@@ -64,10 +44,11 @@ function mapearCategoriaEstoque(categoriaIngrediente: string): string {
 export class ItemEstoqueDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(EstoqueService);
+  private readonly categoriasSvc = inject(CategoriasIngredientesService);
   private readonly snack = inject(MatSnackBar);
 
   readonly edicao: boolean;
-  readonly categorias = CATEGORIAS_ESTOQUE;
+  readonly categorias = signal<CategoriaIngrediente[]>([]);
   readonly unidades = UNIDADES_MEDIDA;
   readonly rotulo = rotulo;
 
@@ -80,7 +61,7 @@ export class ItemEstoqueDialogComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     tipo: ['Insumo' as TipoItemEstoque],
     nome: ['', [Validators.required]],
-    categoria: ['Proteinas'],
+    categoria: [''],
     unidadeMedida: ['Kg'],
     ingredienteId: [null as number | null],
     receitaId: [null as number | null],
@@ -110,6 +91,7 @@ export class ItemEstoqueDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.categoriasSvc.listar().subscribe((cs) => this.categorias.set(cs));
     this.service.listarFornecedores(true).subscribe((fs) => this.fornecedores.set(fs.map((f) => ({ id: f.id, nome: f.nome }))));
 
     if (this.edicao) {
@@ -141,7 +123,7 @@ export class ItemEstoqueDialogComponent implements OnInit {
           const ing = this.ingredientes().find((x) => x.id === id);
           if (ing) {
             this.form.controls.nome.setValue(ing.nome);
-            this.form.controls.categoria.setValue(mapearCategoriaEstoque(ing.categoria));
+            this.form.controls.categoria.setValue(ing.categoria);
           }
         }
       });

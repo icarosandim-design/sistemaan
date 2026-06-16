@@ -12,7 +12,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
-  CATEGORIAS_ESTOQUE,
   EntradaCompra,
   fmtMoeda,
   fmtQtd,
@@ -20,6 +19,8 @@ import {
   rotulo,
 } from './estoque.model';
 import { EstoqueService } from './estoque.service';
+import { CategoriasIngredientesService } from '../categorias/categorias-ingredientes.service';
+import { CategoriaIngrediente } from '../categorias/categorias.model';
 import { EntradaDialogComponent } from './estoque-operacao-dialogs.component';
 import { CompraDialogComponent } from './compra-dialog.component';
 
@@ -42,6 +43,7 @@ import { CompraDialogComponent } from './compra-dialog.component';
 })
 export class ComprasComponent implements OnInit {
   private readonly service = inject(EstoqueService);
+  private readonly categoriasSvc = inject(CategoriasIngredientesService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
@@ -49,7 +51,7 @@ export class ComprasComponent implements OnInit {
   readonly rotulo = rotulo;
   readonly fmtQtd = fmtQtd;
   readonly fmtMoeda = fmtMoeda;
-  readonly categorias = CATEGORIAS_ESTOQUE;
+  readonly categorias = signal<CategoriaIngrediente[]>([]);
 
   readonly linhas = signal<EntradaCompra[]>([]);
   readonly carregando = signal(false);
@@ -66,6 +68,7 @@ export class ComprasComponent implements OnInit {
   ngOnInit(): void {
     this.service.listarItens().subscribe((xs) => this.itens.set(xs.map((i) => ({ id: i.id, nome: i.nome }))));
     this.service.listarFornecedores(true).subscribe((fs) => this.fornecedores.set(fs.map((f) => ({ id: f.id, nome: f.nome }))));
+    this.categoriasSvc.listar().subscribe((cs) => this.categorias.set(cs));
     this.carregar();
   }
 

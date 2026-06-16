@@ -22,7 +22,7 @@ public sealed class CategoriaIngredienteService : ICategoriaIngredienteService
         return await query
             .OrderBy(c => c.Ordem)
             .ThenBy(c => c.Nome)
-            .Select(c => new CategoriaIngredienteDto(c.Id, c.Nome, c.Descricao, c.Ordem, c.Ativo))
+            .Select(c => new CategoriaIngredienteDto(c.Id, c.Nome, c.Descricao, c.Ordem, c.Escopo.ToString(), c.Ativo))
             .ToListAsync(cancellationToken);
     }
 
@@ -30,19 +30,19 @@ public sealed class CategoriaIngredienteService : ICategoriaIngredienteService
     {
         var c = await _db.CategoriasIngredientes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
             ?? throw new NotFoundException("Categoria de ingrediente", id);
-        return new CategoriaIngredienteDto(c.Id, c.Nome, c.Descricao, c.Ordem, c.Ativo);
+        return new CategoriaIngredienteDto(c.Id, c.Nome, c.Descricao, c.Ordem, c.Escopo.ToString(), c.Ativo);
     }
 
     public async Task<CategoriaIngredienteDto> CriarAsync(SalvarCategoriaIngredienteRequest request, CancellationToken cancellationToken = default)
     {
         await ValidarAsync(request, null, cancellationToken);
 
-        var categoria = CategoriaIngrediente.Criar(request.Nome, request.Descricao, request.Ordem);
+        var categoria = CategoriaIngrediente.Criar(request.Nome, request.Descricao, request.Ordem, ParseEscopo(request.Escopo));
         categoria.DefinirAtivo(request.Ativo);
 
         _db.CategoriasIngredientes.Add(categoria);
         await _db.SaveChangesAsync(cancellationToken);
-        return new CategoriaIngredienteDto(categoria.Id, categoria.Nome, categoria.Descricao, categoria.Ordem, categoria.Ativo);
+        return new CategoriaIngredienteDto(categoria.Id, categoria.Nome, categoria.Descricao, categoria.Ordem, categoria.Escopo.ToString(), categoria.Ativo);
     }
 
     public async Task<CategoriaIngredienteDto> AtualizarAsync(long id, SalvarCategoriaIngredienteRequest request, CancellationToken cancellationToken = default)
@@ -57,10 +57,13 @@ public sealed class CategoriaIngredienteService : ICategoriaIngredienteService
             await GarantirQuePodeInativarAsync(id, cancellationToken);
         }
 
-        categoria.Atualizar(request.Nome, request.Descricao, request.Ordem, request.Ativo);
+        categoria.Atualizar(request.Nome, request.Descricao, request.Ordem, request.Ativo, ParseEscopo(request.Escopo));
         await _db.SaveChangesAsync(cancellationToken);
-        return new CategoriaIngredienteDto(categoria.Id, categoria.Nome, categoria.Descricao, categoria.Ordem, categoria.Ativo);
+        return new CategoriaIngredienteDto(categoria.Id, categoria.Nome, categoria.Descricao, categoria.Ordem, categoria.Escopo.ToString(), categoria.Ativo);
     }
+
+    private static EscopoCategoria ParseEscopo(string? valor)
+        => Enum.TryParse<EscopoCategoria>(valor, true, out var e) ? e : EscopoCategoria.Alimento;
 
     public async Task AlternarStatusAsync(long id, bool ativo, CancellationToken cancellationToken = default)
     {

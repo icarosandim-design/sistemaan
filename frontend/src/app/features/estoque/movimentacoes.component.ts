@@ -12,7 +12,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
-  CATEGORIAS_ESTOQUE,
   fmtMoeda,
   fmtQtd,
   MovimentacaoGeral,
@@ -22,6 +21,8 @@ import {
   TIPOS_MOVIMENTACAO,
 } from './estoque.model';
 import { EstoqueService } from './estoque.service';
+import { CategoriasIngredientesService } from '../categorias/categorias-ingredientes.service';
+import { CategoriaIngrediente } from '../categorias/categorias.model';
 
 @Component({
   selector: 'app-movimentacoes',
@@ -44,13 +45,14 @@ import { EstoqueService } from './estoque.service';
 })
 export class MovimentacoesComponent implements OnInit {
   private readonly service = inject(EstoqueService);
+  private readonly categoriasSvc = inject(CategoriasIngredientesService);
   private readonly snack = inject(MatSnackBar);
 
   readonly displayedColumns = ['dataHora', 'item', 'tipo', 'quantidade', 'lote', 'custo', 'valor', 'saldo', 'usuario', 'origem'];
   readonly rotulo = rotulo;
   readonly fmtQtd = fmtQtd;
   readonly fmtMoeda = fmtMoeda;
-  readonly categorias = CATEGORIAS_ESTOQUE;
+  readonly categorias = signal<CategoriaIngrediente[]>([]);
   readonly tipos = TIPOS_MOVIMENTACAO;
   readonly origens = ORIGENS_MOVIMENTACAO;
 
@@ -73,6 +75,7 @@ export class MovimentacoesComponent implements OnInit {
   tamanho = 50;
 
   ngOnInit(): void {
+    this.categoriasSvc.listar().subscribe((cs) => this.categorias.set(cs));
     this.service.listarItens().subscribe((xs) => this.itens.set(xs.map((i) => ({ id: i.id, nome: i.nome }))));
     this.service.listarFornecedores(true).subscribe((fs) => this.fornecedores.set(fs.map((f) => ({ id: f.id, nome: f.nome }))));
     this.carregar();
