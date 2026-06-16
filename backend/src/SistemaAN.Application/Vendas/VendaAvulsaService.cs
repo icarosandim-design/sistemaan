@@ -1,23 +1,22 @@
-using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
 using SistemaAN.Domain.Clientes;
 using SistemaAN.Domain.Entregas;
+using SistemaAN.Domain.Produtos;
 using SistemaAN.Domain.Receitas;
+using SistemaAN.Domain.Vendas;
 
 namespace SistemaAN.Application.Vendas;
 
 /// <summary>
-/// Venda avulsa PF: cliente PF + pet + itens de Receita da Casa → uma Entrega
-/// Programada única (sem assinatura/recorrência). Reaproveita a Entrega para
-/// integrar com Entregas/Estoque/Produção. Valor e forma de pagamento são
-/// apenas informativos (registrados na observação interna; sem financeiro).
+/// Venda avulsa PF: cliente PF + pet + Produtos (Receita da Casa). Cria a VendaAvulsa
+/// (cabeçalho comercial com valor estruturado e forma de pagamento) e gera a Entrega
+/// Programada correspondente (operação/logística). O preço vem do produto/venda — a
+/// Entrega não define preço.
 /// </summary>
 public sealed class VendaAvulsaService : IVendaAvulsaService
 {
-    private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
-
     private readonly IApplicationDbContext _db;
 
     public VendaAvulsaService(IApplicationDbContext db) => _db = db;
@@ -47,59 +46,80 @@ public sealed class VendaAvulsaService : IVendaAvulsaService
             throw Erro("dataEntrega", "Informe a data de entrega.");
         }
 
-        var (itens, totalGramas, totalPacotes) = await MontarItensAsync(request.Itens, cancellationToken);
+        var resolvidos = await ResolverItensAsync(request.Itens, cancellationToken);
 
+        // ----- Entrega (operação) -----
         var snapshot = new DadosSnapshotEntrega(
-            cliente.Nome,
-            cliente.Telefone,
-            cliente.Rua,
-            cliente.Numero,
-            cliente.Complemento,
-            cliente.Cep,
-            cliente.Bairro,
-            cliente.Cidade,
-            cliente.Estado,
-            "Venda avulsa",
-            0,
-            cliente.PreferenciaHorario);
+            cliente.Nome, cliente.Telefone, cliente.Rua, cliente.Numero, cliente.Complemento,
+            cliente.Cep, cliente.Bairro, cliente.Cidade, cliente.Estado, "Venda avulsa", 0, cliente.PreferenciaHorario);
+
+        var entregaItens = resolvidos.Select(x => EntregaItem.CriarCasa(
+            x.Receita.Id, x.Receita.Codigo, x.Receita.Nome,
+            x.Quantidade * x.PesoGramas,
+            new[] { EntregaItemPacote.Criar(x.TamanhoNome, x.PesoGramas, x.Quantidade) },
+            x.ProdutoId)).ToList();
+        var totalGramas = resolvidos.Sum(x => x.Quantidade * x.PesoGramas);
+        var totalPacotes = resolvidos.Sum(x => x.Quantidade);
 
         var entrega = Entrega.Criar(cliente.Id, request.DataEntrega, snapshot);
-        entrega.AdicionarPet(EntregaPet.Criar(pet.Id, pet.Nome, TipoReceita.Casa, null, totalGramas, itens));
-        entrega.DefinirObservacoesInternas(ComporObservacao(request));
+        entrega.AdicionarPet(EntregaPet.Criar(pet.Id, pet.Nome, TipoReceita.Casa, null, totalGramas, entregaItens));
+        if (!string.IsNullOrWhiteSpace(request.Observacoes))
+        {
+            entrega.DefinirObservacoesInternas($"Venda avulsa PF · {request.Observacoes!.Trim()}");
+        }
+        else
+        {
+            entrega.DefinirObservacoesInternas("Venda avulsa PF");
+        }
         entrega.RegistrarHistorico(usuario, "Entrega gerada a partir de Venda avulsa PF", null, EntregaStatus.Programada);
-
         _db.Entregas.Add(entrega);
         await _db.SaveChangesAsync(cancellationToken);
 
-        return new VendaAvulsaResultadoDto(entrega.Id, entrega.DataPrevista, entrega.Status.ToString(), totalPacotes);
+        // ----- VendaAvulsa (comercial) -----
+        var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
+        var venda = VendaAvulsa.Criar(cliente.Id, pet.Id, hoje, request.FormaPagamento, request.Observacoes);
+        foreach (var x in resolvidos)
+        {
+            venda.AdicionarItem(VendaAvulsaItem.Criar(x.ProdutoId, x.Quantidade, x.Preco, null));
+        }
+        venda.RecalcularTotal();
+        venda.VincularEntrega(entrega.Id);
+        _db.VendasAvulsas.Add(venda);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return new VendaAvulsaResultadoDto(venda.Id, entrega.Id, entrega.DataPrevista, entrega.Status.ToString(), venda.ValorTotal, totalPacotes);
     }
 
-    private async Task<(List<EntregaItem> Itens, int TotalGramas, int TotalPacotes)> MontarItensAsync(
-        IReadOnlyList<SalvarVendaAvulsaItemRequest> reqs, CancellationToken ct)
+    private sealed record ItemResolvido(long ProdutoId, Receita Receita, string TamanhoNome, int PesoGramas, int Quantidade, decimal Preco);
+
+    private async Task<List<ItemResolvido>> ResolverItensAsync(IReadOnlyList<SalvarVendaAvulsaItemRequest> reqs, CancellationToken ct)
     {
         if (reqs is null || reqs.Count == 0)
         {
-            throw Erro("itens", "Inclua ao menos um item (receita + tamanho + quantidade).");
+            throw Erro("itens", "Inclua ao menos um item (produto + quantidade).");
         }
 
-        var receitaIds = reqs.Select(r => r.ReceitaId).Distinct().ToList();
-        var tamanhoIds = reqs.Select(r => r.TamanhoPacoteId).Distinct().ToList();
-        var receitas = await _db.Receitas.Where(r => receitaIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id, ct);
-        var tamanhos = await _db.TamanhosPacote.Where(t => tamanhoIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, ct);
+        var produtoIds = reqs.Select(r => r.ProdutoId).Distinct().ToList();
+        var produtos = await _db.Produtos.Where(p => produtoIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id, ct);
+        var recIds = produtos.Values.Where(p => p.ReceitaCasaId != null).Select(p => p.ReceitaCasaId!.Value).Distinct().ToList();
+        var tamIds = produtos.Values.Where(p => p.TamanhoPacoteId != null).Select(p => p.TamanhoPacoteId!.Value).Distinct().ToList();
+        var receitas = await _db.Receitas.Where(r => recIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id, ct);
+        var tamanhos = await _db.TamanhosPacote.Where(t => tamIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, ct);
 
-        var itens = new List<EntregaItem>();
+        var lista = new List<ItemResolvido>();
         var erros = new Dictionary<string, string[]>();
         for (var idx = 0; idx < reqs.Count; idx++)
         {
             var r = reqs[idx];
-            if (!receitas.TryGetValue(r.ReceitaId, out var rec) || rec.Tipo != TipoReceita.Casa)
+            if (!produtos.TryGetValue(r.ProdutoId, out var prod) || prod.Tipo != TipoProduto.ReceitaDaCasa
+                || prod.ReceitaCasaId is not { } prc || prod.TamanhoPacoteId is not { } ptam)
             {
-                erros[$"itens[{idx}].receitaId"] = ["Selecione uma Receita da Casa válida."];
+                erros[$"itens[{idx}].produtoId"] = ["Selecione um produto de Receita da Casa válido."];
                 continue;
             }
-            if (!tamanhos.TryGetValue(r.TamanhoPacoteId, out var tam))
+            if (!receitas.TryGetValue(prc, out var rec) || !tamanhos.TryGetValue(ptam, out var tam))
             {
-                erros[$"itens[{idx}].tamanhoPacoteId"] = ["Selecione um tamanho de pacote válido."];
+                erros[$"itens[{idx}].produtoId"] = ["Produto sem receita/tamanho válidos."];
                 continue;
             }
             if (r.Quantidade <= 0)
@@ -107,38 +127,19 @@ public sealed class VendaAvulsaService : IVendaAvulsaService
                 erros[$"itens[{idx}].quantidade"] = ["A quantidade deve ser maior que zero."];
                 continue;
             }
-
-            itens.Add(EntregaItem.CriarCasa(
-                rec.Id, rec.Codigo, rec.Nome,
-                r.Quantidade * tam.PesoGramas,
-                new[] { EntregaItemPacote.Criar(tam.Nome, tam.PesoGramas, r.Quantidade) }));
+            var preco = r.PrecoUnitario ?? prod.PrecoVendaAvulsaPF;
+            if (preco < 0m)
+            {
+                erros[$"itens[{idx}].precoUnitario"] = ["O preço unitário não pode ser negativo."];
+                continue;
+            }
+            lista.Add(new ItemResolvido(prod.Id, rec, tam.Nome, tam.PesoGramas, r.Quantidade, preco));
         }
         if (erros.Count > 0)
         {
             throw new ValidationException(erros);
         }
-
-        var totalGramas = reqs.Sum(r => r.Quantidade * tamanhos[r.TamanhoPacoteId].PesoGramas);
-        var totalPacotes = reqs.Sum(r => r.Quantidade);
-        return (itens, totalGramas, totalPacotes);
-    }
-
-    private static string ComporObservacao(SalvarVendaAvulsaRequest req)
-    {
-        var partes = new List<string> { "Venda avulsa PF" };
-        if (req.Valor is > 0m)
-        {
-            partes.Add($"Valor: {req.Valor.Value.ToString("C2", PtBr)}");
-        }
-        if (!string.IsNullOrWhiteSpace(req.FormaPagamento))
-        {
-            partes.Add($"Pagamento: {req.FormaPagamento.Trim()}");
-        }
-        if (!string.IsNullOrWhiteSpace(req.Observacoes))
-        {
-            partes.Add(req.Observacoes.Trim());
-        }
-        return string.Join(" · ", partes);
+        return lista;
     }
 
     private static ValidationException Erro(string campo, string msg)

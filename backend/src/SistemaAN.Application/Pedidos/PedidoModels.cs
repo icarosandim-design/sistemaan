@@ -9,7 +9,10 @@ public sealed record PedidoItemDto(
     string TamanhoNome,
     int PesoGramas,
     int Quantidade,
-    string? Observacao);
+    string? Observacao,
+    long? ProdutoId,
+    decimal? PrecoUnitario,
+    decimal? ValorTotalItem);
 
 public sealed record PedidoDto(
     long Id,
@@ -22,6 +25,7 @@ public sealed record PedidoDto(
     long? EntregaId,
     string? EntregaStatus,
     int TotalPacotes,
+    decimal? ValorTotal,
     IReadOnlyList<PedidoItemDto> Itens);
 
 public sealed record PedidoResumoDto(
@@ -39,7 +43,9 @@ public sealed record SalvarPedidoItemRequest(
     long ReceitaId,
     long TamanhoPacoteId,
     int Quantidade,
-    string? Observacao);
+    string? Observacao,
+    long? ProdutoId = null,
+    decimal? PrecoUnitario = null);
 
 public sealed record SalvarPedidoRequest(
     long ClienteId,

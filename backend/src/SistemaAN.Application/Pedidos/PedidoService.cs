@@ -49,6 +49,7 @@ public sealed class PedidoService : IPedidoService
         {
             pedido.AdicionarItem(it);
         }
+        pedido.RecalcularTotal();
 
         _db.Pedidos.Add(pedido);
         await _db.SaveChangesAsync(cancellationToken);
@@ -85,6 +86,7 @@ public sealed class PedidoService : IPedidoService
         {
             pedido.AdicionarItem(it);
         }
+        pedido.RecalcularTotal();
 
         if (entrega is not null)
         {
@@ -111,6 +113,10 @@ public sealed class PedidoService : IPedidoService
         if (pedido.Itens.Count == 0)
         {
             throw Erro("itens", "Inclua ao menos um item antes de confirmar.");
+        }
+        if (pedido.Itens.Any(i => !i.PrecoUnitario.HasValue || i.PrecoUnitario.Value <= 0m))
+        {
+            throw Erro("itens", "Informe o preço unitário (maior que zero) de todos os itens antes de confirmar.");
         }
 
         var (cliente, pj) = await CarregarClientePjAsync(pedido.ClienteId, cancellationToken);
@@ -172,8 +178,37 @@ public sealed class PedidoService : IPedidoService
             throw Erro("itens", "Inclua ao menos um item no pedido.");
         }
 
-        var receitaIds = reqs.Select(r => r.ReceitaId).Distinct().ToList();
-        var tamanhoIds = reqs.Select(r => r.TamanhoPacoteId).Distinct().ToList();
+        var produtoIds = reqs.Where(r => r.ProdutoId != null).Select(r => r.ProdutoId!.Value).Distinct().ToList();
+        var produtos = await _db.Produtos.Where(p => produtoIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id, ct);
+
+        // Resolve receita/tamanho de cada item (via Produto quando informado; senão legado).
+        var resolvidos = new List<(int Idx, SalvarPedidoItemRequest Req, long ReceitaId, long TamanhoId, decimal? Preco, long? ProdutoId)>();
+        var errosResolucao = new Dictionary<string, string[]>();
+        for (var idx = 0; idx < reqs.Count; idx++)
+        {
+            var r = reqs[idx];
+            if (r.ProdutoId is { } pid)
+            {
+                if (!produtos.TryGetValue(pid, out var prod) || prod.Tipo != Domain.Produtos.TipoProduto.ReceitaDaCasa
+                    || prod.ReceitaCasaId is not { } prc || prod.TamanhoPacoteId is not { } ptam)
+                {
+                    errosResolucao[$"itens[{idx}].produtoId"] = ["Selecione um produto de Receita da Casa válido."];
+                    continue;
+                }
+                resolvidos.Add((idx, r, prc, ptam, r.PrecoUnitario ?? prod.PrecoVendaPJ, pid));
+            }
+            else
+            {
+                resolvidos.Add((idx, r, r.ReceitaId, r.TamanhoPacoteId, r.PrecoUnitario, null));
+            }
+        }
+        if (errosResolucao.Count > 0)
+        {
+            throw new ValidationException(errosResolucao);
+        }
+
+        var receitaIds = resolvidos.Select(x => x.ReceitaId).Distinct().ToList();
+        var tamanhoIds = resolvidos.Select(x => x.TamanhoId).Distinct().ToList();
         var receitas = await _db.Receitas.Where(r => receitaIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id, ct);
         var tamanhos = await _db.TamanhosPacote.Where(t => tamanhoIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, ct);
         var produtoAcabado = await _db.ItensEstoque.AsNoTracking()
@@ -183,15 +218,14 @@ public sealed class PedidoService : IPedidoService
 
         var itens = new List<PedidoItem>();
         var erros = new Dictionary<string, string[]>();
-        for (var idx = 0; idx < reqs.Count; idx++)
+        foreach (var (idx, r, recId, tamId, preco, prodId) in resolvidos)
         {
-            var r = reqs[idx];
-            if (!receitas.TryGetValue(r.ReceitaId, out var rec) || rec.Tipo != TipoReceita.Casa)
+            if (!receitas.TryGetValue(recId, out var rec) || rec.Tipo != TipoReceita.Casa)
             {
                 erros[$"itens[{idx}].receitaId"] = ["Selecione uma Receita da Casa válida."];
                 continue;
             }
-            if (!tamanhos.TryGetValue(r.TamanhoPacoteId, out var tam))
+            if (!tamanhos.TryGetValue(tamId, out var tam))
             {
                 erros[$"itens[{idx}].tamanhoPacoteId"] = ["Selecione um tamanho de pacote válido."];
                 continue;
@@ -201,9 +235,14 @@ public sealed class PedidoService : IPedidoService
                 erros[$"itens[{idx}].quantidade"] = ["A quantidade deve ser maior que zero."];
                 continue;
             }
-            var itemEstoqueId = produtoAcabado.FirstOrDefault(x => x.ReceitaId == r.ReceitaId && x.TamanhoPacoteId == r.TamanhoPacoteId)?.Id;
+            if (preco is < 0m)
+            {
+                erros[$"itens[{idx}].precoUnitario"] = ["O preço unitário não pode ser negativo."];
+                continue;
+            }
+            var itemEstoqueId = produtoAcabado.FirstOrDefault(x => x.ReceitaId == recId && x.TamanhoPacoteId == tamId)?.Id;
             itens.Add(PedidoItem.Criar(rec.Id, rec.Codigo, rec.Nome, tam.Id, tam.Nome, tam.PesoGramas,
-                r.Quantidade, null, string.IsNullOrWhiteSpace(r.Observacao) ? null : r.Observacao.Trim(), itemEstoqueId));
+                r.Quantidade, preco, string.IsNullOrWhiteSpace(r.Observacao) ? null : r.Observacao.Trim(), itemEstoqueId, prodId));
         }
         if (erros.Count > 0)
         {
@@ -248,7 +287,8 @@ public sealed class PedidoService : IPedidoService
             EntregaItem.CriarCasa(
                 it.ReceitaId, it.ReceitaCodigo, it.ReceitaNome,
                 it.Quantidade * it.PesoGramas,
-                new[] { EntregaItemPacote.Criar(it.TamanhoNome, it.PesoGramas, it.Quantidade) }))
+                new[] { EntregaItemPacote.Criar(it.TamanhoNome, it.PesoGramas, it.Quantidade) },
+                it.ProdutoId))
             .ToList();
         var total = pedido.Itens.Sum(it => it.Quantidade * it.PesoGramas);
         return EntregaPet.Criar(null, nome, TipoReceita.Casa, null, total, entregaItens);
@@ -274,9 +314,10 @@ public sealed class PedidoService : IPedidoService
         }
         return new PedidoDto(
             p.Id, p.ClienteId, p.ClienteNome, p.DataPedido, p.DataEntrega, p.Status.ToString(), p.Observacoes,
-            p.EntregaId, entregaStatus, p.Itens.Sum(i => i.Quantidade),
+            p.EntregaId, entregaStatus, p.Itens.Sum(i => i.Quantidade), p.ValorTotal,
             p.Itens.OrderBy(i => i.Id).Select(i => new PedidoItemDto(
-                i.Id, i.ReceitaId, i.ReceitaCodigo, i.ReceitaNome, i.TamanhoPacoteId, i.TamanhoNome, i.PesoGramas, i.Quantidade, i.Observacao)).ToList());
+                i.Id, i.ReceitaId, i.ReceitaCodigo, i.ReceitaNome, i.TamanhoPacoteId, i.TamanhoNome, i.PesoGramas, i.Quantidade, i.Observacao,
+                i.ProdutoId, i.PrecoUnitario, i.ValorTotalItem)).ToList());
     }
 
     private static string NomeSnapshot(Cliente cliente, ClientePj pj)

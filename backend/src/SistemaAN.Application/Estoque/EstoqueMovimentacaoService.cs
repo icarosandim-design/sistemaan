@@ -134,8 +134,24 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
 
         // 2) Geração das entradas (frete informativo: registrado todo na 1ª linha; não compõe custo).
         var freteTotal = request.Frete is decimal fr && fr > 0m ? fr : 0m;
+        var descontoTotal = request.Desconto is decimal dc && dc > 0m ? dc : 0m;
+        var acrescimoTotal = request.Acrescimo is decimal ac && ac > 0m ? ac : 0m;
         var notaPrefixo = string.IsNullOrWhiteSpace(request.NotaFiscal) ? null : $"NF {request.NotaFiscal.Trim()}";
         var agora = DateTimeOffset.UtcNow;
+
+        // Cabeçalho da NotaCompra: dados fiscais/financeiros ficam aqui, não em cada entrada.
+        // (A futura Conta a Pagar deve nascer 1 por NotaCompra.)
+        var totalProdutosPrevisto = request.Itens.Sum(li =>
+            Math.Round((li.ValorUnitario is decimal u && u > 0m ? u : li.ValorTotal!.Value / li.Quantidade) * li.Quantidade, 2, MidpointRounding.AwayFromZero));
+        var nota = NotaCompra.Criar(new DadosNotaCompra(
+            request.FornecedorId, request.DataCompra, request.DataEntrada,
+            request.NotaFiscal, request.SerieNotaFiscal, request.ChaveAcessoNotaFiscal, request.DataEmissaoNotaFiscal,
+            request.DataVencimentoPagamento, request.FormaPagamento, request.CondicaoPagamento,
+            request.LinhaDigitavelBoleto, request.CodigoBarrasBoleto, request.BancoEmissorBoleto, request.NumeroDocumento,
+            totalProdutosPrevisto, freteTotal, descontoTotal, acrescimoTotal, request.Observacoes));
+        _db.NotasCompra.Add(nota);
+        await _db.SaveChangesAsync(cancellationToken);
+
         var totalProdutos = 0m;
         var afetados = new List<long>();
 
@@ -162,6 +178,7 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             var entrada = EntradaEstoque.Criar(item, lote, request.FornecedorId, li.Quantidade, item.UnidadeMedida,
                 valorUnitario, frete, false, valorProdutos, request.DataCompra, request.DataEntrada,
                 li.Validade, loteCodigo, li.LocalArmazenamento, usuario, obs);
+            entrada.VincularNotaCompra(nota.Id);
 
             var mov = MovimentacaoEstoque.CriarEntrada(item, lote, TipoMovimentacao.EntradaCompra, li.Quantidade,
                 saldoAnterior, item.QuantidadeAtual, valorUnitario, usuario, agora, obs);
@@ -184,7 +201,7 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
             dtos.Add(await _itens.ObterAsync(id, cancellationToken));
         }
 
-        return new CompraResultadoDto(request.Itens.Count, totalProdutos, freteTotal, totalProdutos + freteTotal, dtos);
+        return new CompraResultadoDto(request.Itens.Count, totalProdutos, freteTotal, nota.ValorTotal, nota.Id, dtos);
     }
 
     private static string? ComporObservacao(string? notaPrefixo, string? observacoes)

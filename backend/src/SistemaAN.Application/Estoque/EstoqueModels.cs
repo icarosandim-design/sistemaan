@@ -185,14 +185,28 @@ public sealed record RegistrarCompraRequest(
     string? NotaFiscal,
     decimal? Frete,
     string? Observacoes,
-    IReadOnlyList<CompraItemRequest> Itens);
+    IReadOnlyList<CompraItemRequest> Itens,
+    // ----- Cabeçalho fiscal/financeiro da nota (opcional) -----
+    string? SerieNotaFiscal = null,
+    string? ChaveAcessoNotaFiscal = null,
+    DateOnly? DataEmissaoNotaFiscal = null,
+    DateOnly? DataVencimentoPagamento = null,
+    string? FormaPagamento = null,
+    string? CondicaoPagamento = null,
+    string? LinhaDigitavelBoleto = null,
+    string? CodigoBarrasBoleto = null,
+    string? BancoEmissorBoleto = null,
+    string? NumeroDocumento = null,
+    decimal? Desconto = null,
+    decimal? Acrescimo = null);
 
-/// <summary>Resultado de uma compra: itens afetados + totais informativos.</summary>
+/// <summary>Resultado de uma compra: itens afetados + totais + cabeçalho da nota.</summary>
 public sealed record CompraResultadoDto(
     int ItensRegistrados,
     decimal ValorProdutos,
     decimal Frete,
     decimal TotalPago,
+    long? NotaCompraId,
     IReadOnlyList<ItemEstoqueDto> Itens);
 
 // ===================== Movimentações (livro-razão geral) =====================
