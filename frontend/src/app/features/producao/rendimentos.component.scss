@@ -19,13 +19,14 @@
 .bloco { background: var(--an-superficie); border: 1px solid var(--an-fundo-secundario); border-radius: var(--an-raio); padding: 0.9rem 1rem; }
 .bloco-titulo { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.7rem; font-size: 1.05rem; font-weight: 700; color: var(--an-texto-titulo); .mat-icon { color: var(--an-cta); } }
 
-.tabela { display: flex; flex-direction: column; overflow-x: auto; width: 100%; }
-.thead, .trow { display: grid; align-items: center; gap: 0.4rem 0.6rem; padding: 0.3rem 0.3rem; }
-.tabela.ing .thead, .tabela.ing .trow { grid-template-columns: minmax(140px,1.4fr) 80px 96px 96px 120px 96px 96px 80px 80px 110px; min-width: 1080px; }
-.tabela.prod .thead, .tabela.prod .trow { grid-template-columns: 120px 110px 140px minmax(140px,1fr); min-width: 560px; }
-.tabela.detalhe .thead, .tabela.detalhe .trow { grid-template-columns: 100px minmax(120px,1fr) 90px 90px 100px 80px 80px minmax(120px,1.2fr); min-width: 860px; }
-.thead { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--an-texto-secundario); border-bottom: 1px solid var(--an-fundo-secundario); }
-.trow { font-size: 0.8rem; border-bottom: 1px dashed var(--an-fundo-secundario); }
+.tabela { display: flex; flex-direction: column; width: 100%; }
+.thead, .trow { display: grid; align-items: center; gap: 0.2rem 0.35rem; padding: 0.3rem 0.15rem; }
+.tabela.ing .thead, .tabela.ing .trow { grid-template-columns: minmax(0,1.6fr) minmax(0,0.7fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.8fr) minmax(0,0.8fr) minmax(0,1.1fr); }
+.tabela.prod .thead, .tabela.prod .trow { grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.4fr); }
+.tabela.detalhe .thead, .tabela.detalhe .trow { grid-template-columns: minmax(0,0.9fr) minmax(0,1.3fr) minmax(0,0.9fr) minmax(0,0.9fr) minmax(0,1fr) minmax(0,0.8fr) minmax(0,0.8fr) minmax(0,1.4fr); }
+.thead { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; color: var(--an-texto-secundario); border-bottom: 1px solid var(--an-fundo-secundario); }
+.trow { font-size: 0.76rem; border-bottom: 1px dashed var(--an-fundo-secundario); }
+.thead span, .trow span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .trow.revisar { background: #fffdf5; }
 .t-r { text-align: right; font-variant-numeric: tabular-nums; }
 .t-c { text-align: center; }
