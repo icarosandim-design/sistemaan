@@ -159,7 +159,7 @@ public sealed class DemoDataSeeder
                 for (var p = 1; p <= qtdPets; p++)
                 {
                     var pet = await _pets.CriarAsync(cliente.Id, new SalvarPetRequest(
-                        $"Pet {i}-{p}", "SRD", 8m + (i % 20), null, "2 anos", p % 2 == 0 ? "Femea" : "Macho", null, null, null), ct);
+                        $"Pet {i}-{p}", null, 8m + (i % 20), null, "2 anos", p % 2 == 0 ? "Femea" : "Macho", null, null, null, null), ct);
 
                     var recId = receitaIds[i % receitaIds.Count];
                     await _planos.SalvarAsync(pet.Id, new SalvarPlanoRequest(

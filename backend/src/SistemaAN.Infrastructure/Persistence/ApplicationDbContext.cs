@@ -56,6 +56,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Pet> Pets => Set<Pet>();
 
+    public DbSet<Raca> Racas => Set<Raca>();
+
+    public DbSet<Doenca> Doencas => Set<Doenca>();
+
+    public DbSet<PetDoenca> PetDoencas => Set<PetDoenca>();
+
     public DbSet<TamanhoPacote> TamanhosPacote => Set<TamanhoPacote>();
 
     public DbSet<PlanoAlimentar> PlanosAlimentares => Set<PlanoAlimentar>();

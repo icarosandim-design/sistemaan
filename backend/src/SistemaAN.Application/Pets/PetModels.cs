@@ -4,6 +4,7 @@ public sealed record PetDto(
     long Id,
     long ClienteId,
     string Nome,
+    long? RacaId,
     string? Raca,
     decimal PesoKg,
     DateOnly? DataNascimento,
@@ -13,7 +14,9 @@ public sealed record PetDto(
     string? ObservacoesGerais,
     string? ObservacoesAlimentares,
     int? GramasDiaAjustadas,
-    int? GramasDiaSugeridas);
+    int? GramasDiaSugeridas,
+    IReadOnlyList<long> DoencaIds,
+    IReadOnlyList<string> Doencas);
 
 public sealed record PetResumoDto(
     long Id,
@@ -37,11 +40,12 @@ public sealed record PetReceitaProntaDto(
 
 public sealed record SalvarPetRequest(
     string Nome,
-    string? Raca,
+    long? RacaId,
     decimal PesoKg,
     DateOnly? DataNascimento,
     string? IdadeAprox,
     string? Sexo,
     string? ObservacoesGerais,
     string? ObservacoesAlimentares,
-    int? GramasDiaAjustadas);
+    int? GramasDiaAjustadas,
+    IReadOnlyList<long>? DoencaIds);

@@ -32,6 +32,8 @@ public static class DependencyInjection
         services.AddScoped<IClientePjService, ClientePjService>();
         services.AddScoped<IOrigemVendaService, OrigemVendaService>();
         services.AddScoped<IMotivoCancelamentoService, MotivoCancelamentoService>();
+        services.AddScoped<Cadastros.IRacaService, Cadastros.RacaService>();
+        services.AddScoped<Cadastros.IDoencaService, Cadastros.DoencaService>();
         services.AddScoped<IPetService, PetService>();
         services.AddScoped<ITamanhoPacoteService, TamanhoPacoteService>();
         services.AddScoped<IReceitaPersonalizadaService, ReceitaPersonalizadaService>();

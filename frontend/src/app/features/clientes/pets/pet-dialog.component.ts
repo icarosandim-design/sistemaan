@@ -10,6 +10,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { Pet, PetReceitaPronta, SalvarPetRequest, Sexo, SEXOS } from './pet.model';
 import { PetService } from './pet.service';
+import { RacasService } from '../../racas/racas.service';
+import { Raca } from '../../racas/racas.model';
+import { DoencasService } from '../../doencas/doencas.service';
+import { Doenca } from '../../doencas/doencas.model';
 
 export interface PetDialogData {
   pet: Pet | null;
@@ -33,15 +37,19 @@ export interface PetDialogData {
 export class PetDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly petService = inject(PetService);
+  private readonly racasService = inject(RacasService);
+  private readonly doencasService = inject(DoencasService);
 
   readonly sexos = SEXOS;
   readonly edicao: boolean;
   readonly sugestao = signal<number | null>(null);
   readonly prontos = signal<PetReceitaPronta[]>([]);
+  readonly racas = signal<Raca[]>([]);
+  readonly doencas = signal<Doenca[]>([]);
 
   readonly form = this.fb.nonNullable.group({
     nome: ['', [Validators.required]],
-    raca: [''],
+    racaId: [null as number | null],
     pesoKg: [0, [Validators.required, Validators.min(0.1)]],
     dataNascimento: ['' as string | null],
     idadeAprox: [''],
@@ -49,18 +57,22 @@ export class PetDialogComponent {
     observacoesGerais: [''],
     observacoesAlimentares: [''],
     gramasDiaAjustadas: [null as number | null, [Validators.min(0)]],
+    doencaIds: [[] as number[]],
   });
 
   constructor(
     private readonly ref: MatDialogRef<PetDialogComponent, SalvarPetRequest>,
     @Inject(MAT_DIALOG_DATA) readonly data: PetDialogData,
   ) {
+    this.racasService.listar().subscribe({ next: (rs) => this.racas.set(rs) });
+    this.doencasService.listar().subscribe({ next: (ds) => this.doencas.set(ds) });
+
     this.edicao = !!data.pet;
     if (data.pet) {
       const p = data.pet;
       this.form.patchValue({
         nome: p.nome,
-        raca: p.raca ?? '',
+        racaId: p.racaId ?? null,
         pesoKg: p.pesoKg,
         dataNascimento: p.dataNascimento ?? null,
         idadeAprox: p.idadeAprox ?? '',
@@ -68,6 +80,7 @@ export class PetDialogComponent {
         observacoesGerais: p.observacoesGerais ?? '',
         observacoesAlimentares: p.observacoesAlimentares ?? '',
         gramasDiaAjustadas: p.gramasDiaAjustadas,
+        doencaIds: p.doencaIds ?? [],
       });
       this.sugestao.set(p.gramasDiaSugeridas);
       this.petService.prontos(p.id).subscribe({ next: (r) => this.prontos.set(r), error: () => {} });
@@ -96,7 +109,7 @@ export class PetDialogComponent {
     const txt = (s: string) => (s.trim() ? s.trim() : null);
     const req: SalvarPetRequest = {
       nome: v.nome.trim(),
-      raca: txt(v.raca),
+      racaId: v.racaId ?? null,
       pesoKg: Number(v.pesoKg),
       dataNascimento: v.dataNascimento || null,
       idadeAprox: txt(v.idadeAprox),
@@ -104,6 +117,7 @@ export class PetDialogComponent {
       observacoesGerais: txt(v.observacoesGerais),
       observacoesAlimentares: txt(v.observacoesAlimentares),
       gramasDiaAjustadas: v.gramasDiaAjustadas ?? null,
+      doencaIds: v.doencaIds ?? [],
     };
     this.ref.close(req);
   }

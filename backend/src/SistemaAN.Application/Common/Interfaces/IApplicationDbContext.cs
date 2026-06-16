@@ -48,6 +48,12 @@ public interface IApplicationDbContext
 
     DbSet<Pet> Pets { get; }
 
+    DbSet<Raca> Racas { get; }
+
+    DbSet<Doenca> Doencas { get; }
+
+    DbSet<PetDoenca> PetDoencas { get; }
+
     DbSet<TamanhoPacote> TamanhosPacote { get; }
 
     DbSet<PlanoAlimentar> PlanosAlimentares { get; }

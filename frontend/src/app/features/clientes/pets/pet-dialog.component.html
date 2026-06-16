@@ -12,9 +12,24 @@
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Raça</mat-label>
-        <input matInput formControlName="raca" />
+        <mat-select formControlName="racaId">
+          <mat-option [value]="null">—</mat-option>
+          @for (r of racas(); track r.id) {
+            <mat-option [value]="r.id">{{ r.nome }}</mat-option>
+          }
+        </mat-select>
       </mat-form-field>
     </div>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Doenças</mat-label>
+      <mat-select formControlName="doencaIds" multiple>
+        @for (d of doencas(); track d.id) {
+          <mat-option [value]="d.id">{{ d.nome }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Opcional — selecione uma ou mais.</mat-hint>
+    </mat-form-field>
 
     <div class="linha">
       <mat-form-field appearance="outline">

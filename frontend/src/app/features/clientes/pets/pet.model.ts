@@ -5,6 +5,7 @@ export interface Pet {
   id: number;
   clienteId: number;
   nome: string;
+  racaId: number | null;
   raca: string | null;
   pesoKg: number;
   dataNascimento: string | null; // aaaa-mm-dd
@@ -15,6 +16,8 @@ export interface Pet {
   observacoesAlimentares: string | null;
   gramasDiaAjustadas: number | null;
   gramasDiaSugeridas: number | null; // calculado pela Tabela de Consumo (backend)
+  doencaIds: number[];
+  doencas: string[];
 }
 
 /** Comida pronta por receita do pet. */
@@ -43,7 +46,7 @@ export interface PetResumo {
 /** Payload de criação/edição (SalvarPetRequest no backend). */
 export interface SalvarPetRequest {
   nome: string;
-  raca: string | null;
+  racaId: number | null;
   pesoKg: number;
   dataNascimento: string | null;
   idadeAprox: string | null;
@@ -51,6 +54,7 @@ export interface SalvarPetRequest {
   observacoesGerais: string | null;
   observacoesAlimentares: string | null;
   gramasDiaAjustadas: number | null;
+  doencaIds: number[];
 }
 
 export const SEXOS: { valor: Sexo; label: string }[] = [

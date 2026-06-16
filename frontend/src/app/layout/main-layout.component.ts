@@ -101,6 +101,8 @@ export class MainLayoutComponent {
         { label: 'Receitas da Casa', icone: 'menu_book', rota: '/receitas', papeis: ADMIN_OPERADOR },
         { label: 'Tamanhos de Pacote', icone: 'inventory_2', rota: '/tamanhos-pacote', papeis: ADMIN_OPERADOR },
         { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes', papeis: ADMIN_OPERADOR },
+        { label: 'Raças', icone: 'pets', rota: '/cadastros/racas', papeis: ADMIN_OPERADOR },
+        { label: 'Doenças', icone: 'vaccines', rota: '/cadastros/doencas', papeis: ADMIN_OPERADOR },
         { label: 'Categorias', icone: 'category', rota: '/cadastros/categorias', papeis: ADMIN_OPERADOR },
         { label: 'Origens de Venda', icone: 'sell', rota: '/cadastros/origens-venda', papeis: ADMIN_OPERADOR },
         { label: 'Motivos de Cancelamento', icone: 'cancel', rota: '/cadastros/motivos-cancelamento', papeis: ADMIN_OPERADOR },

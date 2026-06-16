@@ -14,6 +14,9 @@ public class Pet : AuditableEntity
 
     public long ClienteId { get; private set; }
     public string Nome { get; private set; } = string.Empty;
+    /// <summary>Raça referenciada no cadastro de Raças (opcional).</summary>
+    public long? RacaId { get; private set; }
+    /// <summary>Nome da raça (snapshot para exibição/compatibilidade).</summary>
     public string? Raca { get; private set; }
     public decimal PesoKg { get; private set; }
     public DateOnly? DataNascimento { get; private set; }
@@ -40,6 +43,7 @@ public class Pet : AuditableEntity
     private void Aplicar(DadosPet d)
     {
         Nome = d.Nome.Trim();
+        RacaId = d.RacaId;
         Raca = Texto(d.Raca);
         PesoKg = d.PesoKg;
         DataNascimento = d.DataNascimento;
@@ -59,6 +63,7 @@ public class Pet : AuditableEntity
 
 public sealed record DadosPet(
     string Nome,
+    long? RacaId,
     string? Raca,
     decimal PesoKg,
     DateOnly? DataNascimento,

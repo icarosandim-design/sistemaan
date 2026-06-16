@@ -29,6 +29,8 @@ import { PetsComponent } from './features/pets/pets.component';
 import { PlanejarRotasComponent } from './features/rotas/planejar-rotas.component';
 import { RotaImpressaoComponent } from './features/rotas/rota-impressao.component';
 import { MotivosCancelamentoComponent } from './features/motivos-cancelamento/motivos-cancelamento.component';
+import { RacasComponent } from './features/racas/racas.component';
+import { DoencasComponent } from './features/doencas/doencas.component';
 import { RelatoriosDashboardComponent } from './features/relatorios/dashboard.component';
 import { RelatoriosComponent } from './features/relatorios/relatorios.component';
 
@@ -56,6 +58,8 @@ export const routes: Routes = [
       { path: 'cadastros/categorias', component: CategoriasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/origens-venda', component: OrigensVendaComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/motivos-cancelamento', component: MotivosCancelamentoComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'cadastros/racas', component: RacasComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'cadastros/doencas', component: DoencasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/usuarios', component: UsuariosComponent, data: { papeis: SO_ADMIN } },
       { path: 'relatorios/dashboard', component: RelatoriosDashboardComponent, data: { papeis: SO_ADMIN } },
       { path: 'relatorios', component: RelatoriosComponent, data: { papeis: SO_ADMIN } },

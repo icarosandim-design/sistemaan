@@ -49,7 +49,8 @@ public sealed class PetService : IPetService
             .ToListAsync(cancellationToken);
 
         var faixas = await FaixasAtivasAsync(cancellationToken);
-        return pets.Select(p => Map(p, Sugerir(faixas, p.PesoKg))).ToList();
+        var doencas = await CarregarDoencasAsync(pets.Select(p => p.Id).ToList(), cancellationToken);
+        return pets.Select(p => Map(p, Sugerir(faixas, p.PesoKg), doencas.TryGetValue(p.Id, out var ds) ? ds : [])).ToList();
     }
 
     public async Task<IReadOnlyList<PetResumoDto>> ListarTodosAsync(string? busca, bool? ativo, string? tipo, CancellationToken cancellationToken = default)
@@ -123,7 +124,8 @@ public sealed class PetService : IPetService
         var pet = await _db.Pets.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
             ?? throw new NotFoundException("Pet", id);
         var faixas = await FaixasAtivasAsync(cancellationToken);
-        return Map(pet, Sugerir(faixas, pet.PesoKg));
+        var doencas = await CarregarDoencasAsync([pet.Id], cancellationToken);
+        return Map(pet, Sugerir(faixas, pet.PesoKg), doencas.TryGetValue(pet.Id, out var ds) ? ds : []);
     }
 
     public async Task<IReadOnlyList<PetReceitaProntaDto>> ProntosPorReceitaAsync(long petId, CancellationToken cancellationToken = default)
@@ -212,14 +214,17 @@ public sealed class PetService : IPetService
             throw new NotFoundException("Cliente", clienteId);
         }
 
-        var dados = Validar(request);
+        var racaNome = await ResolverRacaNomeAsync(request.RacaId, cancellationToken);
+        var dados = Validar(request, racaNome);
         var pet = Pet.Criar(clienteId, dados);
         _db.Pets.Add(pet);
         await _db.SaveChangesAsync(cancellationToken);
+        await SalvarDoencasAsync(pet.Id, request.DoencaIds, cancellationToken);
         await RegerarEntregasAsync(clienteId, cancellationToken);
 
         var faixas = await FaixasAtivasAsync(cancellationToken);
-        return Map(pet, Sugerir(faixas, pet.PesoKg));
+        var doencas = await CarregarDoencasAsync([pet.Id], cancellationToken);
+        return Map(pet, Sugerir(faixas, pet.PesoKg), doencas.TryGetValue(pet.Id, out var ds) ? ds : []);
     }
 
     public async Task<PetDto> AtualizarAsync(long id, SalvarPetRequest request, CancellationToken cancellationToken = default)
@@ -227,13 +232,16 @@ public sealed class PetService : IPetService
         var pet = await _db.Pets.FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
             ?? throw new NotFoundException("Pet", id);
 
-        var dados = Validar(request);
+        var racaNome = await ResolverRacaNomeAsync(request.RacaId, cancellationToken);
+        var dados = Validar(request, racaNome);
         pet.Atualizar(dados);
         await _db.SaveChangesAsync(cancellationToken);
+        await SalvarDoencasAsync(pet.Id, request.DoencaIds, cancellationToken);
         await RegerarEntregasAsync(pet.ClienteId, cancellationToken);
 
         var faixas = await FaixasAtivasAsync(cancellationToken);
-        return Map(pet, Sugerir(faixas, pet.PesoKg));
+        var doencas = await CarregarDoencasAsync([pet.Id], cancellationToken);
+        return Map(pet, Sugerir(faixas, pet.PesoKg), doencas.TryGetValue(pet.Id, out var ds) ? ds : []);
     }
 
     public async Task InativarAsync(long id, CancellationToken cancellationToken = default)
@@ -254,7 +262,64 @@ public sealed class PetService : IPetService
         await RegerarEntregasAsync(pet.ClienteId, cancellationToken);
     }
 
-    private static DadosPet Validar(SalvarPetRequest r)
+    private async Task<string?> ResolverRacaNomeAsync(long? racaId, CancellationToken ct)
+    {
+        if (racaId is not { } rid)
+        {
+            return null;
+        }
+
+        var nome = await _db.Racas.Where(r => r.Id == rid).Select(r => r.Nome).FirstOrDefaultAsync(ct);
+        if (nome is null)
+        {
+            throw new ValidationException(new Dictionary<string, string[]> { ["racaId"] = ["Raça inválida."] });
+        }
+
+        return nome;
+    }
+
+    private async Task SalvarDoencasAsync(long petId, IReadOnlyList<long>? doencaIds, CancellationToken ct)
+    {
+        var ids = (doencaIds ?? []).Distinct().ToList();
+        if (ids.Count > 0)
+        {
+            var validas = await _db.Doencas.Where(d => ids.Contains(d.Id)).Select(d => d.Id).ToListAsync(ct);
+            if (ids.Except(validas).Any())
+            {
+                throw new ValidationException(new Dictionary<string, string[]> { ["doencaIds"] = ["Uma ou mais doenças são inválidas."] });
+            }
+        }
+
+        var existentes = await _db.PetDoencas.Where(pd => pd.PetId == petId).ToListAsync(ct);
+        _db.PetDoencas.RemoveRange(existentes);
+        foreach (var did in ids)
+        {
+            _db.PetDoencas.Add(PetDoenca.Criar(petId, did));
+        }
+
+        await _db.SaveChangesAsync(ct);
+    }
+
+    private async Task<Dictionary<long, List<(long Id, string Nome)>>> CarregarDoencasAsync(IReadOnlyCollection<long> petIds, CancellationToken ct)
+    {
+        if (petIds.Count == 0)
+        {
+            return new Dictionary<long, List<(long, string)>>();
+        }
+
+        var rows = await (from pd in _db.PetDoencas
+                          join d in _db.Doencas on pd.DoencaId equals d.Id
+                          where petIds.Contains(pd.PetId)
+                          orderby d.Nome
+                          select new { pd.PetId, d.Id, d.Nome })
+            .ToListAsync(ct);
+
+        return rows
+            .GroupBy(r => r.PetId)
+            .ToDictionary(g => g.Key, g => g.Select(x => (x.Id, x.Nome)).ToList());
+    }
+
+    private static DadosPet Validar(SalvarPetRequest r, string? racaNome)
     {
         var erros = new Dictionary<string, string[]>();
 
@@ -292,7 +357,7 @@ public sealed class PetService : IPetService
         }
 
         return new DadosPet(
-            r.Nome, r.Raca, r.PesoKg, r.DataNascimento, r.IdadeAprox, sexo,
+            r.Nome, r.RacaId, racaNome, r.PesoKg, r.DataNascimento, r.IdadeAprox, sexo,
             r.ObservacoesGerais, r.ObservacoesAlimentares, r.GramasDiaAjustadas);
     }
 
@@ -302,8 +367,9 @@ public sealed class PetService : IPetService
     private static int? Sugerir(List<FaixaConsumo> faixas, decimal peso)
         => faixas.FirstOrDefault(f => peso >= f.PesoInicial && peso <= f.PesoFinal)?.GramasPorDia;
 
-    private static PetDto Map(Pet p, int? sugestao) => new(
-        p.Id, p.ClienteId, p.Nome, p.Raca, p.PesoKg, p.DataNascimento, p.IdadeAprox,
+    private static PetDto Map(Pet p, int? sugestao, IReadOnlyList<(long Id, string Nome)> doencas) => new(
+        p.Id, p.ClienteId, p.Nome, p.RacaId, p.Raca, p.PesoKg, p.DataNascimento, p.IdadeAprox,
         p.Sexo?.ToString(), p.Ativo, p.ObservacoesGerais, p.ObservacoesAlimentares,
-        p.GramasDiaAjustadas, sugestao);
+        p.GramasDiaAjustadas, sugestao,
+        doencas.Select(d => d.Id).ToList(), doencas.Select(d => d.Nome).ToList());
 }

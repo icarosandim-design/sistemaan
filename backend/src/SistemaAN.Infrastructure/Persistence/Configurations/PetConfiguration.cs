@@ -18,6 +18,7 @@ public sealed class PetConfiguration : IEntityTypeConfiguration<Pet>
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.Nome).HasMaxLength(80).IsRequired();
+        builder.Property(p => p.RacaId);
         builder.Property(p => p.Raca).HasMaxLength(80);
         builder.Property(p => p.PesoKg).HasPrecision(6, 2).IsRequired();
         builder.Property(p => p.DataNascimento);
@@ -29,11 +30,19 @@ public sealed class PetConfiguration : IEntityTypeConfiguration<Pet>
         builder.Property(p => p.GramasDiaAjustadas);
 
         builder.HasIndex(p => p.ClienteId);
+        builder.HasIndex(p => p.RacaId).HasDatabaseName("ix_pets_raca");
 
         builder
             .HasOne<Cliente>()
             .WithMany()
             .HasForeignKey(p => p.ClienteId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne<Raca>()
+            .WithMany()
+            .HasForeignKey(p => p.RacaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_pets_raca");
     }
 }
