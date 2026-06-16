@@ -21,7 +21,6 @@ import {
 import { EstoqueService } from './estoque.service';
 import { CategoriasIngredientesService } from '../categorias/categorias-ingredientes.service';
 import { CategoriaIngrediente } from '../categorias/categorias.model';
-import { EntradaDialogComponent } from './estoque-operacao-dialogs.component';
 import { CompraDialogComponent } from './compra-dialog.component';
 
 @Component({
@@ -120,31 +119,6 @@ export class ComprasComponent implements OnInit {
         this.snack.open(`Compra registrada: ${r.itensRegistrados} item(ns).`, 'OK', { duration: 3000 });
         this.carregar();
       }
-    });
-  }
-
-  novaEntrada(): void {
-    const ref = this.dialog.open(EntradaDialogComponent, {
-      data: { item: null },
-      width: '620px',
-      maxWidth: '96vw',
-      autoFocus: false,
-    });
-    ref.afterClosed().subscribe((req) => {
-      if (!req) {
-        return;
-      }
-      this.carregando.set(true);
-      this.service.registrarEntrada(req).subscribe({
-        next: () => {
-          this.snack.open('Entrada registrada.', 'OK', { duration: 2500 });
-          this.carregar();
-        },
-        error: (e: HttpErrorResponse) => {
-          this.carregando.set(false);
-          this.snack.open(this.mensagemErro(e), 'Fechar', { duration: 5000 });
-        },
-      });
     });
   }
 

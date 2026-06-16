@@ -18,17 +18,29 @@
 .subtitulo { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--an-texto-secundario); }
 .head-acoes { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 
-.btn-cta { background: var(--an-cta); color: #fff; &:hover { background: var(--an-cta-hover); } }
+.btn-cta {
+  background: var(--an-cta);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(176, 141, 87, 0.3);
+  &:hover { background: var(--an-cta-hover); box-shadow: 0 4px 12px rgba(176, 141, 87, 0.4); }
+}
 
 .filtros {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem 0.6rem;
+  padding: 0.85rem 1rem 0.25rem;
+  background: var(--an-superficie);
+  border: 1px solid var(--an-fundo-secundario);
+  border-radius: var(--an-raio);
 }
 
 .f {
-  flex: 0 1 132px;
+  flex: 1 1 140px;
+  max-width: 200px;
   margin-bottom: -1.25em;
   font-size: 0.85rem;
 
@@ -36,7 +48,7 @@
   ::ng-deep .mat-mdc-text-field-wrapper { height: 42px; }
 }
 
-.filtro-acoes { display: flex; gap: 0.4rem; align-items: center; }
+.filtro-acoes { display: flex; gap: 0.4rem; align-items: center; margin-left: auto; }
 
 .tabela-card {
   background: var(--an-superficie);
