@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute } from '@angular/router';
 import { EntregaDisponivel, RotaResumo, rotuloPeriodo, rotuloStatusRota } from './rotas.model';
 import { RotasService } from './rotas.service';
 import { RotaDetalheDialogComponent, RotaFormDialogComponent } from './rota-dialogs.component';
@@ -20,6 +21,7 @@ import { rotuloPreferenciaHorario } from '../clientes/clientes.model';
 export class PlanejarRotasComponent implements OnInit {
   private readonly service = inject(RotasService);
   private readonly dialog = inject(MatDialog);
+  private readonly route = inject(ActivatedRoute);
 
   readonly rotas = signal<RotaResumo[]>([]);
   readonly disponiveis = signal<EntregaDisponivel[]>([]);
@@ -32,6 +34,10 @@ export class PlanejarRotasComponent implements OnInit {
   data = new Date().toISOString().slice(0, 10);
 
   ngOnInit(): void {
+    const data = this.route.snapshot.queryParamMap.get('data');
+    if (data) {
+      this.data = data;
+    }
     this.carregar();
   }
 

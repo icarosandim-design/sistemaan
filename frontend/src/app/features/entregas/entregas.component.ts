@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { Observable, forkJoin, map, of } from 'rxjs';
 import {
   classeStatus,
@@ -60,6 +61,7 @@ export class EntregasComponent implements OnInit {
   private readonly estoque = inject(EstoqueService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
+  private readonly router = inject(Router);
 
   // Saldo real de produto acabado (Casa): `${receitaId}-${pesoGramas}` → pacotes.
   readonly estoqueProdutoAcabado = signal<Map<string, number>>(new Map());
@@ -366,25 +368,13 @@ export class EntregasComponent implements OnInit {
     return this.lista.filter((e) => prontidaoEntrega(e.operacional).casaFalta > 0).length;
   }
 
-  /**
-   * Planejar a rota do dia selecionado (qualquer data, hoje ou futura).
-   * Visual/preparatório: o backend de Rotas ainda não existe.
-   */
+  /** Abre o módulo Planejar Rotas já no dia selecionado. */
   planejarRota(): void {
     if (!this.diaSelecionado) {
       this.snack.open('Selecione um dia no calendário para planejar a rota.', 'OK', { duration: 3000 });
       return;
     }
-    const total = this.lista.length;
-    const fora = this.foraDaRotaCount;
-    const [y, m, d] = this.diaSelecionado.split('-').map(Number);
-    const dataBr = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
-    this.snack.open(
-      `Planejamento de rota para ${dataBr}: ${total} entrega(s)` + (fora ? `, ${fora} fora da rota.` : '.') +
-        ' (Módulo de Rotas em breve)',
-      'OK',
-      { duration: 4000 },
-    );
+    this.router.navigate(['/rotas'], { queryParams: { data: this.diaSelecionado } });
   }
 
   private erro(msg: string): void {

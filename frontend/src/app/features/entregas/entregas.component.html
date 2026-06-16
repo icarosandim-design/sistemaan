@@ -69,7 +69,7 @@
         <span class="lista-contador">{{ lista.length }} {{ lista.length === 1 ? 'entrega' : 'entregas' }}</span>
       </div>
       <button mat-flat-button class="btn-rota" [disabled]="!diaSelecionado || lista.length === 0" (click)="planejarRota()"
-              matTooltip="Monta a rota das entregas do dia selecionado (Módulo de Rotas em breve)">
+              matTooltip="Abre o Planejar Rotas no dia selecionado">
         <mat-icon>route</mat-icon> Planejar rota do dia
       </button>
     </div>
