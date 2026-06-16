@@ -30,7 +30,11 @@
     </section>
   }
 
-  <!-- Janela -->
+  <!-- Janela / período -->
+  <p class="janela-legenda">
+    Demanda de: <strong>{{ janelaTexto }}</strong>
+    @if (store.carregandoPlanejar()) { <mat-spinner diameter="16"></mat-spinner> }
+  </p>
   <div class="janelas">
     @for (j of janelas; track j) {
       <button class="chip-janela" [class.ativo]="!personalizado && janela === j" (click)="selecionarJanela(j)">{{ j }}</button>
@@ -42,8 +46,6 @@
         <input type="date" [(ngModel)]="rangeAte" (change)="aplicarRange()" />
       </span>
     }
-    <span class="janela-info">Demanda do período: <strong>{{ janelaTexto }}</strong></span>
-    @if (store.carregandoPlanejar()) { <mat-spinner diameter="18"></mat-spinner> }
   </div>
 
   <!-- Resumo das escolhas -->

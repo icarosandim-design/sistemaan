@@ -11,7 +11,12 @@
 .page-title h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
 .btn-cta { background: var(--an-cta); color: #fff; }
 
-.janelas { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.janela-legenda {
+  display: flex; align-items: center; gap: 0.4rem;
+  margin: 0.25rem 0 0.6rem; font-size: 0.85rem; color: var(--an-texto-secundario);
+  strong { color: var(--an-primaria); font-weight: 700; }
+}
+.janelas { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.2rem; }
 .chip-janela {
   display: inline-flex; align-items: center; gap: 0.25rem;
   border: 1px solid var(--an-fundo-secundario); background: var(--an-superficie);

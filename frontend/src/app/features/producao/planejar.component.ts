@@ -34,7 +34,7 @@ export class ProducaoPlanejarComponent implements OnInit {
   readonly fmtMoeda = fmtMoeda;
   readonly rotuloStatusPreparo = rotuloStatusPreparo;
 
-  readonly janelas = ['Hoje', 'Amanhã', 'Próximos 3 dias', 'Próximos 7 dias', 'Próximos 15 dias', 'Próximos 30 dias', 'Próxima semana'];
+  readonly janelas = ['Hoje', 'Amanhã', 'Próximos 3 dias', 'Próximos 7 dias', 'Próximos 15 dias', 'Próximos 30 dias'];
   janela = 'Próximos 7 dias';
   personalizado = false;
   rangeDe = '';
@@ -90,13 +90,6 @@ export class ProducaoPlanejarComponent implements OnInit {
       case 'Próximos 7 dias': fim.setDate(hoje.getDate() + 6); break;
       case 'Próximos 15 dias': fim.setDate(hoje.getDate() + 14); break;
       case 'Próximos 30 dias': fim.setDate(hoje.getDate() + 29); break;
-      case 'Próxima semana': {
-        const diaSem = hoje.getDay(); // 0=dom
-        const ateSegunda = ((8 - diaSem) % 7) || 7; // próxima segunda
-        ini.setDate(hoje.getDate() + ateSegunda);
-        fim.setDate(hoje.getDate() + ateSegunda + 6);
-        break;
-      }
     }
     return { inicio: this.iso(ini), fim: this.iso(fim) };
   }
