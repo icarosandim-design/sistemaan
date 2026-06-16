@@ -99,10 +99,10 @@
             } @else {
               <div class="tab-wrap">
                 <table class="tab">
-                  <thead><tr><th>Data</th><th>Tipo</th><th>Cliente</th><th>Pet</th><th class="r">Valor da venda</th><th class="r">Custo receitas</th><th>Origem</th></tr></thead>
+                  <thead><tr><th>Data</th><th>Tipo</th><th>Cliente</th><th>Pet</th><th>Raça</th><th class="r">Valor da venda</th><th class="r">Custo receitas</th><th>Origem</th></tr></thead>
                   <tbody>
                     @for (l of v.linhas; track $index) {
-                      <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.tipo }}</td><td>{{ l.cliente }}</td><td>{{ l.pet || '—' }}</td>
+                      <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.tipo }}</td><td>{{ l.cliente }}</td><td>{{ l.pet || '—' }}</td><td>{{ l.raca || '—' }}</td>
                       <td class="r">{{ l.valor != null ? 'R$ ' + num(l.valor) : '—' }}</td><td class="r">R$ {{ num(l.custo) }}</td><td>{{ l.origem || '—' }}</td></tr>
                     }
                   </tbody>

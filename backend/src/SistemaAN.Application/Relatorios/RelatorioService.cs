@@ -28,7 +28,7 @@ public sealed class RelatorioService : IRelatorioService
 
     // ----- Modelos internos de carregamento -----
     private sealed record VendaInfo(
-        DateOnly Data, string Tipo, string Cliente, long ClienteId, string? Pet,
+        DateOnly Data, string Tipo, string Cliente, long ClienteId, string? Pet, string? Raca,
         string Receitas, decimal Kg, string Status, string? Origem, string? Cidade, string? Bairro, string? Observacoes,
         decimal? Valor, decimal Custo);
 
@@ -62,6 +62,7 @@ public sealed class RelatorioService : IRelatorioService
                 e.ObservacoesInternas,
                 Pets = e.Pets.Select(p => new
                 {
+                    p.PetId,
                     p.PetNome,
                     p.QuantidadeTotalGramas,
                     Itens = p.Itens.Select(i => new
@@ -89,6 +90,9 @@ public sealed class RelatorioService : IRelatorioService
 
         var custoPorKgReceita = await CarregarCustoReceitasCasaAsync(ct);
 
+        var petRacas = await _db.Pets.Select(p => new { p.Id, p.Raca }).ToListAsync(ct);
+        var mapaRaca = petRacas.ToDictionary(p => p.Id, p => p.Raca);
+
         var lista = new List<VendaInfo>(entregas.Count);
         foreach (var e in entregas)
         {
@@ -99,6 +103,11 @@ public sealed class RelatorioService : IRelatorioService
 
             var kg = e.Pets.Sum(p => p.QuantidadeTotalGramas) / 1000m;
             var pets = string.Join(", ", e.Pets.Select(p => p.PetNome).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct());
+            var racas = string.Join(", ", e.Pets
+                .Where(p => p.PetId != null)
+                .Select(p => mapaRaca.TryGetValue(p.PetId!.Value, out var rc) ? rc : null)
+                .Where(rc => !string.IsNullOrWhiteSpace(rc))
+                .Distinct());
             var receitas = string.Join(", ", e.Pets.SelectMany(p => p.Itens).Select(i => i.ReceitaNome).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct());
 
             // Custo somado das receitas de todos os cães da entrega (mesma fórmula da Receita da Casa).
@@ -134,6 +143,7 @@ public sealed class RelatorioService : IRelatorioService
             lista.Add(new VendaInfo(
                 e.DataPrevista, tipo, e.ClienteNome, e.ClienteId,
                 string.IsNullOrWhiteSpace(pets) ? null : pets,
+                string.IsNullOrWhiteSpace(racas) ? null : racas,
                 receitas, kg, e.Status.ToString(), cli?.OrigemVenda, e.Cidade, e.Bairro, e.ObservacoesInternas,
                 valor, Round(custo)));
         }
@@ -416,7 +426,7 @@ public sealed class RelatorioService : IRelatorioService
 
         var ordenadas = vendas.OrderByDescending(v => v.Data).ToList();
         var (pagina, tam, pagic) = Paginar(ordenadas, f);
-        var linhas = pagic.Select(v => new VendaLinhaDto(v.Data, v.Tipo, v.Cliente, v.Pet, v.Valor, v.Custo, v.Origem)).ToList();
+        var linhas = pagic.Select(v => new VendaLinhaDto(v.Data, v.Tipo, v.Cliente, v.Pet, v.Raca, v.Valor, v.Custo, v.Origem)).ToList();
 
         return new RelatorioVendasDto(new RelatorioPeriodo(inicio, fim), resumo, linhas, ordenadas.Count, pagina, tam);
     }

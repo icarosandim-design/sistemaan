@@ -77,6 +77,7 @@ export interface VendaLinha {
   tipo: string;
   cliente: string;
   pet: string | null;
+  raca: string | null;
   valor: number | null;
   custo: number;
   origem: string | null;

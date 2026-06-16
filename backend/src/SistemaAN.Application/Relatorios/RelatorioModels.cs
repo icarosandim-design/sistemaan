@@ -61,6 +61,7 @@ public sealed record VendaLinhaDto(
     string Tipo,
     string Cliente,
     string? Pet,
+    string? Raca,
     decimal? Valor,
     decimal Custo,
     string? Origem);
