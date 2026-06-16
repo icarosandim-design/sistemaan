@@ -11,18 +11,18 @@
         <mat-icon class="caret">expand_more</mat-icon>
       </button>
       <mat-menu #menuVenda="matMenu">
-        <a mat-menu-item routerLink="/clientes">
+        <button mat-menu-item routerLink="/clientes">
           <mat-icon>person_add</mat-icon>
           <span>Nova assinatura PF</span>
-        </a>
+        </button>
         <button mat-menu-item (click)="abrirVendaAvulsa()">
           <mat-icon>sell</mat-icon>
           <span>Venda avulsa PF</span>
         </button>
-        <a mat-menu-item routerLink="/clientes-pj">
+        <button mat-menu-item routerLink="/clientes-pj">
           <mat-icon>store</mat-icon>
           <span>Pedido PJ</span>
-        </a>
+        </button>
       </mat-menu>
     </div>
   </header>
