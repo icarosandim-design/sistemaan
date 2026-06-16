@@ -28,7 +28,7 @@ public sealed class RelatorioService : IRelatorioService
     // ----- Modelos internos de carregamento -----
     private sealed record VendaInfo(
         DateOnly Data, string Tipo, string Cliente, long ClienteId, string? Pet,
-        string Receitas, decimal Kg, string Status, string? Origem, string? Cidade, string? Bairro);
+        string Receitas, decimal Kg, string Status, string? Origem, string? Cidade, string? Bairro, string? Observacoes);
 
     private sealed record ConsumoInfo(
         DateOnly Data, long IngredienteId, string Ingrediente, decimal Coeficiente,
@@ -57,6 +57,7 @@ public sealed class RelatorioService : IRelatorioService
                 e.ClienteNome,
                 e.Bairro,
                 e.Cidade,
+                e.ObservacoesInternas,
                 Pets = e.Pets.Select(p => new
                 {
                     p.PetNome,
@@ -86,7 +87,7 @@ public sealed class RelatorioService : IRelatorioService
             lista.Add(new VendaInfo(
                 e.DataPrevista, tipo, e.ClienteNome, e.ClienteId,
                 string.IsNullOrWhiteSpace(pets) ? null : pets,
-                receitas, kg, e.Status.ToString(), cli?.OrigemVenda, e.Cidade, e.Bairro));
+                receitas, kg, e.Status.ToString(), cli?.OrigemVenda, e.Cidade, e.Bairro, e.ObservacoesInternas));
         }
 
         return lista;
@@ -250,6 +251,27 @@ public sealed class RelatorioService : IRelatorioService
             }
         }
 
+        // ----- Ticket médio por tipo (apenas onde há valor real) -----
+        var valoresAssinatura = await _db.Clientes
+            .Where(c => c.Ativo && c.TipoCliente == TipoCliente.Assinante && c.ValorRecorrenteMensal > 0)
+            .Select(c => c.ValorRecorrenteMensal)
+            .ToListAsync(ct);
+        decimal? ticketAssinatura = valoresAssinatura.Count > 0 ? valoresAssinatura.Average() : null;
+
+        var valoresAvulsa = vendas
+            .Where(v => v.Tipo == TipoAvulsa)
+            .Select(v => ParseValorAvulsa(v.Observacoes))
+            .Where(x => x is > 0m)
+            .Select(x => x!.Value)
+            .ToList();
+        decimal? ticketAvulsa = valoresAvulsa.Count > 0 ? valoresAvulsa.Average() : null;
+
+        var valoresPj = await _db.Pedidos
+            .Where(p => p.DataPedido >= inicio && p.DataPedido <= fim && p.ValorTotal != null && p.ValorTotal > 0)
+            .Select(p => p.ValorTotal!.Value)
+            .ToListAsync(ct);
+        decimal? ticketPj = valoresPj.Count > 0 ? valoresPj.Average() : null;
+
         // ----- Cards -----
         var kgPeriodo = vendas.Sum(v => v.Kg);
         var difCru = consumos.Sum(c => c.RealCru - c.PlanejadoCru) / 1000m;
@@ -262,7 +284,9 @@ public sealed class RelatorioService : IRelatorioService
         {
             new("kg_vendidos", "Kg vendidos no período", FmtKg(kgPeriodo), null, false, false),
             new("vendas", "Vendas no período", vendas.Count.ToString(), "entregas (exceto canceladas)", false, false),
-            new("ticket_medio", "Ticket médio", "—", "Depende de valor por venda (futuro)", false, true),
+            new("ticket_assinatura", "Ticket médio assinatura", ticketAssinatura is { } ta ? FmtMoeda(ta) : "—", "R$/mês por assinante", false, ticketAssinatura is null),
+            new("ticket_avulsa", "Ticket médio avulsa", ticketAvulsa is { } tav ? FmtMoeda(tav) : "—", "por venda (quando informado)", false, ticketAvulsa is null),
+            new("ticket_pj", "Ticket médio PJ", ticketPj is { } tp ? FmtMoeda(tp) : "—", ticketPj is null ? "Valor do pedido ainda não registrado" : "por pedido", false, ticketPj is null),
             new("receita_recorrente", "Receita recorrente ativa", FmtMoeda(receitaRecorrente), "por mês", false, false),
             new("cancelamentos", "Cancelamentos", cancelamentos.Count.ToString(), null, false, false),
             new("receita_perdida", "Receita perdida (cancelamentos)", FmtMoeda(cancelamentos.Sum(c => c.ValorMensalPerdido)), "por mês", false, false),
@@ -598,6 +622,26 @@ public sealed class RelatorioService : IRelatorioService
         var pagina = f.Pagina > 0 ? f.Pagina : 1;
         var itens = fonte.Skip((pagina - 1) * tamanho).Take(tamanho).ToList();
         return (pagina, tamanho, itens);
+    }
+
+    /// <summary>Extrai o valor da venda avulsa gravado como texto nas observações ("Valor: R$ 1.234,56").</summary>
+    private static decimal? ParseValorAvulsa(string? observacoes)
+    {
+        if (string.IsNullOrWhiteSpace(observacoes))
+        {
+            return null;
+        }
+
+        var m = System.Text.RegularExpressions.Regex.Match(observacoes, @"Valor:\s*R\$\s*([\d\.]*\d,\d{2})");
+        if (!m.Success)
+        {
+            return null;
+        }
+
+        var bruto = m.Groups[1].Value.Replace(".", string.Empty).Replace(",", ".");
+        return decimal.TryParse(bruto, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v)
+            ? v
+            : null;
     }
 
     private static decimal Round(decimal v) => Math.Round(v, 2, MidpointRounding.AwayFromZero);
