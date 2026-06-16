@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,8 +8,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { EstoqueService } from '../estoque/estoque.service';
-import { OpcaoSimples } from '../estoque/estoque.model';
+import { ProdutosService } from '../produtos/produtos.service';
+import { Produto } from '../produtos/produtos.model';
 import { ClientesService } from '../clientes/clientes.service';
 import { Cliente, FORMAS_PAGAMENTO, SalvarClienteRequest } from '../clientes/clientes.model';
 import { ClienteDialogComponent } from '../clientes/cliente-dialog.component';
@@ -25,9 +26,9 @@ function msgErro(e: unknown): string {
 }
 
 interface LinhaItem {
-  receitaId: number | null;
-  tamanhoPacoteId: number | null;
+  produtoId: number | null;
   quantidade: number | null;
+  precoUnitario: number | null;
   observacao: string | null;
 }
 
@@ -35,6 +36,7 @@ interface LinhaItem {
   selector: 'app-venda-avulsa-dialog',
   standalone: true,
   imports: [
+    CurrencyPipe,
     FormsModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -82,28 +84,25 @@ interface LinhaItem {
       </div>
 
       <!-- Itens -->
-      <h3 class="sec">Itens (Receita da Casa)</h3>
+      <h3 class="sec">Itens (Produto)</h3>
       @for (l of itens; track $index) {
         <div class="linha-item">
           <mat-form-field appearance="outline" class="f-receita">
-            <mat-label>Receita</mat-label>
-            <mat-select [(ngModel)]="l.receitaId">
-              @for (r of receitas(); track r.id) {
-                <mat-option [value]="r.id">{{ r.nome }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="outline" class="f-tam">
-            <mat-label>Tamanho</mat-label>
-            <mat-select [(ngModel)]="l.tamanhoPacoteId">
-              @for (t of tamanhos(); track t.id) {
-                <mat-option [value]="t.id">{{ t.nome }}</mat-option>
+            <mat-label>Produto</mat-label>
+            <mat-select [(ngModel)]="l.produtoId" (selectionChange)="aoEscolherProduto(l)">
+              @for (p of produtos(); track p.id) {
+                <mat-option [value]="p.id">{{ p.nome }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" class="f-qtd">
             <mat-label>Qtd</mat-label>
             <input matInput type="number" min="1" [(ngModel)]="l.quantidade" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="f-tam">
+            <mat-label>Preço un.</mat-label>
+            <input matInput type="number" min="0" step="0.01" [(ngModel)]="l.precoUnitario" />
+            <span matTextPrefix>R$&nbsp;</span>
           </mat-form-field>
           <button mat-icon-button type="button" (click)="removerLinha($index)" matTooltip="Remover">
             <mat-icon>delete</mat-icon>
@@ -113,16 +112,13 @@ interface LinhaItem {
       <button mat-button type="button" class="add" (click)="adicionarLinha()">
         <mat-icon>add</mat-icon> Adicionar item
       </button>
+      <p class="total">Total da venda: <strong>{{ totalVenda() | currency: 'BRL' }}</strong></p>
 
       <!-- Entrega / pagamento -->
       <div class="linha-grid">
         <mat-form-field appearance="outline">
           <mat-label>Data de entrega</mat-label>
           <input matInput type="date" [(ngModel)]="dataEntrega" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Valor (R$)</mat-label>
-          <input matInput type="number" min="0" step="0.01" [(ngModel)]="valor" />
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Forma de pagamento</mat-label>
@@ -174,7 +170,7 @@ interface LinhaItem {
 export class VendaAvulsaDialogComponent implements OnInit {
   private readonly clientesService = inject(ClientesService);
   private readonly petService = inject(PetService);
-  private readonly estoque = inject(EstoqueService);
+  private readonly produtosService = inject(ProdutosService);
   private readonly service = inject(VendaAvulsaService);
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
@@ -182,8 +178,7 @@ export class VendaAvulsaDialogComponent implements OnInit {
 
   readonly clientes = signal<Cliente[]>([]);
   readonly pets = signal<Pet[]>([]);
-  readonly receitas = signal<OpcaoSimples[]>([]);
-  readonly tamanhos = signal<OpcaoSimples[]>([]);
+  readonly produtos = signal<Produto[]>([]);
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
   readonly formas = FORMAS_PAGAMENTO;
@@ -191,15 +186,25 @@ export class VendaAvulsaDialogComponent implements OnInit {
   clienteId: number | null = null;
   petId: number | null = null;
   dataEntrega = '';
-  valor: number | null = null;
   formaPagamento: string | null = null;
   observacoes = '';
-  itens: LinhaItem[] = [{ receitaId: null, tamanhoPacoteId: null, quantidade: null, observacao: null }];
+  itens: LinhaItem[] = [{ produtoId: null, quantidade: null, precoUnitario: null, observacao: null }];
 
   ngOnInit(): void {
     this.clientesService.listar().subscribe((cs) => this.clientes.set(cs.filter((c) => c.ativo)));
-    this.estoque.listarReceitasCasa().subscribe((r) => this.receitas.set(r));
-    this.estoque.listarTamanhos().subscribe((t) => this.tamanhos.set(t));
+    // Venda avulsa PF entrega produtos de Receita da Casa nesta fase.
+    this.produtosService.listar(false, 'ReceitaDaCasa').subscribe((ps) => this.produtos.set(ps));
+  }
+
+  aoEscolherProduto(l: LinhaItem): void {
+    const p = this.produtos().find((x) => x.id === l.produtoId);
+    if (p && (l.precoUnitario === null || l.precoUnitario === undefined)) {
+      l.precoUnitario = p.precoVendaAvulsaPF;
+    }
+  }
+
+  totalVenda(): number {
+    return this.itens.reduce((s, l) => s + (l.quantidade ?? 0) * (l.precoUnitario ?? 0), 0);
   }
 
   aoTrocarCliente(): void {
@@ -250,7 +255,7 @@ export class VendaAvulsaDialogComponent implements OnInit {
   }
 
   adicionarLinha(): void {
-    this.itens = [...this.itens, { receitaId: null, tamanhoPacoteId: null, quantidade: null, observacao: null }];
+    this.itens = [...this.itens, { produtoId: null, quantidade: null, precoUnitario: null, observacao: null }];
   }
 
   removerLinha(i: number): void {
@@ -275,10 +280,10 @@ export class VendaAvulsaDialogComponent implements OnInit {
       return;
     }
     const itens = this.itens
-      .filter((l) => l.receitaId && l.tamanhoPacoteId && (l.quantidade ?? 0) > 0)
-      .map((l) => ({ receitaId: l.receitaId!, tamanhoPacoteId: l.tamanhoPacoteId!, quantidade: l.quantidade!, observacao: l.observacao }));
+      .filter((l) => l.produtoId && (l.quantidade ?? 0) > 0)
+      .map((l) => ({ produtoId: l.produtoId!, quantidade: l.quantidade!, precoUnitario: l.precoUnitario ?? null, observacao: l.observacao }));
     if (!itens.length) {
-      this.erro.set('Inclua ao menos um item (receita + tamanho + quantidade).');
+      this.erro.set('Inclua ao menos um item (produto + quantidade).');
       return;
     }
 
@@ -287,7 +292,6 @@ export class VendaAvulsaDialogComponent implements OnInit {
       petId: this.petId,
       dataEntrega: this.dataEntrega,
       observacoes: this.observacoes.trim() || null,
-      valor: this.valor ?? null,
       formaPagamento: this.formaPagamento,
       itens,
     };

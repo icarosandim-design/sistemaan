@@ -5,23 +5,21 @@
     <mat-form-field appearance="outline"><mat-label>Data de entrega *</mat-label><input matInput type="date" [(ngModel)]="dataEntrega" /></mat-form-field>
   </div>
 
-  <h3 class="secao">Itens (produto acabado da Casa)</h3>
+  <h3 class="secao">Itens (Produto da Casa)</h3>
   <div class="itens">
-    <div class="ihead"><span>Receita da Casa</span><span>Tamanho</span><span class="t-r">Pacotes</span><span>Observação</span><span></span></div>
+    <div class="ihead"><span>Produto</span><span class="t-r">Pacotes</span><span class="t-r">Preço un.</span><span>Observação</span><span></span></div>
     @for (l of itens; track $index) {
       <div class="irow">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-select [(ngModel)]="l.receitaId" placeholder="Receita">
-            @for (r of receitas(); track r.id) { <mat-option [value]="r.id">{{ r.nome }}</mat-option> }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-select [(ngModel)]="l.tamanhoPacoteId" placeholder="Tamanho">
-            @for (t of tamanhos(); track t.id) { <mat-option [value]="t.id">{{ t.nome }}</mat-option> }
+          <mat-select [(ngModel)]="l.produtoId" (selectionChange)="aoEscolherProduto(l)" placeholder="Produto">
+            @for (p of produtos(); track p.id) { <mat-option [value]="p.id">{{ p.nome }}</mat-option> }
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qtd">
           <input matInput type="number" min="1" [(ngModel)]="l.quantidade" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qtd">
+          <input matInput type="number" min="0" step="0.01" [(ngModel)]="l.precoUnitario" />
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <input matInput [(ngModel)]="l.observacao" placeholder="opcional" />
@@ -30,6 +28,7 @@
       </div>
     }
     <button mat-stroked-button class="add" (click)="adicionarLinha()"><mat-icon>add</mat-icon> Adicionar item</button>
+    <p class="total-pedido">Valor total do pedido: <strong>{{ totalPedido() | currency: 'BRL' }}</strong></p>
   </div>
 
   @if (situacao().length) {

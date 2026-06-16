@@ -222,6 +222,19 @@ export interface RegistrarCompraRequest {
   frete?: number | null;
   observacoes?: string | null;
   itens: CompraItemRequest[];
+  // Cabeçalho fiscal/financeiro da nota (opcional)
+  serieNotaFiscal?: string | null;
+  chaveAcessoNotaFiscal?: string | null;
+  dataEmissaoNotaFiscal?: string | null;
+  dataVencimentoPagamento?: string | null;
+  formaPagamento?: string | null;
+  condicaoPagamento?: string | null;
+  linhaDigitavelBoleto?: string | null;
+  codigoBarrasBoleto?: string | null;
+  bancoEmissorBoleto?: string | null;
+  numeroDocumento?: string | null;
+  desconto?: number | null;
+  acrescimo?: number | null;
 }
 
 export interface CompraResultado {
@@ -229,6 +242,7 @@ export interface CompraResultado {
   valorProdutos: number;
   frete: number;
   totalPago: number;
+  notaCompraId: number | null;
   itens: ItemEstoque[];
 }
 

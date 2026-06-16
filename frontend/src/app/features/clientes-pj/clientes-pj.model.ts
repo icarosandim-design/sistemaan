@@ -66,6 +66,9 @@ export interface PedidoItem {
   pesoGramas: number;
   quantidade: number;
   observacao: string | null;
+  produtoId: number | null;
+  precoUnitario: number | null;
+  valorTotalItem: number | null;
 }
 
 export interface Pedido {
@@ -79,6 +82,7 @@ export interface Pedido {
   entregaId: number | null;
   entregaStatus: string | null;
   totalPacotes: number;
+  valorTotal: number | null;
   itens: PedidoItem[];
 }
 
@@ -99,6 +103,8 @@ export interface SalvarPedidoItemRequest {
   tamanhoPacoteId: number;
   quantidade: number;
   observacao?: string | null;
+  produtoId?: number | null;
+  precoUnitario?: number | null;
 }
 
 export interface SalvarPedidoRequest {

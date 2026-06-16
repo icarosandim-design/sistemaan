@@ -69,6 +69,35 @@ interface LinhaCompra {
         </mat-form-field>
       </div>
 
+      <!-- Cabeçalho fiscal / financeiro (opcional) — base para a futura Conta a Pagar -->
+      <h3 class="sec">Dados da nota / pagamento (opcional)</h3>
+      <div class="grade-cab">
+        <mat-form-field appearance="outline">
+          <mat-label>Série da NF</mat-label>
+          <input matInput [(ngModel)]="serieNotaFiscal" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Emissão da NF</mat-label>
+          <input matInput type="date" [(ngModel)]="dataEmissaoNotaFiscal" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Vencimento do pagamento</mat-label>
+          <input matInput type="date" [(ngModel)]="dataVencimentoPagamento" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Forma de pagamento</mat-label>
+          <input matInput [(ngModel)]="formaPagamento" placeholder="Boleto, Pix, ..." />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Condição de pagamento</mat-label>
+          <input matInput [(ngModel)]="condicaoPagamento" placeholder="Ex.: 30 dias" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Linha digitável (boleto)</mat-label>
+          <input matInput [(ngModel)]="linhaDigitavelBoleto" />
+        </mat-form-field>
+      </div>
+
       <!-- Itens da nota -->
       <h3 class="sec">Itens</h3>
       @for (l of itens; track $index) {
@@ -146,6 +175,12 @@ export class CompraDialogComponent implements OnInit {
   dataEntrada = this.hoje;
   frete: number | null = null;
   observacoes = '';
+  serieNotaFiscal = '';
+  dataEmissaoNotaFiscal = '';
+  dataVencimentoPagamento = '';
+  formaPagamento = '';
+  condicaoPagamento = '';
+  linhaDigitavelBoleto = '';
   itens: LinhaCompra[] = [{ itemEstoqueId: null, quantidade: null, valorUnitario: null }];
 
   ngOnInit(): void {
@@ -200,6 +235,12 @@ export class CompraDialogComponent implements OnInit {
       frete: this.frete ?? null,
       observacoes: this.observacoes.trim() || null,
       itens,
+      serieNotaFiscal: this.serieNotaFiscal.trim() || null,
+      dataEmissaoNotaFiscal: this.dataEmissaoNotaFiscal || null,
+      dataVencimentoPagamento: this.dataVencimentoPagamento || null,
+      formaPagamento: this.formaPagamento.trim() || null,
+      condicaoPagamento: this.condicaoPagamento.trim() || null,
+      linhaDigitavelBoleto: this.linhaDigitavelBoleto.trim() || null,
     };
     this.salvando.set(true);
     this.service.registrarCompra(req).subscribe({

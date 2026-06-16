@@ -1,4 +1,5 @@
 import { Component, Inject, OnInit, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,8 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { EstoqueService } from '../estoque/estoque.service';
-import { OpcaoSimples } from '../estoque/estoque.model';
+import { ProdutosService } from '../produtos/produtos.service';
+import { Produto } from '../produtos/produtos.model';
 import { SituacaoEstoqueItem } from '../entregas/entregas.model';
 import { Pedido, SalvarPedidoRequest } from './clientes-pj.model';
 import { ClientesPjService } from './clientes-pj.service';
@@ -19,26 +20,25 @@ function msgErro(e: unknown): string {
 }
 
 interface LinhaItem {
-  receitaId: number | null;
-  tamanhoPacoteId: number | null;
+  produtoId: number | null;
   quantidade: number | null;
+  precoUnitario: number | null;
   observacao: string | null;
 }
 
 @Component({
   selector: 'app-pedido-dialog',
   standalone: true,
-  imports: [FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule],
+  imports: [CurrencyPipe, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule],
   templateUrl: './pedido-dialog.component.html',
   styleUrl: './pedido-dialog.component.scss',
 })
 export class PedidoDialogComponent implements OnInit {
   private readonly service = inject(ClientesPjService);
-  private readonly estoque = inject(EstoqueService);
+  private readonly produtosService = inject(ProdutosService);
 
   readonly edicao: boolean;
-  readonly receitas = signal<OpcaoSimples[]>([]);
-  readonly tamanhos = signal<OpcaoSimples[]>([]);
+  readonly produtos = signal<Produto[]>([]);
   readonly salvando = signal(false);
   readonly erro = signal<string | null>(null);
   readonly situacao = signal<SituacaoEstoqueItem[]>([]);
@@ -46,7 +46,7 @@ export class PedidoDialogComponent implements OnInit {
   dataPedido = '';
   dataEntrega = '';
   observacoes = '';
-  itens: LinhaItem[] = [{ receitaId: null, tamanhoPacoteId: null, quantidade: null, observacao: null }];
+  itens: LinhaItem[] = [{ produtoId: null, quantidade: null, precoUnitario: null, observacao: null }];
 
   constructor(
     readonly ref: MatDialogRef<PedidoDialogComponent, Pedido>,
@@ -59,7 +59,7 @@ export class PedidoDialogComponent implements OnInit {
       this.dataEntrega = data.pedido.dataEntrega;
       this.observacoes = data.pedido.observacoes ?? '';
       this.itens = data.pedido.itens.map((i) => ({
-        receitaId: i.receitaId, tamanhoPacoteId: i.tamanhoPacoteId, quantidade: i.quantidade, observacao: i.observacao,
+        produtoId: i.produtoId, quantidade: i.quantidade, precoUnitario: i.precoUnitario, observacao: i.observacao,
       }));
       if (!this.itens.length) this.adicionarLinha();
     } else {
@@ -68,15 +68,25 @@ export class PedidoDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.estoque.listarReceitasCasa().subscribe((r) => this.receitas.set(r));
-    this.estoque.listarTamanhos().subscribe((t) => this.tamanhos.set(t));
+    this.produtosService.listar(false, 'ReceitaDaCasa').subscribe((ps) => this.produtos.set(ps));
     if (this.data.pedido) {
       this.service.situacaoPedido(this.data.pedido.id).subscribe({ next: (s) => this.situacao.set(s), error: () => {} });
     }
   }
 
+  aoEscolherProduto(l: LinhaItem): void {
+    const p = this.produtos().find((x) => x.id === l.produtoId);
+    if (p && (l.precoUnitario === null || l.precoUnitario === undefined)) {
+      l.precoUnitario = p.precoVendaPJ;
+    }
+  }
+
+  totalPedido(): number {
+    return this.itens.reduce((s, l) => s + (l.quantidade ?? 0) * (l.precoUnitario ?? 0), 0);
+  }
+
   adicionarLinha(): void {
-    this.itens = [...this.itens, { receitaId: null, tamanhoPacoteId: null, quantidade: null, observacao: null }];
+    this.itens = [...this.itens, { produtoId: null, quantidade: null, precoUnitario: null, observacao: null }];
   }
 
   removerLinha(i: number): void {
@@ -88,9 +98,9 @@ export class PedidoDialogComponent implements OnInit {
     this.erro.set(null);
     if (!this.dataEntrega) { this.erro.set('Informe a data de entrega.'); return; }
     const itens = this.itens
-      .filter((l) => l.receitaId && l.tamanhoPacoteId && (l.quantidade ?? 0) > 0)
-      .map((l) => ({ receitaId: l.receitaId!, tamanhoPacoteId: l.tamanhoPacoteId!, quantidade: l.quantidade!, observacao: l.observacao }));
-    if (!itens.length) { this.erro.set('Inclua ao menos um item (receita + tamanho + quantidade).'); return; }
+      .filter((l) => l.produtoId && (l.quantidade ?? 0) > 0)
+      .map((l) => ({ receitaId: 0, tamanhoPacoteId: 0, quantidade: l.quantidade!, observacao: l.observacao, produtoId: l.produtoId!, precoUnitario: l.precoUnitario ?? null }));
+    if (!itens.length) { this.erro.set('Inclua ao menos um item (produto + quantidade).'); return; }
 
     const req: SalvarPedidoRequest = {
       clienteId: this.data.clienteId,

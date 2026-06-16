@@ -31,6 +31,7 @@ import { RotaImpressaoComponent } from './features/rotas/rota-impressao.componen
 import { MotivosCancelamentoComponent } from './features/motivos-cancelamento/motivos-cancelamento.component';
 import { RacasComponent } from './features/racas/racas.component';
 import { DoencasComponent } from './features/doencas/doencas.component';
+import { ProdutosComponent } from './features/produtos/produtos.component';
 import { RelatoriosDashboardComponent } from './features/relatorios/dashboard.component';
 import { RelatoriosComponent } from './features/relatorios/relatorios.component';
 
@@ -58,6 +59,7 @@ export const routes: Routes = [
       { path: 'cadastros/categorias', component: CategoriasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/origens-venda', component: OrigensVendaComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/motivos-cancelamento', component: MotivosCancelamentoComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'cadastros/produtos', component: ProdutosComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/racas', component: RacasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/doencas', component: DoencasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/usuarios', component: UsuariosComponent, data: { papeis: SO_ADMIN } },

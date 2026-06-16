@@ -99,6 +99,7 @@ export class MainLayoutComponent {
       papeis: ADMIN_OPERADOR,
       filhos: [
         { label: 'Receitas da Casa', icone: 'menu_book', rota: '/receitas', papeis: ADMIN_OPERADOR },
+        { label: 'Produtos', icone: 'sell', rota: '/cadastros/produtos', papeis: ADMIN_OPERADOR },
         { label: 'Tamanhos de Pacote', icone: 'inventory_2', rota: '/tamanhos-pacote', papeis: ADMIN_OPERADOR },
         { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes', papeis: ADMIN_OPERADOR },
         { label: 'Raças', icone: 'pets', rota: '/cadastros/racas', papeis: ADMIN_OPERADOR },
