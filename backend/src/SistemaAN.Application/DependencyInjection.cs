@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<Pedidos.IPedidoService, Pedidos.PedidoService>();
         services.AddScoped<Rotas.IRotaService, Rotas.RotaService>();
         services.AddScoped<Central.ICentralService, Central.CentralService>();
+        services.AddScoped<Vendas.IVendaAvulsaService, Vendas.VendaAvulsaService>();
         return services;
     }
 }

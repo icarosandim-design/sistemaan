@@ -6,10 +6,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog } from '@angular/material/dialog';
 import { CentralResumo, Kpi } from './central.model';
 import { CentralService } from './central.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { PERFIL } from '../../core/auth/perfis';
+import { VendaAvulsaDialogComponent } from '../vendas/venda-avulsa-dialog.component';
 
 @Component({
   selector: 'app-central-operacional',
@@ -21,6 +23,7 @@ import { PERFIL } from '../../core/auth/perfis';
 export class CentralOperacionalComponent implements OnInit {
   private readonly service = inject(CentralService);
   private readonly auth = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
 
   readonly resumo = signal<CentralResumo | null>(null);
   readonly carregando = signal(true);
@@ -36,6 +39,16 @@ export class CentralOperacionalComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregar();
+  }
+
+  /** Abre o fluxo de Venda avulsa PF; ao concluir, recarrega o resumo. */
+  abrirVendaAvulsa(): void {
+    const ref = this.dialog.open(VendaAvulsaDialogComponent, { autoFocus: false, maxWidth: '94vw' });
+    ref.afterClosed().subscribe((r) => {
+      if (r) {
+        this.carregar();
+      }
+    });
   }
 
   carregar(): void {

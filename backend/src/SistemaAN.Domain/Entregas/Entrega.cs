@@ -88,6 +88,10 @@ public class Entrega : AuditableEntity
 
     public void MarcarEstoqueBaixado() => EstoqueBaixado = true;
 
+    /// <summary>Define a observação interna da entrega (ex.: dados da venda avulsa).</summary>
+    public void DefinirObservacoesInternas(string? texto)
+        => ObservacoesInternas = string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
+
     public void RegistrarHistorico(string usuario, string evento, EntregaStatus? de = null, EntregaStatus? para = null)
         => _historico.Add(EntregaHistorico.Criar(usuario, evento, de, para));
 
