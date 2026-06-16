@@ -4,6 +4,9 @@ public interface IItemEstoqueService
 {
     Task<IReadOnlyList<ItemEstoqueDto>> ListarAsync(bool apenasAbaixoMinimo = false, CancellationToken cancellationToken = default);
 
+    /// <summary>Pacotes de Receita Personalizada já prontos (reservados) e ainda não entregues.</summary>
+    Task<IReadOnlyList<PersonalizadaProntaDto>> ListarPersonalizadasProntasAsync(CancellationToken cancellationToken = default);
+
     Task<ItemEstoqueDto> ObterAsync(long id, CancellationToken cancellationToken = default);
 
     Task<ItemEstoqueDto> CriarInsumoAsync(CriarItemInsumoRequest request, CancellationToken cancellationToken = default);

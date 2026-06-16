@@ -17,6 +17,20 @@
 .page-title h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
 .subtitulo { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--an-texto-secundario); }
 
+.abas { margin-top: 0.25rem; }
+.abas .filtros { margin-top: 1rem; }
+
+.dica-aba {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 1rem 0 0.25rem;
+  font-size: 0.82rem;
+  color: var(--an-texto-secundario);
+
+  .mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--an-cta); }
+}
+
 .btn-cta {
   background: var(--an-cta);
   color: #fff;

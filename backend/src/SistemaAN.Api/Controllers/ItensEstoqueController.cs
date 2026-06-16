@@ -18,6 +18,11 @@ public sealed class ItensEstoqueController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<ItemEstoqueDto>>> Listar([FromQuery] bool abaixoMinimo, CancellationToken ct)
         => Ok(await _service.ListarAsync(abaixoMinimo, ct));
 
+    /// <summary>Pacotes de Receita Personalizada prontos (reservados) e ainda não entregues.</summary>
+    [HttpGet("personalizadas-prontas")]
+    public async Task<ActionResult<IReadOnlyList<PersonalizadaProntaDto>>> PersonalizadasProntas(CancellationToken ct)
+        => Ok(await _service.ListarPersonalizadasProntasAsync(ct));
+
     /// <summary>Obtém um item de estoque.</summary>
     [HttpGet("{id:long}")]
     public async Task<ActionResult<ItemEstoqueDto>> Obter(long id, CancellationToken ct)

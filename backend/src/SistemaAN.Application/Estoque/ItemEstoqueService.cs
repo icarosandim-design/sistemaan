@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using SistemaAN.Application.Common.Exceptions;
 using SistemaAN.Application.Common.Interfaces;
+using SistemaAN.Domain.Entregas;
 using SistemaAN.Domain.Estoque;
 using SistemaAN.Domain.Receitas;
 
@@ -25,6 +26,45 @@ public sealed class ItemEstoqueService : IItemEstoqueService
             .OrderBy(i => i.Nome)
             .Select(Projecao())
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PersonalizadaProntaDto>> ListarPersonalizadasProntasAsync(CancellationToken cancellationToken = default)
+    {
+        // Entregas ativas (ainda não entregues/canceladas/reagendadas) que reservam pacotes prontos.
+        var ativos = new[]
+        {
+            EntregaStatus.Programada, EntregaStatus.ConfirmadaCliente,
+            EntregaStatus.SaiuParaEntrega, EntregaStatus.NaoEntregue,
+        };
+
+        var entregas = await _db.Entregas
+            .Where(e => ativos.Contains(e.Status))
+            .Include(e => e.Pets).ThenInclude(p => p.Itens)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var lista = new List<PersonalizadaProntaDto>();
+        foreach (var e in entregas)
+        {
+            foreach (var pet in e.Pets)
+            {
+                foreach (var item in pet.Itens.Where(i =>
+                    i.Tipo == TipoReceita.Personalizada
+                    && i.StatusPreparo != StatusPreparoPersonalizada.NaoPronta
+                    && (i.PacotesProntos ?? 0) > 0))
+                {
+                    lista.Add(new PersonalizadaProntaDto(
+                        e.Id, item.ReceitaCodigo, item.ReceitaNome, item.TamanhoPacoteGramas ?? 0,
+                        pet.PetNome, e.ClienteNome, e.DataPrevista, item.PacotesProntos ?? 0, e.Status.ToString()));
+                }
+            }
+        }
+
+        return lista
+            .OrderBy(x => x.DataPrevista)
+            .ThenBy(x => x.ClienteNome)
+            .ThenBy(x => x.ReceitaNome)
+            .ToList();
     }
 
     public async Task<ItemEstoqueDto> ObterAsync(long id, CancellationToken cancellationToken = default)

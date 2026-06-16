@@ -15,6 +15,7 @@ import {
   MovimentacaoEstoque,
   MovimentacaoPagina,
   OpcaoSimples,
+  PersonalizadaPronta,
   RegistrarAjusteRequest,
   RegistrarEntradaRequest,
   RegistrarSaidaRequest,
@@ -50,6 +51,11 @@ export class EstoqueService {
 
   obterItem(id: number): Observable<ItemEstoque> {
     return this.http.get<ItemEstoque>(`${this.api}/estoque/itens/${id}`);
+  }
+
+  /** Pacotes de Receita Personalizada prontos e ainda não entregues. */
+  listarPersonalizadasProntas(): Observable<PersonalizadaPronta[]> {
+    return this.http.get<PersonalizadaPronta[]>(`${this.api}/estoque/itens/personalizadas-prontas`);
   }
 
   criarInsumo(req: CriarItemInsumoRequest): Observable<ItemEstoque> {

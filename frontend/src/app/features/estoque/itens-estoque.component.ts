@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatTableModule } from '@angular/material/table';
@@ -8,9 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { fmtMoeda, fmtQtd, ItemEstoque, rotulo } from './estoque.model';
+import { fmtMoeda, fmtQtd, ItemEstoque, PersonalizadaPronta, rotulo } from './estoque.model';
 import { EstoqueService } from './estoque.service';
 import { ItemEstoqueDialogComponent } from './item-estoque-dialog.component';
 import { ItemEstoqueDetalheComponent } from './item-estoque-detalhe.component';
@@ -19,6 +21,7 @@ import { ItemEstoqueDetalheComponent } from './item-estoque-detalhe.component';
   selector: 'app-itens-estoque',
   standalone: true,
   imports: [
+    NgTemplateOutlet,
     FormsModule,
     MatTableModule,
     MatFormFieldModule,
@@ -27,6 +30,7 @@ import { ItemEstoqueDetalheComponent } from './item-estoque-detalhe.component';
     MatIconModule,
     MatTooltipModule,
     MatProgressBarModule,
+    MatTabsModule,
   ],
   templateUrl: './itens-estoque.component.html',
   styleUrl: './itens-estoque.component.scss',
@@ -36,14 +40,17 @@ export class ItensEstoqueComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack = inject(MatSnackBar);
 
-  readonly displayedColumns = ['nome', 'tipo', 'categoria', 'saldo', 'custo', 'minimo', 'ativo', 'acoes'];
+  /** Colunas das abas de cadastro (Insumos / Produto acabado) — sem a coluna "tipo" (a aba já é o tipo). */
+  readonly colsCadastro = ['nome', 'categoria', 'saldo', 'custo', 'minimo', 'ativo', 'acoes'];
+  readonly colsPersonalizada = ['receita', 'pet', 'cliente', 'tamanho', 'prontos', 'data', 'status'];
   readonly rotulo = rotulo;
   readonly fmtQtd = fmtQtd;
   readonly fmtMoeda = fmtMoeda;
 
   todos: ItemEstoque[] = [];
+  personalizadas: PersonalizadaPronta[] = [];
   carregando = false;
-  filtroTipo = '';
+  abaSelecionada = 0;
   filtroStatus = '';
   filtroAlerta = '';
 
@@ -51,11 +58,18 @@ export class ItensEstoqueComponent implements OnInit {
     this.carregar();
   }
 
-  get lista(): ItemEstoque[] {
-    return this.todos.filter((i) => {
-      if (this.filtroTipo && i.tipo !== this.filtroTipo) {
-        return false;
-      }
+  /** Insumos filtrados por status/alerta. */
+  get insumos(): ItemEstoque[] {
+    return this.filtrar(this.todos.filter((i) => i.tipo === 'Insumo'));
+  }
+
+  /** Produto acabado da casa filtrado por status/alerta. */
+  get produtosAcabados(): ItemEstoque[] {
+    return this.filtrar(this.todos.filter((i) => i.tipo === 'ProdutoAcabadoCasa'));
+  }
+
+  private filtrar(itens: ItemEstoque[]): ItemEstoque[] {
+    return itens.filter((i) => {
       if (this.filtroStatus && (this.filtroStatus === 'ativo') !== i.ativo) {
         return false;
       }
@@ -64,6 +78,10 @@ export class ItensEstoqueComponent implements OnInit {
       }
       return true;
     });
+  }
+
+  get totalPersonalizadasProntas(): number {
+    return this.personalizadas.reduce((s, p) => s + p.pacotesProntos, 0);
   }
 
   get qtdAbaixoMinimo(): number {
@@ -82,6 +100,22 @@ export class ItensEstoqueComponent implements OnInit {
         this.erro('Falha ao carregar itens de estoque.');
       },
     });
+    this.service.listarPersonalizadasProntas().subscribe({
+      next: (xs) => (this.personalizadas = xs),
+      error: () => this.erro('Falha ao carregar personalizadas prontas.'),
+    });
+  }
+
+  fmtPeso(g: number): string {
+    return g >= 1000 ? `${(g / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 3 })} kg` : `${g} g`;
+  }
+
+  fmtData(iso: string): string {
+    if (!iso) {
+      return '—';
+    }
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
   }
 
   novo(): void {

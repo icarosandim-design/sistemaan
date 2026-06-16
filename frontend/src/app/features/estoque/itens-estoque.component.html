@@ -2,7 +2,7 @@
   <header class="page-head">
     <div class="page-title">
       <h1>Itens de Estoque</h1>
-      <p class="subtitulo">Insumos e produto acabado da casa. Saldo, custo médio e lotes vêm das movimentações.</p>
+      <p class="subtitulo">Três estoques em um: insumos, produto acabado da casa e personalizadas prontas (aguardando entrega).</p>
     </div>
     <button mat-flat-button class="btn-cta" (click)="novo()">
       <mat-icon>add</mat-icon>
@@ -17,15 +17,66 @@
     </div>
   }
 
+  <mat-tab-group [(selectedIndex)]="abaSelecionada" class="abas" animationDuration="0ms">
+    <mat-tab label="Insumos ({{ insumos.length }})">
+      <ng-container *ngTemplateOutlet="tabelaCadastro; context: { $implicit: insumos, vazio: 'Nenhum insumo cadastrado.' }"></ng-container>
+    </mat-tab>
+
+    <mat-tab label="Produto acabado · Casa ({{ produtosAcabados.length }})">
+      <ng-container *ngTemplateOutlet="tabelaCadastro; context: { $implicit: produtosAcabados, vazio: 'Nenhum produto acabado cadastrado.' }"></ng-container>
+    </mat-tab>
+
+    <mat-tab label="Personalizadas prontas ({{ totalPersonalizadasProntas }})">
+      <p class="dica-aba">
+        <mat-icon>info</mat-icon>
+        Pacotes de Receita Personalizada já produzidos e reservados, ainda não entregues. Estoque dinâmico (vem das entregas).
+      </p>
+      <div class="tabela-card">
+        @if (carregando) { <mat-progress-bar mode="indeterminate"></mat-progress-bar> }
+        <table mat-table [dataSource]="personalizadas" class="tabela">
+          <ng-container matColumnDef="receita">
+            <th mat-header-cell *matHeaderCellDef>Receita</th>
+            <td mat-cell *matCellDef="let p" class="cel-nome">{{ p.receitaCodigo }} — {{ p.receitaNome }}</td>
+          </ng-container>
+          <ng-container matColumnDef="pet">
+            <th mat-header-cell *matHeaderCellDef>Pet</th>
+            <td mat-cell *matCellDef="let p">{{ p.petNome }}</td>
+          </ng-container>
+          <ng-container matColumnDef="cliente">
+            <th mat-header-cell *matHeaderCellDef>Cliente</th>
+            <td mat-cell *matCellDef="let p" class="cel-sec">{{ p.clienteNome }}</td>
+          </ng-container>
+          <ng-container matColumnDef="tamanho">
+            <th mat-header-cell *matHeaderCellDef class="t-right">Tamanho</th>
+            <td mat-cell *matCellDef="let p" class="t-right cel-sec">{{ fmtPeso(p.pesoGramas) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="prontos">
+            <th mat-header-cell *matHeaderCellDef class="t-right">Prontos</th>
+            <td mat-cell *matCellDef="let p" class="t-right cel-saldo">{{ p.pacotesProntos }} pac.</td>
+          </ng-container>
+          <ng-container matColumnDef="data">
+            <th mat-header-cell *matHeaderCellDef class="t-right">Entrega</th>
+            <td mat-cell *matCellDef="let p" class="t-right cel-sec">{{ fmtData(p.dataPrevista) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef class="t-center">Status</th>
+            <td mat-cell *matCellDef="let p" class="t-center"><span class="chip">{{ p.statusEntrega }}</span></td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="colsPersonalizada; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: colsPersonalizada"></tr>
+          <tr class="sem-dados" *matNoDataRow>
+            <td [attr.colspan]="colsPersonalizada.length">Nenhuma personalizada pronta aguardando entrega.</td>
+          </tr>
+        </table>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</section>
+
+<!-- Tabela reutilizada pelas abas de cadastro (Insumos / Produto acabado) -->
+<ng-template #tabelaCadastro let-itens let-vazio="vazio">
   <div class="filtros">
-    <mat-form-field appearance="outline" class="f-min">
-      <mat-label>Tipo</mat-label>
-      <mat-select [(ngModel)]="filtroTipo">
-        <mat-option value="">Todos</mat-option>
-        <mat-option value="Insumo">Insumo</mat-option>
-        <mat-option value="ProdutoAcabadoCasa">Produto acabado (Casa)</mat-option>
-      </mat-select>
-    </mat-form-field>
     <mat-form-field appearance="outline" class="f-min">
       <mat-label>Status</mat-label>
       <mat-select [(ngModel)]="filtroStatus">
@@ -44,10 +95,8 @@
   </div>
 
   <div class="tabela-card">
-    @if (carregando) {
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    }
-    <table mat-table [dataSource]="lista" class="tabela">
+    @if (carregando) { <mat-progress-bar mode="indeterminate"></mat-progress-bar> }
+    <table mat-table [dataSource]="itens" class="tabela">
       <ng-container matColumnDef="nome">
         <th mat-header-cell *matHeaderCellDef>Item</th>
         <td mat-cell *matCellDef="let i" class="cel-nome">
@@ -55,11 +104,6 @@
           @if (i.ingredienteNome) { <span class="sub">{{ i.ingredienteNome }}</span> }
           @if (i.receitaNome) { <span class="sub">{{ i.receitaNome }} · {{ i.tamanhoPacoteNome }}</span> }
         </td>
-      </ng-container>
-
-      <ng-container matColumnDef="tipo">
-        <th mat-header-cell *matHeaderCellDef>Tipo</th>
-        <td mat-cell *matCellDef="let i" class="cel-sec">{{ rotulo(i.tipo) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="categoria">
@@ -106,12 +150,12 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="linha" (click)="abrirDetalhe(row)"></tr>
+      <tr mat-header-row *matHeaderRowDef="colsCadastro; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: colsCadastro" class="linha" (click)="abrirDetalhe(row)"></tr>
 
       <tr class="sem-dados" *matNoDataRow>
-        <td [attr.colspan]="displayedColumns.length">Nenhum item de estoque encontrado.</td>
+        <td [attr.colspan]="colsCadastro.length">{{ vazio }}</td>
       </tr>
     </table>
   </div>
-</section>
+</ng-template>

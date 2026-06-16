@@ -107,6 +107,19 @@ export interface ItemEstoque {
   abaixoDoMinimo: boolean;
 }
 
+/** "Estoque" dinâmico de Receita Personalizada (pacotes prontos, ainda não entregues). */
+export interface PersonalizadaPronta {
+  entregaId: number;
+  receitaCodigo: string;
+  receitaNome: string;
+  pesoGramas: number;
+  petNome: string;
+  clienteNome: string;
+  dataPrevista: string;
+  pacotesProntos: number;
+  statusEntrega: string;
+}
+
 export interface CriarItemInsumoRequest {
   nome: string;
   categoria: string;

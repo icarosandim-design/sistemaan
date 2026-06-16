@@ -64,6 +64,22 @@ public sealed record ItemEstoqueDto(
     string? Observacoes,
     bool AbaixoDoMinimo);
 
+/// <summary>
+/// "Estoque" dinâmico de Receita Personalizada: pacotes já prontos (reservados)
+/// em entregas ativas que ainda não foram entregues. Não é cadastro — é leitura.
+/// </summary>
+public sealed record PersonalizadaProntaDto(
+    long EntregaId,
+    string ReceitaCodigo,
+    string ReceitaNome,
+    int PesoGramas,
+    string PetNome,
+    string ClienteNome,
+    DateOnly DataPrevista,
+    int PacotesProntos,
+    string StatusEntrega);
+
+
 public sealed record CriarItemInsumoRequest(
     string Nome,
     string Categoria,
