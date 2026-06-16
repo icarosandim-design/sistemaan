@@ -21,6 +21,7 @@ import {
 } from './estoque.model';
 import { EstoqueService } from './estoque.service';
 import { EntradaDialogComponent } from './estoque-operacao-dialogs.component';
+import { CompraDialogComponent } from './compra-dialog.component';
 
 @Component({
   selector: 'app-compras',
@@ -103,6 +104,20 @@ export class ComprasComponent implements OnInit {
     this.categoria = '';
     this.comFrete = '';
     this.carregar();
+  }
+
+  novaCompra(): void {
+    const ref = this.dialog.open(CompraDialogComponent, {
+      width: '720px',
+      maxWidth: '96vw',
+      autoFocus: false,
+    });
+    ref.afterClosed().subscribe((r) => {
+      if (r) {
+        this.snack.open(`Compra registrada: ${r.itensRegistrados} item(ns).`, 'OK', { duration: 3000 });
+        this.carregar();
+      }
+    });
   }
 
   novaEntrada(): void {

@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AtualizarItemEstoqueRequest,
+  CompraResultado,
   CriarItemInsumoRequest,
   CriarItemProdutoAcabadoRequest,
   EntradaCompra,
@@ -17,6 +18,7 @@ import {
   OpcaoSimples,
   PersonalizadaPronta,
   RegistrarAjusteRequest,
+  RegistrarCompraRequest,
   RegistrarEntradaRequest,
   RegistrarSaidaRequest,
   SalvarFornecedorRequest,
@@ -77,6 +79,10 @@ export class EstoqueService {
   // ===== Operações =====
   registrarEntrada(req: RegistrarEntradaRequest): Observable<ItemEstoque> {
     return this.http.post<ItemEstoque>(`${this.api}/estoque/entradas`, req);
+  }
+
+  registrarCompra(req: RegistrarCompraRequest): Observable<CompraResultado> {
+    return this.http.post<CompraResultado>(`${this.api}/estoque/compras`, req);
   }
 
   registrarSaida(req: RegistrarSaidaRequest): Observable<ItemEstoque> {

@@ -4,6 +4,9 @@ public interface IEstoqueMovimentacaoService
 {
     Task<ItemEstoqueDto> RegistrarEntradaAsync(RegistrarEntradaRequest request, string usuario, CancellationToken cancellationToken = default);
 
+    /// <summary>Registra uma compra com vários itens (uma nota) — gera uma entrada por item, em transação.</summary>
+    Task<CompraResultadoDto> RegistrarCompraAsync(RegistrarCompraRequest request, string usuario, CancellationToken cancellationToken = default);
+
     Task<ItemEstoqueDto> RegistrarSaidaAsync(RegistrarSaidaRequest request, string usuario, CancellationToken cancellationToken = default);
 
     Task<ItemEstoqueDto> RegistrarAjusteAsync(RegistrarAjusteRequest request, string usuario, CancellationToken cancellationToken = default);

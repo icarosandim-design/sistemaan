@@ -94,6 +94,107 @@ public sealed class EstoqueMovimentacaoService : IEstoqueMovimentacaoService
         return await _itens.ObterAsync(item.Id, cancellationToken);
     }
 
+    public async Task<CompraResultadoDto> RegistrarCompraAsync(RegistrarCompraRequest request, string usuario, CancellationToken cancellationToken = default)
+    {
+        if (request.Itens is null || request.Itens.Count == 0)
+        {
+            throw new ValidationException(new Dictionary<string, string[]> { ["itens"] = ["Inclua ao menos um item na compra."] });
+        }
+
+        if (request.FornecedorId is long fornId && !await _db.Fornecedores.AnyAsync(x => x.Id == fornId, cancellationToken))
+        {
+            throw new ValidationException(new Dictionary<string, string[]> { ["fornecedorId"] = ["Fornecedor não encontrado."] });
+        }
+
+        var ids = request.Itens.Select(i => i.ItemEstoqueId).Distinct().ToList();
+        var itens = await _db.ItensEstoque.Where(x => ids.Contains(x.Id)).ToDictionaryAsync(x => x.Id, cancellationToken);
+
+        // 1) Validação (sem nenhuma alteração) — se algo estiver errado, nada é tocado.
+        var erros = new Dictionary<string, string[]>();
+        for (var i = 0; i < request.Itens.Count; i++)
+        {
+            var li = request.Itens[i];
+            if (!itens.ContainsKey(li.ItemEstoqueId))
+            {
+                erros[$"itens[{i}].itemEstoqueId"] = ["Item de estoque não encontrado."];
+            }
+            if (li.Quantidade <= 0m)
+            {
+                erros[$"itens[{i}].quantidade"] = ["A quantidade deve ser maior que zero."];
+            }
+            if (!(li.ValorUnitario is decimal vu && vu > 0m) && !(li.ValorTotal is decimal vt && vt > 0m))
+            {
+                erros[$"itens[{i}].valor"] = ["Informe o valor unitário ou o valor total do item."];
+            }
+        }
+        if (erros.Count > 0)
+        {
+            throw new ValidationException(erros);
+        }
+
+        // 2) Geração das entradas (frete informativo: registrado todo na 1ª linha; não compõe custo).
+        var freteTotal = request.Frete is decimal fr && fr > 0m ? fr : 0m;
+        var notaPrefixo = string.IsNullOrWhiteSpace(request.NotaFiscal) ? null : $"NF {request.NotaFiscal.Trim()}";
+        var agora = DateTimeOffset.UtcNow;
+        var totalProdutos = 0m;
+        var afetados = new List<long>();
+
+        for (var i = 0; i < request.Itens.Count; i++)
+        {
+            var li = request.Itens[i];
+            var item = itens[li.ItemEstoqueId];
+
+            var valorUnitario = li.ValorUnitario is decimal vu && vu > 0m ? vu : li.ValorTotal!.Value / li.Quantidade;
+            var valorProdutos = Math.Round(valorUnitario * li.Quantidade, 2, MidpointRounding.AwayFromZero);
+            totalProdutos += valorProdutos;
+
+            var frete = i == 0 ? freteTotal : 0m; // frete da nota fica todo na 1ª linha (informativo)
+            var loteCodigo = string.IsNullOrWhiteSpace(li.LoteCodigo)
+                ? $"L{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{i + 1}"
+                : li.LoteCodigo.Trim();
+            var obs = ComporObservacao(notaPrefixo, request.Observacoes);
+
+            var saldoAnterior = item.QuantidadeAtual;
+            var lote = LoteEstoque.Criar(item, loteCodigo, request.DataEntrada, li.Validade,
+                li.Quantidade, valorUnitario, request.FornecedorId, OrigemLote.Compra, null);
+            item.RegistrarEntrada(li.Quantidade, valorUnitario);
+
+            var entrada = EntradaEstoque.Criar(item, lote, request.FornecedorId, li.Quantidade, item.UnidadeMedida,
+                valorUnitario, frete, false, valorProdutos, request.DataCompra, request.DataEntrada,
+                li.Validade, loteCodigo, li.LocalArmazenamento, usuario, obs);
+
+            var mov = MovimentacaoEstoque.CriarEntrada(item, lote, TipoMovimentacao.EntradaCompra, li.Quantidade,
+                saldoAnterior, item.QuantidadeAtual, valorUnitario, usuario, agora, obs);
+            mov.Vincular(entrada);
+
+            _db.LotesEstoque.Add(lote);
+            _db.EntradasEstoque.Add(entrada);
+            _db.MovimentacoesEstoque.Add(mov);
+            if (!afetados.Contains(item.Id))
+            {
+                afetados.Add(item.Id);
+            }
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var dtos = new List<ItemEstoqueDto>();
+        foreach (var id in afetados)
+        {
+            dtos.Add(await _itens.ObterAsync(id, cancellationToken));
+        }
+
+        return new CompraResultadoDto(request.Itens.Count, totalProdutos, freteTotal, totalProdutos + freteTotal, dtos);
+    }
+
+    private static string? ComporObservacao(string? notaPrefixo, string? observacoes)
+    {
+        var partes = new[] { notaPrefixo, observacoes?.Trim() }
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToArray();
+        return partes.Length == 0 ? null : string.Join(" · ", partes!);
+    }
+
     public async Task<ItemEstoqueDto> RegistrarSaidaAsync(RegistrarSaidaRequest request, string usuario, CancellationToken cancellationToken = default)
     {
         var item = await _db.ItensEstoque.FirstOrDefaultAsync(x => x.Id == request.ItemEstoqueId, cancellationToken)

@@ -163,6 +163,38 @@ public sealed record RegistrarEntradaRequest(
     decimal? Frete = null,
     bool FreteCompoeCusto = false);
 
+// ===================== Compra com vários itens (uma nota) =====================
+/// <summary>Um item dentro de uma compra/nota.</summary>
+public sealed record CompraItemRequest(
+    long ItemEstoqueId,
+    decimal Quantidade,
+    decimal? ValorUnitario,
+    decimal? ValorTotal,
+    DateOnly? Validade,
+    string? LoteCodigo,
+    string? LocalArmazenamento);
+
+/// <summary>
+/// Compra de um fornecedor com vários itens numa única nota. Gera uma entrada por
+/// item (saldo + custo médio de cada um). O frete é informativo (não compõe custo).
+/// </summary>
+public sealed record RegistrarCompraRequest(
+    long? FornecedorId,
+    DateOnly DataCompra,
+    DateOnly DataEntrada,
+    string? NotaFiscal,
+    decimal? Frete,
+    string? Observacoes,
+    IReadOnlyList<CompraItemRequest> Itens);
+
+/// <summary>Resultado de uma compra: itens afetados + totais informativos.</summary>
+public sealed record CompraResultadoDto(
+    int ItensRegistrados,
+    decimal ValorProdutos,
+    decimal Frete,
+    decimal TotalPago,
+    IReadOnlyList<ItemEstoqueDto> Itens);
+
 // ===================== Movimentações (livro-razão geral) =====================
 public sealed record MovimentacaoGeralDto(
     long Id,

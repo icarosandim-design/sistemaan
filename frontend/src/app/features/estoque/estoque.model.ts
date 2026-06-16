@@ -208,6 +208,35 @@ export interface RegistrarEntradaRequest {
   frete: number | null;
 }
 
+// ===== Compra com vários itens (uma nota) =====
+export interface CompraItemRequest {
+  itemEstoqueId: number;
+  quantidade: number;
+  valorUnitario?: number | null;
+  valorTotal?: number | null;
+  validade?: string | null;
+  loteCodigo?: string | null;
+  localArmazenamento?: string | null;
+}
+
+export interface RegistrarCompraRequest {
+  fornecedorId: number | null;
+  dataCompra: string;
+  dataEntrada: string;
+  notaFiscal?: string | null;
+  frete?: number | null;
+  observacoes?: string | null;
+  itens: CompraItemRequest[];
+}
+
+export interface CompraResultado {
+  itensRegistrados: number;
+  valorProdutos: number;
+  frete: number;
+  totalPago: number;
+  itens: ItemEstoque[];
+}
+
 export interface RegistrarSaidaRequest {
   itemEstoqueId: number;
   quantidade: number;

@@ -15,10 +15,15 @@ public sealed class EstoqueController : ControllerBase
 
     private string Usuario => User.Identity?.Name ?? "sistema";
 
-    /// <summary>Registra uma entrada de estoque (compra) gerando lote e movimentação.</summary>
+    /// <summary>Registra uma entrada de estoque (compra de 1 item) gerando lote e movimentação.</summary>
     [HttpPost("entradas")]
     public async Task<ActionResult<ItemEstoqueDto>> RegistrarEntrada(RegistrarEntradaRequest request, CancellationToken ct)
         => Ok(await _service.RegistrarEntradaAsync(request, Usuario, ct));
+
+    /// <summary>Registra uma compra com vários itens (uma nota) — gera uma entrada por item.</summary>
+    [HttpPost("compras")]
+    public async Task<ActionResult<CompraResultadoDto>> RegistrarCompra(RegistrarCompraRequest request, CancellationToken ct)
+        => Ok(await _service.RegistrarCompraAsync(request, Usuario, ct));
 
     /// <summary>Registra uma saída de estoque (consumo/perda/descarte/etc.) por FIFO.</summary>
     [HttpPost("saidas")]
