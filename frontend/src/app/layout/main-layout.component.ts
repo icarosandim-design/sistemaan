@@ -103,9 +103,19 @@ export class MainLayoutComponent {
         { label: 'Ingredientes', icone: 'eco', rota: '/ingredientes', papeis: ADMIN_OPERADOR },
         { label: 'Categorias', icone: 'category', rota: '/cadastros/categorias', papeis: ADMIN_OPERADOR },
         { label: 'Origens de Venda', icone: 'sell', rota: '/cadastros/origens-venda', papeis: ADMIN_OPERADOR },
+        { label: 'Motivos de Cancelamento', icone: 'cancel', rota: '/cadastros/motivos-cancelamento', papeis: ADMIN_OPERADOR },
         { label: 'Tabela de Consumo', icone: 'monitor_weight', rota: '/tabela-consumo', papeis: ADMIN_OPERADOR },
         { label: 'Frequências de Entrega', icone: 'event_repeat', rota: '/frequencias-entrega', papeis: ADMIN_OPERADOR },
         { label: 'Usuários', icone: 'manage_accounts', rota: '/cadastros/usuarios', papeis: SO_ADMIN },
+      ],
+    },
+    {
+      label: 'Relatórios',
+      icone: 'assessment',
+      papeis: SO_ADMIN,
+      filhos: [
+        { label: 'Dashboard', icone: 'dashboard', rota: '/relatorios/dashboard', papeis: SO_ADMIN },
+        { label: 'Relatórios', icone: 'description', rota: '/relatorios', papeis: SO_ADMIN },
       ],
     },
   ];

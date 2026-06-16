@@ -1,0 +1,320 @@
+<section class="pagina">
+  <header class="page-head">
+    <div class="page-title">
+      <h1>Relatórios</h1>
+      <p class="subtitulo">Escolha um relatório para visualizar. Dados reais do período; indicadores sem fonte são marcados.</p>
+    </div>
+    @if (ativo()) {
+      <button mat-stroked-button (click)="fechar()"><mat-icon>arrow_back</mat-icon> Voltar à lista</button>
+    }
+  </header>
+
+  <!-- ====== Seletor de relatórios ====== -->
+  @if (!ativo()) {
+    <div class="seletor">
+      @for (o of opcoes; track o.id) {
+        <button class="rel-card" (click)="abrir(o.id)">
+          <mat-icon>{{ o.icone }}</mat-icon>
+          <span class="rc-nome">{{ o.nome }}</span>
+          <span class="rc-desc">{{ o.desc }}</span>
+        </button>
+      }
+    </div>
+  } @else {
+    <!-- ====== Filtros ====== -->
+    <div class="filtros">
+      @if (ativo() !== 'estoque') {
+        <label>De <input type="date" [(ngModel)]="inicio" /></label>
+        <label>até <input type="date" [(ngModel)]="fim" /></label>
+      }
+      @if (ativo() === 'vendas') {
+        <label>Tipo
+          <select [(ngModel)]="tipoVenda">
+            <option value="">Todos</option>
+            @for (t of tiposVenda; track t) { <option [value]="t">{{ t }}</option> }
+          </select>
+        </label>
+      }
+      @if (ativo() === 'cancelamentos') {
+        <label>Motivo
+          <select [(ngModel)]="motivoId">
+            <option [ngValue]="null">Todos</option>
+            @for (m of motivos(); track m.id) { <option [ngValue]="m.id">{{ m.nome }}</option> }
+          </select>
+        </label>
+      }
+      @if (ativo() === 'producao' || ativo() === 'perdas' || ativo() === 'custos') {
+        <label>Ingrediente
+          <select [(ngModel)]="ingredienteId">
+            <option [ngValue]="null">Todos</option>
+            @for (i of ingredientes(); track i.id) { <option [ngValue]="i.id">{{ i.nome }}</option> }
+          </select>
+        </label>
+      }
+      @if (ativo() === 'estoque') {
+        <label>Tipo
+          <select [(ngModel)]="tipoEstoque">
+            <option value="">Todos</option>
+            <option value="Insumo">Insumo</option>
+            <option value="Produto acabado">Produto acabado</option>
+          </select>
+        </label>
+        <label>Status
+          <select [(ngModel)]="statusEstoque">
+            <option value="">Todos</option>
+            <option value="Com saldo">Com saldo</option>
+            <option value="Baixo">Baixo</option>
+            <option value="Zerado">Zerado</option>
+          </select>
+        </label>
+      }
+      <button mat-flat-button class="btn-cta" (click)="aplicar()"><mat-icon>search</mat-icon> Aplicar</button>
+    </div>
+
+    @if (carregando()) {
+      <div class="estado"><mat-spinner diameter="34"></mat-spinner><p>Carregando relatório...</p></div>
+    } @else if (erro()) {
+      <div class="estado estado-erro"><mat-icon>cloud_off</mat-icon><p>Não foi possível carregar o relatório.</p>
+        <button mat-stroked-button (click)="carregar()"><mat-icon>refresh</mat-icon> Tentar novamente</button></div>
+    } @else {
+      @switch (ativo()) {
+
+        <!-- ============ VENDAS ============ -->
+        @case ('vendas') {
+          @let v = vendas();
+          @if (v) {
+            <div class="cards">
+              <div class="kc"><div class="kv">{{ v.resumo.quantidadeVendas }}</div><div class="kl">Vendas no período</div></div>
+              <div class="kc"><div class="kv">{{ num(v.resumo.totalKg) }} kg</div><div class="kl">Total vendido (kg)</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(v.resumo.receitaRecorrenteAtivaMensal) }}</div><div class="kl">Receita recorrente ativa / mês</div></div>
+            </div>
+            @if (v.resumo.receitaPorVendaIndisponivel) {
+              <div class="aviso"><mat-icon>info</mat-icon> Receita por venda (ticket, preço/kg) depende de valor por venda — ainda não registrado. Métricas em kg são reais.</div>
+            }
+            <div class="acoes-tab">
+              <span class="total">{{ v.total }} registro(s)</span>
+              <button mat-stroked-button (click)="exportarVendas()"><mat-icon>download</mat-icon> Exportar CSV</button>
+            </div>
+            @if (!v.linhas.length) {
+              <div class="vazio"><mat-icon>inbox</mat-icon> Sem vendas no período.</div>
+            } @else {
+              <div class="tab-wrap">
+                <table class="tab">
+                  <thead><tr><th>Data</th><th>Tipo</th><th>Cliente</th><th>Pet</th><th>Receitas</th><th class="r">Kg</th><th>Status</th><th>Origem</th></tr></thead>
+                  <tbody>
+                    @for (l of v.linhas; track $index) {
+                      <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.tipo }}</td><td>{{ l.cliente }}</td><td>{{ l.pet || '—' }}</td>
+                      <td>{{ l.receitas || '—' }}</td><td class="r">{{ num(l.kg) }}</td><td>{{ l.status }}</td><td>{{ l.origem || '—' }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <ng-container [ngTemplateOutlet]="paginacao" [ngTemplateOutletContext]="{ total: v.total }"></ng-container>
+            }
+          }
+        }
+
+        <!-- ============ CANCELAMENTOS ============ -->
+        @case ('cancelamentos') {
+          @let c = cancel();
+          @if (c) {
+            <div class="cards">
+              <div class="kc"><div class="kv">{{ c.resumo.totalCancelamentos }}</div><div class="kl">Cancelamentos</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(c.resumo.receitaMensalPerdida) }}</div><div class="kl">Receita mensal perdida</div></div>
+              <div class="kc"><div class="kv">{{ num(c.resumo.kgMensalPerdido) }} kg</div><div class="kl">Kg mensal perdido</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(c.resumo.ticketMedioMensal) }}</div><div class="kl">Ticket médio mensal</div></div>
+              <div class="kc"><div class="kv">{{ c.resumo.tempoMedioDiasAteCancelamento ? num(c.resumo.tempoMedioDiasAteCancelamento, 0) : '—' }}</div><div class="kl">Dias médios até cancelar</div></div>
+            </div>
+            <div class="acoes-tab">
+              <span class="total">{{ c.total }} registro(s)</span>
+              <button mat-stroked-button (click)="exportarCancelamentos()"><mat-icon>download</mat-icon> Exportar CSV</button>
+            </div>
+            @if (!c.linhas.length) {
+              <div class="vazio"><mat-icon>inbox</mat-icon> Sem cancelamentos no período.</div>
+            } @else {
+              <div class="tab-wrap">
+                <table class="tab">
+                  <thead><tr><th>Data</th><th>Cliente</th><th>Pets</th><th>Motivo</th><th>Observação</th><th class="r">R$/mês</th><th class="r">Kg/mês</th><th class="r">Dias</th><th>Usuário</th></tr></thead>
+                  <tbody>
+                    @for (l of c.linhas; track $index) {
+                      <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.cliente }}</td><td>{{ l.pets || '—' }}</td><td>{{ l.motivo }}</td>
+                      <td>{{ l.observacao || '—' }}</td><td class="r">{{ num(l.valorMensalPerdido) }}</td><td class="r">{{ num(l.kgMensalPerdido) }}</td>
+                      <td class="r">{{ l.diasComoCliente ?? '—' }}</td><td>{{ l.usuario || '—' }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <ng-container [ngTemplateOutlet]="paginacao" [ngTemplateOutletContext]="{ total: c.total }"></ng-container>
+            }
+          }
+        }
+
+        <!-- ============ PRODUÇÃO ============ -->
+        @case ('producao') {
+          @let p = producao();
+          @if (p) {
+            <div class="cards">
+              <div class="kc"><div class="kv">{{ p.resumo.producoesFinalizadas }}/{{ p.resumo.producoesPlanejadas }}</div><div class="kl">Finalizadas / planejadas</div></div>
+              <div class="kc"><div class="kv">{{ num(p.resumo.kgPlanejado) }} kg</div><div class="kl">Cru planejado</div></div>
+              <div class="kc"><div class="kv">{{ num(p.resumo.kgReal) }} kg</div><div class="kl">Cru real</div></div>
+              <div class="kc"><div class="kv">{{ num(p.resumo.diferencaCruGramas / 1000) }} kg</div><div class="kl">Diferença cru</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(p.resumo.custoRealEstimado) }}</div><div class="kl">Custo real estimado</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(p.resumo.diferencaCusto) }}</div><div class="kl">Diferença de custo</div></div>
+            </div>
+            <div class="aviso"><mat-icon>info</mat-icon> Custos são estimados pelo custo médio atual do ingrediente (sem custo por lote).</div>
+            <div class="acoes-tab">
+              <span class="total">{{ p.total }} registro(s)</span>
+              <button mat-stroked-button (click)="exportarProducao()"><mat-icon>download</mat-icon> Exportar CSV</button>
+            </div>
+            @if (!p.linhas.length) {
+              <div class="vazio"><mat-icon>inbox</mat-icon> Sem produções finalizadas no período.</div>
+            } @else {
+              <div class="tab-wrap">
+                <table class="tab">
+                  <thead><tr><th>Data</th><th>Ingrediente</th><th class="r">Plan. cru</th><th class="r">Real cru</th><th class="r">Plan. coz.</th><th class="r">Real coz.</th><th class="r">Dif. cru</th><th class="r">Custo plan.</th><th class="r">Custo real</th></tr></thead>
+                  <tbody>
+                    @for (l of p.linhas; track $index) {
+                      <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.ingrediente }}</td><td class="r">{{ num(l.planejadoCruGramas, 0) }}</td><td class="r">{{ num(l.realCruGramas, 0) }}</td>
+                      <td class="r">{{ num(l.planejadoCozidoGramas, 0) }}</td><td class="r">{{ num(l.realCozidoGramas, 0) }}</td><td class="r">{{ num(l.diferencaCruGramas, 0) }}</td>
+                      <td class="r">{{ num(l.custoPlanejado) }}</td><td class="r">{{ num(l.custoRealEstimado) }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <ng-container [ngTemplateOutlet]="paginacao" [ngTemplateOutletContext]="{ total: p.total }"></ng-container>
+            }
+          }
+        }
+
+        <!-- ============ PERDAS ============ -->
+        @case ('perdas') {
+          @let p = perdas();
+          @if (p) {
+            <div class="cards">
+              <div class="kc"><div class="kv">{{ num(p.resumo.perdaTotalKg) }} kg</div><div class="kl">Perda total</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(p.resumo.perdaTotalValor) }}</div><div class="kl">Perda total (R$)</div></div>
+              <div class="kc"><div class="kv">{{ num(p.resumo.sobraTotalKg) }} kg</div><div class="kl">Sobra total</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(p.resumo.sobraTotalValor) }}</div><div class="kl">Sobra total (R$)</div></div>
+            </div>
+            <div class="aviso"><mat-icon>info</mat-icon> Valores em R$ estimados pelo custo médio atual do ingrediente.</div>
+            <div class="acoes-tab">
+              <span class="total">{{ p.total }} registro(s)</span>
+              <button mat-stroked-button (click)="exportarPerdas()"><mat-icon>download</mat-icon> Exportar CSV</button>
+            </div>
+            @if (!p.linhas.length) {
+              <div class="vazio"><mat-icon>inbox</mat-icon> Sem perdas registradas no período.</div>
+            } @else {
+              <div class="tab-wrap">
+                <table class="tab">
+                  <thead><tr><th>Data</th><th>Ingrediente</th><th class="r">Perda kg</th><th class="r">Perda R$</th><th class="r">Sobra kg</th><th class="r">Sobra R$</th><th class="r">Custo médio</th><th class="r">Fator cad.</th><th class="r">Fator real</th></tr></thead>
+                  <tbody>
+                    @for (l of p.linhas; track $index) {
+                      <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.ingrediente }}</td><td class="r">{{ num(l.perdaKg) }}</td><td class="r">{{ num(l.perdaValor) }}</td>
+                      <td class="r">{{ num(l.sobraKg) }}</td><td class="r">{{ num(l.sobraValor) }}</td><td class="r">{{ num(l.custoMedioUsado) }}</td>
+                      <td class="r">{{ l.fatorCadastrado ? num(l.fatorCadastrado, 3) : '—' }}</td><td class="r">{{ l.fatorReal ? num(l.fatorReal, 3) : '—' }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <ng-container [ngTemplateOutlet]="paginacao" [ngTemplateOutletContext]="{ total: p.total }"></ng-container>
+            }
+          }
+        }
+
+        <!-- ============ CUSTOS DE INSUMOS ============ -->
+        @case ('custos') {
+          @let c = custos();
+          @if (c) {
+            @if (c.historicoLimitado) {
+              <div class="aviso"><mat-icon>info</mat-icon> O sistema guarda o custo médio atual e as entradas de compra — não há histórico mês a mês do custo médio. Mostramos a evolução pelos preços de compra.</div>
+            }
+            <div class="acoes-tab">
+              <span class="total">{{ c.total }} entrada(s) de compra</span>
+              <button mat-stroked-button (click)="exportarCustos()"><mat-icon>download</mat-icon> Exportar CSV</button>
+            </div>
+            @if (c.resumo.length) {
+              <h3 class="sub-h">Resumo por insumo</h3>
+              <div class="tab-wrap">
+                <table class="tab">
+                  <thead><tr><th>Ingrediente</th><th class="r">Custo médio</th><th class="r">Último</th><th class="r">Menor</th><th class="r">Maior</th><th class="r">Qtd comprada</th><th class="r">Total R$</th><th class="r">Var. %</th></tr></thead>
+                  <tbody>
+                    @for (i of c.resumo; track i.ingredienteId) {
+                      <tr><td>{{ i.ingrediente }}</td><td class="r">{{ num(i.custoMedioAtual) }}</td><td class="r">{{ num(i.ultimoCusto) }}</td><td class="r">{{ num(i.menorCustoPeriodo) }}</td>
+                      <td class="r">{{ num(i.maiorCustoPeriodo) }}</td><td class="r">{{ num(i.quantidadeComprada) }}</td><td class="r">{{ num(i.valorTotalComprado) }}</td>
+                      <td class="r" [class.alta]="i.variacaoPercentual > 0" [class.baixa]="i.variacaoPercentual < 0">{{ num(i.variacaoPercentual, 1) }}%</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+            <h3 class="sub-h">Entradas (compras)</h3>
+            @if (!c.linhas.length) {
+              <div class="vazio"><mat-icon>inbox</mat-icon> Sem compras de insumos no período.</div>
+            } @else {
+              <div class="tab-wrap">
+                <table class="tab">
+                  <thead><tr><th>Data</th><th>Ingrediente</th><th>Fornecedor</th><th class="r">Qtd</th><th>Un.</th><th class="r">Valor unit.</th><th class="r">Valor total</th></tr></thead>
+                  <tbody>
+                    @for (l of c.linhas; track $index) {
+                      <tr><td>{{ fmtData(l.data) }}</td><td>{{ l.ingrediente }}</td><td>{{ l.fornecedor || '—' }}</td><td class="r">{{ num(l.quantidade) }}</td>
+                      <td>{{ l.unidade }}</td><td class="r">{{ num(l.valorUnitario) }}</td><td class="r">{{ num(l.valorTotal) }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <ng-container [ngTemplateOutlet]="paginacao" [ngTemplateOutletContext]="{ total: c.total }"></ng-container>
+            }
+          }
+        }
+
+        <!-- ============ ESTOQUE ============ -->
+        @case ('estoque') {
+          @let e = estoque();
+          @if (e) {
+            <div class="cards">
+              <div class="kc"><div class="kv">{{ e.resumo.totalItens }}</div><div class="kl">Itens</div></div>
+              <div class="kc"><div class="kv">{{ e.resumo.itensAbaixoMinimo }}</div><div class="kl">Abaixo do mínimo</div></div>
+              <div class="kc"><div class="kv">{{ e.resumo.itensSemSaldo }}</div><div class="kl">Sem saldo</div></div>
+              <div class="kc"><div class="kv">R$ {{ num(e.resumo.valorEstimadoTotal) }}</div><div class="kl">Valor estimado</div></div>
+              <div class="kc"><div class="kv">{{ e.resumo.produtoAcabadoComSaldo }}</div><div class="kl">Prod. acabado c/ saldo</div></div>
+              <div class="kc"><div class="kv">{{ e.resumo.produtoAcabadoSemSaldo }}</div><div class="kl">Prod. acabado s/ saldo</div></div>
+            </div>
+            @if (e.resumo.comprometidoIndisponivel) {
+              <div class="aviso"><mat-icon>info</mat-icon> Estoque comprometido / disponível / falta para entregas dependem de cálculo futuro de demanda. Mostramos saldo físico, mínimo e valor estimado.</div>
+            }
+            <div class="acoes-tab">
+              <span class="total">{{ e.resumo.totalItens }} item(ns)</span>
+              <button mat-stroked-button (click)="exportarEstoque()"><mat-icon>download</mat-icon> Exportar CSV</button>
+            </div>
+            @if (!e.linhas.length) {
+              <div class="vazio"><mat-icon>inbox</mat-icon> Nenhum item no filtro.</div>
+            } @else {
+              <div class="tab-wrap">
+                <table class="tab">
+                  <thead><tr><th>Item</th><th>Tipo</th><th class="r">Saldo</th><th>Un.</th><th class="r">Mínimo</th><th class="r">Custo médio</th><th class="r">Valor est.</th><th>Status</th></tr></thead>
+                  <tbody>
+                    @for (l of e.linhas; track $index) {
+                      <tr><td>{{ l.item }}</td><td>{{ l.tipo }}</td><td class="r">{{ num(l.saldoFisico) }}</td><td>{{ l.unidade }}</td>
+                      <td class="r">{{ num(l.minimo) }}</td><td class="r">{{ num(l.custoMedio) }}</td><td class="r">{{ num(l.valorEstimado) }}</td>
+                      <td><span class="st" [class.st-zer]="l.status === 'Zerado'" [class.st-bx]="l.status === 'Baixo'">{{ l.status }}</span></td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+        }
+      }
+    }
+  }
+</section>
+
+<ng-template #paginacao let-total="total">
+  @if (totalPaginas(total) > 1) {
+    <div class="pag">
+      <button mat-icon-button [disabled]="pagina <= 1" (click)="paginar(-1, total)"><mat-icon>chevron_left</mat-icon></button>
+      <span>Página {{ pagina }} de {{ totalPaginas(total) }}</span>
+      <button mat-icon-button [disabled]="pagina >= totalPaginas(total)" (click)="paginar(1, total)"><mat-icon>chevron_right</mat-icon></button>
+    </div>
+  }
+</ng-template>

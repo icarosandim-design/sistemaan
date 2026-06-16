@@ -28,6 +28,9 @@ import { ClientesPjComponent } from './features/clientes-pj/clientes-pj.componen
 import { PetsComponent } from './features/pets/pets.component';
 import { PlanejarRotasComponent } from './features/rotas/planejar-rotas.component';
 import { RotaImpressaoComponent } from './features/rotas/rota-impressao.component';
+import { MotivosCancelamentoComponent } from './features/motivos-cancelamento/motivos-cancelamento.component';
+import { RelatoriosDashboardComponent } from './features/relatorios/dashboard.component';
+import { RelatoriosComponent } from './features/relatorios/relatorios.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -52,7 +55,10 @@ export const routes: Routes = [
       { path: 'estoque/fornecedores', component: FornecedoresComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/categorias', component: CategoriasComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/origens-venda', component: OrigensVendaComponent, data: { papeis: ADMIN_OPERADOR } },
+      { path: 'cadastros/motivos-cancelamento', component: MotivosCancelamentoComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'cadastros/usuarios', component: UsuariosComponent, data: { papeis: SO_ADMIN } },
+      { path: 'relatorios/dashboard', component: RelatoriosDashboardComponent, data: { papeis: SO_ADMIN } },
+      { path: 'relatorios', component: RelatoriosComponent, data: { papeis: SO_ADMIN } },
       { path: 'producao/planejar', component: ProducaoPlanejarComponent, data: { papeis: ADMIN_OPERADOR } },
       { path: 'producao/dia', component: ProducaoDiaComponent, data: { papeis: TODOS_PERFIS } },
       { path: 'producao/cozinha', component: ProducaoCozinhaComponent, data: { papeis: TODOS_PERFIS } },

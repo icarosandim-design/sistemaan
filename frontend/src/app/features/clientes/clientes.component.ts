@@ -129,11 +129,11 @@ export class ClientesComponent implements OnInit, AfterViewInit {
       maxWidth: '95vw',
       autoFocus: false,
     });
-    ref.afterClosed().subscribe((motivo: string | undefined) => {
-      if (!motivo) {
+    ref.afterClosed().subscribe((res: { motivoId: number; motivo: string; observacao: string | null } | undefined) => {
+      if (!res) {
         return;
       }
-      this.service.cancelar(c.id, motivo).subscribe({
+      this.service.cancelar(c.id, res.motivo, res.motivoId, res.observacao).subscribe({
         next: () => {
           this.snack.open('Cliente cancelado.', 'OK', { duration: 2500 });
           this.carregar();

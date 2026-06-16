@@ -21,8 +21,8 @@ export class ClientesService {
     return this.http.put<Cliente>(`${this.base}/${id}`, req);
   }
 
-  cancelar(id: number, motivo: string): Observable<void> {
-    return this.http.put<void>(`${this.base}/${id}/cancelar`, { motivo });
+  cancelar(id: number, motivo: string, motivoId?: number, observacao?: string | null): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}/cancelar`, { motivo, motivoId, observacao });
   }
 
   reativar(id: number): Observable<void> {
