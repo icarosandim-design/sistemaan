@@ -116,6 +116,13 @@ export class EstoqueService {
       .pipe(map((xs) => xs.filter((x) => x.ativo).map((x) => ({ id: x.id, nome: x.nome }))));
   }
 
+  /** Ingredientes ativos com a categoria (para pré-preencher a categoria do item de estoque). */
+  listarIngredientesComCategoria(): Observable<{ id: number; nome: string; categoria: string }[]> {
+    return this.http
+      .get<{ id: number; nome: string; categoria: string; ativo: boolean }[]>(`${this.api}/ingredientes`)
+      .pipe(map((xs) => xs.filter((x) => x.ativo).map((x) => ({ id: x.id, nome: x.nome, categoria: x.categoria }))));
+  }
+
   listarReceitasCasa(): Observable<OpcaoSimples[]> {
     return this.http
       .get<{ id: number; codigo: string; nome: string; ativo: boolean }[]>(`${this.api}/receitas-casa`)

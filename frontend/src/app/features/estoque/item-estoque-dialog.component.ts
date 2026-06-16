@@ -23,6 +23,28 @@ export interface ItemEstoqueDialogData {
   item: ItemEstoque | null;
 }
 
+/**
+ * Mapeia a categoria do ingrediente (cadastro livre: Proteína, Vegetal, Óleo…)
+ * para a categoria de estoque (enum fixo). Sem correspondência clara → "Outros".
+ * É só um pré-preenchimento; o usuário pode ajustar.
+ */
+function mapearCategoriaEstoque(categoriaIngrediente: string): string {
+  const n = (categoriaIngrediente ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+  if (n.includes('proteina')) return 'Proteinas';
+  if (n.includes('carboidrato')) return 'Carboidratos';
+  if (n.includes('viscera')) return 'Visceras';
+  if (n.includes('vegeta') || n.includes('legume') || n.includes('verdura')) return 'Legumes';
+  if (n.includes('suplemento')) return 'Suplementos';
+  if (n.includes('embalag')) return 'Embalagens';
+  if (n.includes('etiqueta')) return 'Etiquetas';
+  if (n.includes('limpeza')) return 'MateriaisLimpeza';
+  return 'Outros';
+}
+
 @Component({
   selector: 'app-item-estoque-dialog',
   standalone: true,
@@ -50,7 +72,7 @@ export class ItemEstoqueDialogComponent implements OnInit {
   readonly rotulo = rotulo;
 
   readonly salvando = signal(false);
-  readonly ingredientes = signal<OpcaoSimples[]>([]);
+  readonly ingredientes = signal<{ id: number; nome: string; categoria: string }[]>([]);
   readonly receitas = signal<OpcaoSimples[]>([]);
   readonly tamanhos = signal<OpcaoSimples[]>([]);
   readonly fornecedores = signal<OpcaoSimples[]>([]);
@@ -109,16 +131,17 @@ export class ItemEstoqueDialogComponent implements OnInit {
       });
       this.form.controls.tipo.disable();
     } else {
-      this.service.listarIngredientes().subscribe((xs) => this.ingredientes.set(xs));
+      this.service.listarIngredientesComCategoria().subscribe((xs) => this.ingredientes.set(xs));
       this.service.listarReceitasCasa().subscribe((xs) => this.receitas.set(xs));
       this.service.listarTamanhos().subscribe((xs) => this.tamanhos.set(xs));
 
-      // Nome do insumo é pré-preenchido a partir do ingrediente (editável).
+      // Nome e categoria do insumo são pré-preenchidos a partir do ingrediente (editáveis).
       this.form.controls.ingredienteId.valueChanges.subscribe((id) => {
         if (this.tipo === 'Insumo' && id != null) {
           const ing = this.ingredientes().find((x) => x.id === id);
           if (ing) {
             this.form.controls.nome.setValue(ing.nome);
+            this.form.controls.categoria.setValue(mapearCategoriaEstoque(ing.categoria));
           }
         }
       });
