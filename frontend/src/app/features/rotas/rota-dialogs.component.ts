@@ -9,8 +9,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
-  EntregaDisponivel, PERIODOS_ROTA, preferenciaIncompativel, Rota, rotuloPeriodo,
+  EntregaDisponivel, fmtKg, PERIODOS_ROTA, preferenciaIncompativel, Rota, rotuloPeriodo,
   rotuloStatusRota, StatusRota,
 } from './rotas.model';
 import { RotasService } from './rotas.service';
@@ -102,7 +103,7 @@ export class RotaFormDialogComponent {
 @Component({
   selector: 'app-rota-detalhe-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatTooltipModule, MatProgressSpinnerModule],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatTooltipModule, MatProgressSpinnerModule, DragDropModule],
   templateUrl: './rota-detalhe-dialog.component.html',
   styleUrl: './rota-detalhe-dialog.component.scss',
 })
@@ -120,6 +121,12 @@ export class RotaDetalheDialogComponent implements OnInit {
   readonly rotuloStatusRota = rotuloStatusRota;
   readonly rotuloPreferencia = rotuloPreferenciaHorario;
   readonly preferenciaIncompativel = preferenciaIncompativel;
+  readonly fmtKg = fmtKg;
+
+  /** Peso total da carga da saída (soma das paradas). */
+  get cargaTotalGramas(): number {
+    return (this.rota()?.paradas ?? []).reduce((s, p) => s + p.totalGramas, 0);
+  }
 
   constructor(
     readonly ref: MatDialogRef<RotaDetalheDialogComponent, boolean>,
@@ -163,6 +170,19 @@ export class RotaDetalheDialogComponent implements OnInit {
     this.service.removerEntrega(this.data.rotaId, entregaId).subscribe({
       next: (r) => { this.alterou = true; this.rota.set(r); this.recarregarDisponiveis(); },
       error: (err) => this.snack.open(msgErro(err), 'OK', { duration: 4000 }),
+    });
+  }
+
+  aoArrastar(event: CdkDragDrop<unknown>): void {
+    const r = this.rota();
+    if (!r || event.previousIndex === event.currentIndex) {
+      return;
+    }
+    const ids = r.paradas.map((p) => p.entregaId);
+    moveItemInArray(ids, event.previousIndex, event.currentIndex);
+    this.service.reordenar(this.data.rotaId, ids).subscribe({
+      next: (res) => { this.alterou = true; this.rota.set(res); },
+      error: (err) => this.snack.open(msgErro(err), 'OK', { duration: 3000 }),
     });
   }
 
@@ -216,17 +236,71 @@ export class RotaDetalheDialogComponent implements OnInit {
       `Entregador: ${r.entregador || '—'}`,
       '',
     ];
+    linhas.push(`Carga total: ${this.fmtKg(this.cargaTotalGramas)}`, '');
     r.paradas.forEach((p, i) => {
       linhas.push(`${i + 1}. ${p.clienteNome}${p.ehPj ? ' [PJ]' : ''} — ${this.rotuloPreferencia(p.preferenciaHorario)}`);
+      if (p.petNomes) linhas.push(`   Cão: ${p.petNomes}`);
       linhas.push(`   ${p.endereco}${p.bairro ? ' — ' + p.bairro : ''}${p.cidade ? ', ' + p.cidade : ''}`);
-      if (p.telefone) linhas.push(`   Tel: ${p.telefone}`);
-      if (p.itensResumo) linhas.push(`   Itens: ${p.itensResumo}`);
+      if (p.itensResumo) linhas.push(`   Itens: ${p.itensResumo} (${this.fmtKg(p.totalGramas)})`);
       linhas.push('');
     });
     navigator.clipboard.writeText(linhas.join('\n')).then(
       () => this.snack.open('Rota copiada para a área de transferência.', 'OK', { duration: 2500 }),
       () => this.snack.open('Não foi possível copiar.', 'OK', { duration: 2500 }),
     );
+  }
+
+  /** Gera uma imagem (JPEG) da rota para enviar ao entregador (sem telefone do cliente). */
+  baixarImagem(): void {
+    const r = this.rota();
+    if (!r) {
+      return;
+    }
+    const linhas: { txt: string; bold?: boolean; small?: boolean; gap?: boolean }[] = [];
+    linhas.push({ txt: `Rota — ${this.fmtData(r.data)}`, bold: true });
+    linhas.push({ txt: `${r.nome} · ${this.rotuloPeriodo(r.periodo)} · Entregador: ${r.entregador || '—'}`, small: true });
+    linhas.push({ txt: `Carga total: ${this.fmtKg(this.cargaTotalGramas)}`, small: true });
+    linhas.push({ txt: '', gap: true });
+    r.paradas.forEach((p, i) => {
+      linhas.push({ txt: `${i + 1}. ${p.clienteNome}${p.ehPj ? ' [PJ]' : ''}`, bold: true });
+      if (p.petNomes) {
+        linhas.push({ txt: `    Cão: ${p.petNomes}`, small: true });
+      }
+      linhas.push({ txt: `    ${p.endereco}${p.bairro ? ' — ' + p.bairro : ''}${p.cidade ? ', ' + p.cidade : ''}`, small: true });
+      if (p.itensResumo) {
+        linhas.push({ txt: `    ${p.itensResumo}`, small: true });
+      }
+      linhas.push({ txt: `    ${this.rotuloPreferencia(p.preferenciaHorario)} · ${this.fmtKg(p.totalGramas)}`, small: true });
+      linhas.push({ txt: '', gap: true });
+    });
+
+    const W = 720;
+    const pad = 24;
+    const lh = 22;
+    const altura = pad * 2 + linhas.reduce((s, l) => s + (l.gap ? lh / 2 : lh), 0);
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = Math.max(altura, 200);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.textBaseline = 'top';
+    let y = pad;
+    for (const l of linhas) {
+      if (l.gap) { y += lh / 2; continue; }
+      ctx.font = `${l.bold ? '700 ' : ''}${l.small ? 14 : 18}px Arial, sans-serif`;
+      ctx.fillStyle = l.bold ? '#3f4f2d' : '#333333';
+      ctx.fillText(l.txt, pad, y);
+      y += lh;
+    }
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/jpeg', 0.92);
+    a.download = `rota-${r.data}-${r.nome.replace(/\s+/g, '_')}.jpg`;
+    a.click();
+    this.snack.open('Imagem da rota baixada (JPEG).', 'OK', { duration: 2500 });
   }
 
   private recarregarDisponiveis(): void {

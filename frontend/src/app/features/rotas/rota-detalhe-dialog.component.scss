@@ -37,3 +37,15 @@ mat-dialog-content { min-width: 760px; max-width: 94vw; }
 .acoes .mat-icon { font-size: 1.05rem; } .acoes .rem { color: #b3261e; }
 .btn-add { background: var(--an-cta); color: #fff; flex: none; }
 .vazio { color: var(--an-texto-secundario); font-size: 0.85rem; padding: 0.5rem 0; }
+
+/* Cão + arrastar */
+.cao { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.82rem; color: var(--an-cta-hover); font-weight: 600; margin-top: 0.15rem;
+  .mat-icon { font-size: 1rem; width: 1rem; height: 1rem; } }
+.arrasta { flex: none; cursor: grab; color: var(--an-texto-secundario); align-self: center; }
+.dica-arrasta { display: flex; align-items: center; gap: 0.3rem; margin: 0 0 0.3rem; font-size: 0.76rem; color: var(--an-texto-secundario);
+  .mat-icon { font-size: 1rem; width: 1rem; height: 1rem; } }
+
+/* CDK drag-and-drop */
+.cdk-drag-preview { box-shadow: 0 4px 14px rgba(0,0,0,0.18); background: var(--an-superficie); border-radius: 8px; padding: 0.5rem; }
+.cdk-drag-placeholder { opacity: 0.4; }
+.cdk-drag-animating { transition: transform 180ms cubic-bezier(0, 0, 0.2, 1); }

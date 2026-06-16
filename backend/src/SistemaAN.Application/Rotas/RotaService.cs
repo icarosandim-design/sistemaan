@@ -14,6 +14,10 @@ public sealed class RotaService : IRotaService
     private static readonly EntregaStatus[] EntregaAtivos =
         [EntregaStatus.Programada, EntregaStatus.ConfirmadaCliente, EntregaStatus.SaiuParaEntrega, EntregaStatus.NaoEntregue];
 
+    // Entregas que ainda PODEM entrar numa rota (não despachadas/entregues/canceladas).
+    private static readonly EntregaStatus[] DisponivelParaRota =
+        [EntregaStatus.Programada, EntregaStatus.ConfirmadaCliente];
+
     private static readonly StatusRota[] RotaAtivos =
         [StatusRota.Rascunho, StatusRota.Planejada, StatusRota.Despachada];
 
@@ -57,7 +61,8 @@ public sealed class RotaService : IRotaService
             paradas.Add(new RotaParadaDto(
                 e.Id, p.Ordem, e.ClienteNome, e.PedidoId != null, e.PedidoId,
                 EnderecoTexto(e), e.Bairro, e.Cidade, e.Telefone, e.PreferenciaHorario.ToString(),
-                e.Status.ToString(), ItensResumo(e), EnderecoIncompleto(e), ProntidaoTexto(e), alerta));
+                e.Status.ToString(), ItensResumo(e), EnderecoIncompleto(e), ProntidaoTexto(e), alerta,
+                PetNomes(e), TotalGramas(e)));
         }
 
         return new RotaDto(rota.Id, rota.Data, rota.Nome, rota.Periodo.ToString(), rota.Entregador,
@@ -73,7 +78,7 @@ public sealed class RotaService : IRotaService
         var ocupadasSet = ocupadas.ToHashSet();
 
         var entregas = await _db.Entregas
-            .Where(e => e.DataPrevista == data && EntregaAtivos.Contains(e.Status))
+            .Where(e => e.DataPrevista == data && DisponivelParaRota.Contains(e.Status))
             .Include(e => e.Pets).ThenInclude(p => p.Itens).ThenInclude(i => i.Pacotes)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -83,7 +88,8 @@ public sealed class RotaService : IRotaService
             .OrderBy(e => e.PreferenciaHorario).ThenBy(e => e.ClienteNome)
             .Select(e => new EntregaDisponivelDto(
                 e.Id, e.ClienteNome, e.PedidoId != null, e.PedidoId, EnderecoTexto(e), e.Bairro, e.Cidade, e.Telefone,
-                e.PreferenciaHorario.ToString(), e.Status.ToString(), ItensResumo(e), EnderecoIncompleto(e), ProntidaoTexto(e), null))
+                e.PreferenciaHorario.ToString(), e.Status.ToString(), ItensResumo(e), EnderecoIncompleto(e), ProntidaoTexto(e), null,
+                PetNomes(e), TotalGramas(e)))
             .ToList();
     }
 
@@ -238,6 +244,36 @@ public sealed class RotaService : IRotaService
         var prontos = pers.Sum(i => i.StatusPreparo != StatusPreparoPersonalizada.NaoPronta ? i.PacotesProntos ?? 0 : 0);
         var rotulo = prontos >= total && total > 0 ? "Pronta" : prontos > 0 ? "Parcial" : "Não pronta";
         return $"{rotulo} {prontos}/{total}";
+    }
+
+    /// <summary>Nomes dos pets/cães da entrega (vazio para Pedido PJ, que usa container).</summary>
+    private static string PetNomes(Entrega e)
+    {
+        var nomes = e.Pets
+            .Where(p => p.PetId != null)
+            .Select(p => p.PetNome)
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .Distinct()
+            .ToList();
+        return string.Join(", ", nomes);
+    }
+
+    /// <summary>Peso total da entrega em gramas (Casa pelos pacotes; Personalizada por tamanho × pacotes).</summary>
+    private static int TotalGramas(Entrega e)
+    {
+        var total = 0;
+        foreach (var item in e.Pets.SelectMany(p => p.Itens))
+        {
+            if (item.Tipo == TipoReceita.Casa)
+            {
+                total += item.Pacotes.Sum(pac => pac.PesoGramas * pac.Quantidade);
+            }
+            else
+            {
+                total += (item.TamanhoPacoteGramas ?? 0) * (item.QuantidadePacotes ?? 0);
+            }
+        }
+        return total;
     }
 
     private static string EnderecoTexto(Entrega e)

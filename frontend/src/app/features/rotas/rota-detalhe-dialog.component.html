@@ -13,6 +13,7 @@
       <span><mat-icon>person</mat-icon> {{ r.entregador || 'Sem entregador' }}</span>
       <button mat-stroked-button (click)="editar()"><mat-icon>edit</mat-icon> Editar</button>
       <button mat-stroked-button (click)="copiar()"><mat-icon>content_copy</mat-icon> Copiar</button>
+      <button mat-stroked-button (click)="baixarImagem()" matTooltip="Baixar JPEG para enviar ao entregador"><mat-icon>image</mat-icon> Baixar imagem</button>
       <button mat-stroked-button (click)="imprimir()"><mat-icon>print</mat-icon> Imprimir</button>
     </div>
 
@@ -24,40 +25,45 @@
     </div>
 
     <!-- Paradas -->
-    <h3 class="secao">Entregas da saída ({{ r.paradas.length }})</h3>
-    @for (p of r.paradas; track p.entregaId; let i = $index) {
-      <div class="parada">
-        <div class="ordem">{{ p.ordem }}</div>
-        <div class="info">
-          <div class="linha1">
-            <span class="cliente">{{ p.clienteNome }}</span>
-            @if (p.ehPj) { <span class="badge pj">Cliente PJ</span> }
-            <span class="badge pref" [class.incompat]="preferenciaIncompativel(r.periodo, p.preferenciaHorario)">
-              <mat-icon>schedule</mat-icon> {{ rotuloPreferencia(p.preferenciaHorario) }}
-            </span>
-            <span class="status-entrega">{{ p.statusEntrega }}</span>
+    <h3 class="secao">Entregas da saída ({{ r.paradas.length }}) · carga total <strong>{{ fmtKg(cargaTotalGramas) }}</strong></h3>
+    @if (ativa) { <p class="dica-arrasta"><mat-icon>drag_indicator</mat-icon> Arraste para ordenar (ou use as setas).</p> }
+    <div cdkDropList (cdkDropListDropped)="aoArrastar($event)">
+      @for (p of r.paradas; track p.entregaId; let i = $index) {
+        <div class="parada" cdkDrag [cdkDragDisabled]="!ativa">
+          @if (ativa) { <mat-icon class="arrasta" cdkDragHandle matTooltip="Arrastar para ordenar">drag_indicator</mat-icon> }
+          <div class="ordem">{{ p.ordem }}</div>
+          <div class="info">
+            <div class="linha1">
+              <span class="cliente">{{ p.clienteNome }}</span>
+              @if (p.ehPj) { <span class="badge pj">Cliente PJ</span> }
+              <span class="badge pref" [class.incompat]="preferenciaIncompativel(r.periodo, p.preferenciaHorario)">
+                <mat-icon>schedule</mat-icon> {{ rotuloPreferencia(p.preferenciaHorario) }}
+              </span>
+              <span class="status-entrega">{{ p.statusEntrega }}</span>
+            </div>
+            @if (p.petNomes) { <div class="cao"><mat-icon>pets</mat-icon> {{ p.petNomes }}</div> }
+            <div class="linha2">{{ p.endereco }}{{ p.bairro ? ' — ' + p.bairro : '' }}{{ p.cidade ? ', ' + p.cidade : '' }}</div>
+            @if (p.itensResumo) { <div class="itens">{{ p.itensResumo }} · <strong>{{ fmtKg(p.totalGramas) }}</strong></div> }
+            <div class="alertas">
+              @if (preferenciaIncompativel(r.periodo, p.preferenciaHorario)) { <span class="al warn"><mat-icon>schedule</mat-icon> Preferência: {{ rotuloPreferencia(p.preferenciaHorario) }}</span> }
+              @if (p.enderecoIncompleto) { <span class="al err"><mat-icon>wrong_location</mat-icon> Endereço incompleto</span> }
+              @if (p.estoqueAlerta === 'falta') { <span class="al warn"><mat-icon>inventory_2</mat-icon> Falta produto acabado</span> }
+              @if (p.estoqueAlerta === 'naocadastrado') { <span class="al err"><mat-icon>inventory_2</mat-icon> Produto acabado não cadastrado</span> }
+              @if (p.prontidaoTexto) { <span class="al" [class.warn]="!p.prontidaoTexto.startsWith('Pronta')"><mat-icon>restaurant</mat-icon> {{ p.prontidaoTexto }}</span> }
+            </div>
           </div>
-          <div class="linha2">{{ p.endereco }}{{ p.bairro ? ' — ' + p.bairro : '' }}{{ p.cidade ? ', ' + p.cidade : '' }}@if (p.telefone) { · {{ p.telefone }} }</div>
-          @if (p.itensResumo) { <div class="itens">{{ p.itensResumo }}</div> }
-          <div class="alertas">
-            @if (preferenciaIncompativel(r.periodo, p.preferenciaHorario)) { <span class="al warn"><mat-icon>schedule</mat-icon> Preferência: {{ rotuloPreferencia(p.preferenciaHorario) }}</span> }
-            @if (p.enderecoIncompleto) { <span class="al err"><mat-icon>wrong_location</mat-icon> Endereço incompleto</span> }
-            @if (p.estoqueAlerta === 'falta') { <span class="al warn"><mat-icon>inventory_2</mat-icon> Falta produto acabado</span> }
-            @if (p.estoqueAlerta === 'naocadastrado') { <span class="al err"><mat-icon>inventory_2</mat-icon> Produto acabado não cadastrado</span> }
-            @if (p.prontidaoTexto) { <span class="al" [class.warn]="!p.prontidaoTexto.startsWith('Pronta')"><mat-icon>restaurant</mat-icon> {{ p.prontidaoTexto }}</span> }
-          </div>
+          @if (ativa) {
+            <div class="acoes">
+              <button mat-icon-button [disabled]="i === 0" (click)="mover(i, -1)" matTooltip="Subir"><mat-icon>arrow_upward</mat-icon></button>
+              <button mat-icon-button [disabled]="i === r.paradas.length - 1" (click)="mover(i, 1)" matTooltip="Descer"><mat-icon>arrow_downward</mat-icon></button>
+              <button mat-icon-button class="rem" (click)="remover(p.entregaId)" matTooltip="Remover"><mat-icon>close</mat-icon></button>
+            </div>
+          }
         </div>
-        @if (ativa) {
-          <div class="acoes">
-            <button mat-icon-button [disabled]="i === 0" (click)="mover(i, -1)" matTooltip="Subir"><mat-icon>arrow_upward</mat-icon></button>
-            <button mat-icon-button [disabled]="i === r.paradas.length - 1" (click)="mover(i, 1)" matTooltip="Descer"><mat-icon>arrow_downward</mat-icon></button>
-            <button mat-icon-button class="rem" (click)="remover(p.entregaId)" matTooltip="Remover"><mat-icon>close</mat-icon></button>
-          </div>
-        }
-      </div>
-    } @empty {
-      <p class="vazio">Nenhuma entrega nesta saída ainda.</p>
-    }
+      } @empty {
+        <p class="vazio">Nenhuma entrega nesta saída ainda.</p>
+      }
+    </div>
 
     <!-- Disponíveis -->
     @if (ativa) {
@@ -71,7 +77,7 @@
               <span class="badge pref" [class.incompat]="preferenciaIncompativel(r.periodo, e.preferenciaHorario)">{{ rotuloPreferencia(e.preferenciaHorario) }}</span>
               @if (e.enderecoIncompleto) { <span class="al err"><mat-icon>wrong_location</mat-icon> Endereço incompleto</span> }
             </div>
-            <div class="linha2">{{ e.endereco }}{{ e.bairro ? ' — ' + e.bairro : '' }} · {{ e.itensResumo }}</div>
+            <div class="linha2">{{ e.endereco }}{{ e.bairro ? ' — ' + e.bairro : '' }} · {{ e.itensResumo }} · {{ fmtKg(e.totalGramas) }}</div>
           </div>
           <button mat-flat-button class="btn-add" (click)="adicionar(e)"><mat-icon>add</mat-icon> Adicionar</button>
         </div>

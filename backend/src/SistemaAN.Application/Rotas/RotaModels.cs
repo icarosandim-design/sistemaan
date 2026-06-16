@@ -24,7 +24,9 @@ public sealed record RotaParadaDto(
     string ItensResumo,
     bool EnderecoIncompleto,
     string? ProntidaoTexto,
-    string EstoqueAlerta);
+    string EstoqueAlerta,
+    string PetNomes,
+    int TotalGramas);
 
 public sealed record RotaDto(
     long Id,
@@ -50,7 +52,9 @@ public sealed record EntregaDisponivelDto(
     string ItensResumo,
     bool EnderecoIncompleto,
     string? ProntidaoTexto,
-    long? EmRotaAtivaId);
+    long? EmRotaAtivaId,
+    string PetNomes,
+    int TotalGramas);
 
 public sealed record CriarRotaRequest(DateOnly Data, string Nome, string Periodo, string? Entregador, string? Observacoes);
 

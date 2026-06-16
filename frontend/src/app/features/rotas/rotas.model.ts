@@ -48,6 +48,8 @@ export interface RotaParada {
   enderecoIncompleto: boolean;
   prontidaoTexto: string | null;
   estoqueAlerta: string; // '' | 'ok' | 'falta' | 'naocadastrado'
+  petNomes: string;
+  totalGramas: number;
 }
 
 export interface Rota {
@@ -76,6 +78,13 @@ export interface EntregaDisponivel {
   enderecoIncompleto: boolean;
   prontidaoTexto: string | null;
   emRotaAtivaId: number | null;
+  petNomes: string;
+  totalGramas: number;
+}
+
+/** Formata gramas em kg (pt-BR). */
+export function fmtKg(gramas: number): string {
+  return `${(gramas / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} kg`;
 }
 
 export interface CriarRotaRequest {

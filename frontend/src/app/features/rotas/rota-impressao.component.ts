@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Rota, rotuloPeriodo } from './rotas.model';
+import { fmtKg, Rota, rotuloPeriodo } from './rotas.model';
 import { RotasService } from './rotas.service';
 import { rotuloPreferenciaHorario } from '../clientes/clientes.model';
 
@@ -25,9 +25,9 @@ import { rotuloPreferenciaHorario } from '../clientes/clientes.model';
         @for (p of r.paradas; track p.entregaId; let i = $index) {
           <article class="parada">
             <div class="cab"><strong>{{ i + 1 }}. {{ p.clienteNome }}</strong>{{ p.ehPj ? ' [Cliente PJ]' : '' }} — {{ rotuloPreferencia(p.preferenciaHorario) }}</div>
+            @if (p.petNomes) { <div>Cão: {{ p.petNomes }}</div> }
             <div>{{ p.endereco }}{{ p.bairro ? ' — ' + p.bairro : '' }}{{ p.cidade ? ', ' + p.cidade : '' }}</div>
-            @if (p.telefone) { <div>Tel/WhatsApp: {{ p.telefone }}</div> }
-            @if (p.itensResumo) { <div>Itens: {{ p.itensResumo }}</div> }
+            @if (p.itensResumo) { <div>Itens: {{ p.itensResumo }} ({{ fmtKg(p.totalGramas) }})</div> }
           </article>
         }
       </div>
@@ -50,6 +50,7 @@ export class RotaImpressaoComponent implements OnInit {
   private readonly service = inject(RotasService);
   readonly rota = signal<Rota | null>(null);
   readonly rotuloPeriodo = rotuloPeriodo;
+  readonly fmtKg = fmtKg;
   readonly rotuloPreferencia = rotuloPreferenciaHorario;
 
   ngOnInit(): void {
